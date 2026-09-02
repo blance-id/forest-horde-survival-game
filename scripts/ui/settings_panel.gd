@@ -1,4 +1,4 @@
-## Settings overlay: music / sound toggles, credits and version.
+## Settings overlay: music / sound / vibration toggles, credits and version.
 ## Toggles write the volume settings AudioManager already listens to.
 class_name SettingsPanel
 extends Control
@@ -11,6 +11,7 @@ const SFX_ON := 1.0
 @onready var _panel: PanelContainer = %Panel
 @onready var _music: ToggleSwitch = %MusicSwitch
 @onready var _sfx: ToggleSwitch = %SfxSwitch
+@onready var _haptics: ToggleSwitch = %HapticsSwitch
 @onready var _version: Label = %Version
 @onready var _close: Button = %CloseButton
 
@@ -24,12 +25,18 @@ func _ready() -> void:
 	_sfx.toggled.connect(func(on: bool) -> void:
 		GameState.set_setting("sfx_volume", SFX_ON if on else 0.0)
 		SoundBank.ui("switch"))
+	_haptics.toggled.connect(func(on: bool) -> void:
+		GameState.set_setting("haptics", on)
+		SoundBank.ui("switch")
+		if on:
+			Haptics.medium())
 	_close.pressed.connect(close)
 
 
 func open() -> void:
 	_music.set_on(float(GameState.get_setting("music_volume", MUSIC_ON)) > 0.0)
 	_sfx.set_on(float(GameState.get_setting("sfx_volume", SFX_ON)) > 0.0)
+	_haptics.set_on(bool(GameState.get_setting("haptics", true)))
 	visible = true
 	_panel.pivot_offset = _panel.size * 0.5
 	_panel.scale = Vector2(0.7, 0.7)

@@ -43,6 +43,9 @@ Order matters: `Log` first, `GameState` depends on `SaveManager` (both are
 ready before any screen), `AudioManager` reads `GameState` settings.
 `SoundBank` (scripts/systems) is a static helper on top of `AudioManager`
 that resolves `assets/audio/{sfx,ui,jingles}/<name>[_NN].ogg` by name.
+`Haptics` (scripts/systems) wraps `Input.vibrate_handheld` behind the
+`haptics` setting with a 90 ms rate limit. `SafeArea` (scripts/ui) converts
+the display cut-out into canvas pixels so top margins can be padded.
 
 ## Main menu: `scenes/ui/main_menu.tscn`
 
@@ -76,7 +79,7 @@ Game (Node3D)
  ├── Weapons      WeaponSystem: WeaponData + level slots; projectile / orbit / aura kinds
  ├── Pickups      PickupManager: gems, coins, hearts in MultiMeshes, magnet + collection
  └── UI (CanvasLayer 10)
-      ├── HUD           HP/XP bars, timer, kills, coins, boss bar, announcements, TouchJoystick
+      ├── HUD           HP/XP bars, timer, kills, coins, boss bar, announcements, move hint, TouchJoystick (floating, drag-to-recentre; reset by Game._freeze on every pause)
       ├── LevelUpPanel  3 cards, pauses the tree
       ├── PausePanel
       └── ResultPanel   win/lose stats + coin reward → retry / menu
@@ -137,7 +140,7 @@ reads (`damage_mult()`, `attack_speed_mult()`, `area_mult()` …).
 | Script | Use |
 |---|---|
 | `tools/check.sh [frames] -- --screen=res://…` | Boots the real game headless, fails on `SCRIPT ERROR` / `ERROR` |
-| `tools/shot.sh out.png [frames] --screen=… [--dev=cmd,…]` | Renders under Xvfb + opengl3 and saves a screenshot; `--dev=` drives `dev_command` (levelup, pause, win, die, hurt, horde, boss, weapons, move, stop) |
+| `tools/shot.sh out.png [frames] --screen=… [--dev=cmd,…]` | Renders under Xvfb + opengl3 and saves a screenshot; `--dev=` drives `dev_command` (levelup, pause, win, die, hurt, horde, boss, weapons, move, stop, touch). With glow on, Xvfb manages ~3–7 fps, so keep captures ≤ 300 frames |
 | `tools/test.sh` | Runs `tests/test_*.gd` headless with autoloads available |
 | `godot --headless --check-only --script <file>` | Per-script parse check with file:line |
 | `godot --headless -s tools/img_crop.gd -- in.png out.png x y w h [scale]` | Crop/zoom a screenshot (no image tools on the box) |

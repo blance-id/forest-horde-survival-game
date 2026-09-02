@@ -98,14 +98,31 @@ every run progresses the meta. A loss must never feel like wasted time.
 
 **Floating drag stick**: touch anywhere on the play area; the touch point
 becomes the stick centre; drag direction = movement direction; drag distance
-(with a small dead zone and a clamp radius) = speed. Release = stop.
-A subtle stick graphic appears where the finger landed so the player gets
-feedback, and disappears on release.
+= speed. Release = stop. A translucent ring + knob fades in where the finger
+landed and fades out on release.
+
+Tuning (`TouchJoystick`, design pixels on the 720-wide canvas):
+
+- Ring radius 96 px, dead zone 10 %.
+- Response curve: 35 % speed right past the dead zone, full speed at 70 % of
+  the radius — a thumb barely has to move to sprint.
+- **Drag-to-recentre**: when the finger passes the ring the base is dragged
+  along behind it, so reversing direction only needs the thumb to cross the
+  ring again, never a lift.
+- Any tree pause (level-up, pause menu, app to background) drops the touch so
+  the hero never keeps walking on a stale stick after the panel closes.
+- First-ever run shows a pulsing "DRAG ANYWHERE TO MOVE" hint until the first
+  touch (hidden for players with a finished run in their profile).
+
+Other:
 
 - No aim input: the hero auto-targets the nearest enemy (weapon-specific
   targeting rules live in `WeaponData`).
-- UI buttons (pause) live in the safe area at the top and are excluded from the
-  movement touch area.
+- UI buttons (pause, 80 px) live at the top, padded below the notch via
+  `SafeArea`, and take the touch before the stick does.
+- Haptics: short pulses on taking damage (40 ms), level-up (18 ms), boss spawn
+  / boss kill / death (90 ms), rate-limited to one per 90 ms and switchable in
+  Settings → Vibration.
 - Keyboard WASD / arrows are supported for desktop development only.
 
 ---

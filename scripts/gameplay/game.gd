@@ -108,6 +108,7 @@ func _start_run() -> void:
 	hud.set_xp(0.0, xp_needed(level), level)
 	hud.set_kills(0)
 	hud.set_coins(0)
+	hud.show_move_hint()
 	level_up_panel.chosen.connect(_on_upgrade_chosen)
 	pause_panel.resume_pressed.connect(_resume)
 	pause_panel.quit_pressed.connect(_give_up)
@@ -156,6 +157,18 @@ func dev_command(cmd: String) -> void:
 			_dev_move = Vector2(0.6, -0.8)
 		"stop":
 			_dev_move = Vector2.ZERO
+		"touch":
+			# Fake a finger landing and dragging so the joystick path renders.
+			var press := InputEventScreenTouch.new()
+			press.index = 0
+			press.pressed = true
+			press.position = Vector2(360, 900)
+			Input.parse_input_event(press)
+			var drag := InputEventScreenDrag.new()
+			drag.index = 0
+			drag.position = Vector2(430, 850)
+			drag.relative = drag.position - press.position
+			Input.parse_input_event(drag)
 		_:
 			Log.warn("Game", "Unknown dev command: " + cmd)
 
@@ -175,7 +188,9 @@ func _process(delta: float) -> void:
 	if state != State.RUNNING:
 		return
 	run_time += delta
-	player.move_input = hud.joystick.direction if hud.joystick.is_pressed else _dev_move
+	# The joystick also carries the keyboard fallback when no finger is down.
+	var stick := hud.joystick.direction
+	player.move_input = stick if stick != Vector2.ZERO else _dev_move
 	_tick_world(delta)
 	_tick_director(delta)
 	hud.set_time(chapter.duration - run_time)
@@ -245,12 +260,14 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 		pickups.drop(PickupManager.Kind.HEAL, e.pos + Vector2(-0.3, 0.0), HEAL_AMOUNT)
 	if d.is_boss:
 		camera_rig.shake(0.8)
+		Haptics.heavy()
 
 
 func _on_boss_spawned(_e: EnemyManager.Enemy) -> void:
 	hud.show_announcement("BOSS INCOMING!", 2.2)
 	SoundBank.sfx("bell", -2.0, 0.0)
 	camera_rig.shake(0.5)
+	Haptics.heavy()
 
 
 func _on_boss_killed(_e: EnemyManager.Enemy) -> void:
@@ -262,6 +279,7 @@ func _on_boss_killed(_e: EnemyManager.Enemy) -> void:
 func _on_player_damaged(_amount: float) -> void:
 	SoundBank.sfx("hit_player", -6.0, 0.1)
 	camera_rig.shake(0.25)
+	Haptics.medium()
 
 
 func _on_pickup_collected(kind: PickupManager.Kind, value: float, _position: Vector3) -> void:
@@ -301,8 +319,9 @@ func _open_level_up() -> void:
 		_pending_level_ups = 0
 		return
 	state = State.LEVEL_UP
-	get_tree().paused = true
+	_freeze()
 	SoundBank.jingle("level_up", -4.0)
+	Haptics.light()
 	level_up_panel.offer(options)
 
 
@@ -367,9 +386,18 @@ func _pause() -> void:
 	if state != State.RUNNING:
 		return
 	state = State.PAUSED
-	get_tree().paused = true
+	_freeze()
 	SoundBank.ui("click")
 	pause_panel.open()
+
+
+## Pauses the tree and drops the joystick touch: the HUD stops receiving
+## input while paused, so the finger's release would otherwise never arrive
+## and the hero would keep walking after the panel closes.
+func _freeze() -> void:
+	get_tree().paused = true
+	hud.joystick.reset()
+	player.move_input = Vector2.ZERO
 
 
 func _resume() -> void:
@@ -402,6 +430,7 @@ func _give_up() -> void:
 func _on_player_died() -> void:
 	SoundBank.jingle("lose", -2.0)
 	camera_rig.shake(0.6)
+	Haptics.heavy()
 	_end(false)
 	_result_timer = RESULT_DELAY
 
@@ -420,6 +449,7 @@ func _end(won: bool) -> void:
 		return
 	state = State.OVER
 	_won = won
+	hud.joystick.reset()
 	player.move_input = Vector2.ZERO
 	var minutes := run_time / 60.0
 	var reward := run_coins + int(chapter.coins_per_minute * minutes)

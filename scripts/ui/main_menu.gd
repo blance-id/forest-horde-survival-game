@@ -32,6 +32,7 @@ const STROLL_TURN := 0.4
 @onready var chapter_name: Label = %ChapterName
 @onready var chapter_best: Label = %ChapterBest
 @onready var settings_panel: SettingsPanel = %SettingsPanel
+@onready var top_bar: MarginContainer = $UI/Root/TopBar
 
 var _rng := RandomNumberGenerator.new()
 var _spawn_timer := 0.0
@@ -41,6 +42,7 @@ var _pulse: Tween
 
 func _ready() -> void:
 	_rng.randomize()
+	SafeArea.pad_top(top_bar)
 	_build_demo()
 	_build_ui()
 

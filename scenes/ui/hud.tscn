@@ -137,13 +137,34 @@ text = "0"
 
 [node name="PauseButton" type="Button" parent="Top/VBox/InfoRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 72)
+custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_vertical = 4
 theme_type_variation = &"RoundButton"
 icon = ExtResource("4_pause")
 icon_alignment = 1
 expand_icon = true
+
+[node name="Hint" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -300.0
+offset_right = 300.0
+offset_bottom = -240.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"Heading"
+text = "DRAG ANYWHERE TO MOVE"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Announce" type="Label" parent="."]
 unique_name_in_owner = true
