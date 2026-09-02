@@ -6,10 +6,11 @@
 [resource]
 script = ExtResource("1")
 id = "magnet"
-display_name = "Magnet"
-card_title = "GIMME!"
-description = "Pick up gems from further away."
+display_name = "Pickup Range"
+description = "+0.8m Pickup Range"
 icon = ExtResource("2")
 stat = "pickup_radius_add"
 value_per_level = 0.8
 max_level = 3
+percent = false
+unit = "m"

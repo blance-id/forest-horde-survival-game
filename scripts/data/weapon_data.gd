@@ -8,7 +8,6 @@ enum Kind { PROJECTILE, ORBIT, AURA }
 
 @export var id: String = "blaster"
 @export var display_name: String = "Blaster"
-@export var card_title: String = "NEW WEAPON!"
 @export var description: String = "Shoots the nearest zombie."
 @export var icon: Texture2D
 @export var kind: Kind = Kind.PROJECTILE
@@ -62,6 +61,20 @@ func stats_at(level: int) -> Dictionary:
 			if key != "text":
 				s[key] = level_ups[i][key]
 	return s
+
+
+## The card's number line: damage, how fast it swings and what one full
+## volley lands. Burst is what players actually compare weapons on.
+func stat_line(level: int, s: Dictionary) -> String:
+	var cd := maxf(0.01, float(s["cooldown"]))
+	var shots := maxi(1, int(s["projectile_count"]))
+	var dmg := float(s["damage"])
+	var parts := ["%d damage" % roundi(dmg), "%.1f/sec" % (1.0 / cd)]
+	if shots > 1:
+		parts.append("burst %d" % roundi(dmg * float(shots)))
+	if int(s["pierce"]) > 0:
+		parts.append("pierce %d" % int(s["pierce"]))
+	return "  ·  ".join(parts)
 
 
 func level_text(level: int) -> String:

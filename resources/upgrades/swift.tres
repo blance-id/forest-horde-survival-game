@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1")
 id = "swift"
-display_name = "Swift Boots"
-card_title = "ZOOM!"
-description = "+10% move speed per level."
+display_name = "Move Speed"
+description = "+10% Move Speed"
 icon = ExtResource("2")
 stat = "move_speed_mult"
 value_per_level = 0.1
 max_level = 5
+percent = true

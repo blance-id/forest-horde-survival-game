@@ -91,6 +91,25 @@ pickups → fx → camera_rig.follow → hud.place_hero_hp → hud.tick`. Everyt
 simulates in XZ as `Vector2` and is written to 3D transforms at the end of
 each tick.
 
+### Enemy attacks
+
+Nothing damages the hero on contact. Every attack runs wind-up → strike →
+damage inside `EnemyManager._move`:
+
+1. In range and off cooldown, the enemy roots itself, sets `windup` from
+   `EnemyData.attack_windup` and emits `enemy_winding_up`. `charge` ramps 0→1
+   and `_write_transform` rears the body back and swells it — the tell.
+2. When the wind-up expires, `_land_attack` fires: melee only connects if the
+   hero is still inside `reach + lunge`, so walking out of a swing works.
+   `strike` snaps to 1 and decays over `STRIKE_TIME`, lunging the body forward.
+3. `enemy_struck` carries the impact point. Casters (`EnemyData.ranged`) skip
+   the melee check and hand the shot to
+   `ProjectileManager.spawn_enemy_bolt()` instead — a slow tinted sphere that
+   flies at *where the hero was*, so standing still is what gets you hit.
+
+`Game` turns both signals into sound and sparks, and only for enemies within
+`TELL_RANGE`: two hundred simultaneous tells would be one wall of noise.
+
 ### Game feel
 
 Everything juicy hangs off signals so gameplay code never knows about VFX:
@@ -112,6 +131,10 @@ into `FxManager` presets, `DamageNumbers`, camera shake, haptics and hit-stop.
   Splats are `mix`-blended ground quads from a 4×2 atlas built at startup.
 - **Hit-stop**: `Game._hit_stop(scale, duration)` sets `Engine.time_scale` and
   restores it from an unscaled timer (boss kill 0.05 s, hero death slow-mo).
+- **EnemyBars** (scripts/ui/enemy_bars.gd) draws every on-screen enemy's health
+  in one canvas item — a node per enemy would cost more than the horde does.
+  Bars are culled past `RANGE`, capped at `MAX_BARS`, and elites (×5 XP and up)
+  get a gold frame so tiers read without a legend.
 - **DamageNumbers** (scripts/ui/damage_numbers.gd) recycles 40 `Number` labels
   and re-projects them from world space every frame (`hud.tick(camera, delta)`).
 - **Vignette**: a full-rect `ColorRect` with `shaders/vignette.gdshader`; the HUD

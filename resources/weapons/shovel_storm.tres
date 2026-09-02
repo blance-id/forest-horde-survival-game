@@ -8,7 +8,6 @@
 script = ExtResource("1")
 id = "shovel_storm"
 display_name = "Shovel Storm"
-card_title = "NEW WEAPON!"
 description = "Shovels spin around you and smack anything close."
 icon = ExtResource("2")
 kind = 1

@@ -26,7 +26,7 @@
 script = ExtResource("1")
 id = "chapter_01"
 display_name = "Whispering Forest"
-duration = 360.0
+duration = 300.0
 arena_half_size = 22.0
 ground_color = Color(0.35, 0.47, 0.18, 1)
 ground_color_alt = Color(0.29, 0.4, 0.15, 1)
@@ -48,22 +48,22 @@ waves = Array[Dictionary]([{
 "weight": 10.0
 }, {
 "enemy": ExtResource("e_runner"),
-"start": 45.0,
+"start": 38.0,
 "end": 400.0,
 "weight": 5.0
 }, {
 "enemy": ExtResource("e_ghost"),
-"start": 90.0,
+"start": 75.0,
 "end": 400.0,
 "weight": 4.0
 }, {
 "enemy": ExtResource("e_brute"),
-"start": 150.0,
+"start": 125.0,
 "end": 400.0,
 "weight": 2.0
 }, {
 "enemy": ExtResource("e_keeper"),
-"start": 240.0,
+"start": 200.0,
 "end": 400.0,
 "weight": 1.0
 }])
@@ -73,32 +73,32 @@ spawn_interval_start = 0.7
 spawn_interval_end = 0.08
 hp_scale_end = 3.0
 events = Array[Dictionary]([{
-"time": 60.0,
+"time": 50.0,
 "kind": "ring",
 "enemy": ExtResource("e_runner"),
 "count": 12
 }, {
-"time": 120.0,
+"time": 100.0,
 "kind": "ring",
 "enemy": ExtResource("e_walker"),
 "count": 24
 }, {
-"time": 180.0,
+"time": 150.0,
 "kind": "ring",
 "enemy": ExtResource("e_ghost"),
 "count": 16
 }, {
-"time": 240.0,
+"time": 200.0,
 "kind": "ring",
 "enemy": ExtResource("e_brute"),
 "count": 8
 }, {
-"time": 300.0,
+"time": 250.0,
 "kind": "boss",
 "enemy": ExtResource("e_vampire"),
 "count": 1
 }, {
-"time": 330.0,
+"time": 275.0,
 "kind": "ring",
 "enemy": ExtResource("e_runner"),
 "count": 30

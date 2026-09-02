@@ -334,3 +334,69 @@ Everything after the slice widens this loop — it never replaces it.
 Monetisation, ads, cloud save, leaderboards, multiplayer, localisation beyond
 English, achievements. The architecture must not block them, but nothing is
 built for them.
+
+---
+
+## 15. v2 — Playtest Overhaul
+
+First smoke test verdict: playable but *not fun*. Too flat (a square arena and
+one verb: shoot), too hard (contact damage with no telegraph), too opaque
+(fancy card names, no idea what a build actually does). v2 fixes that by
+adding a second verb — **the forest is a resource, not a backdrop** — and by
+making every number legible.
+
+### 15.1 The new loop
+
+Chop trees for **wood** → spend wood on **towers** → feed towers **ammo**
+looted from elite enemies → the firing tower makes *noise*, which pulls the
+horde off the player and onto it. A silent tower is invisible to the horde, so
+placing and feeding one is a deliberate, reversible decision, not a fire and
+forget turret. Bushes hide the player (and the horde). Traps hurt both sides.
+
+### 15.2 Work list
+
+Waves are shipped in order; each keeps the game runnable.
+
+**Wave 1 — fairness and legibility**
+- Camera 10 % further out.
+- Run is 5 minutes, not 6.
+- XP is tiered per enemy: ×1 ×2 ×5 ×10 ×20 ×50 ×100 instead of a flat 1.
+- Every enemy has a health bar.
+- Hero HP bar gradients green → yellow → red with the ratio.
+- Enemies telegraph: wind-up, animated strike, then damage — no more damage
+  on touch. Zombie 0.3 s bite, wolf 0.25 s lunge, forest mage 2.0 s cast plus
+  a 3 s slow-flying bolt.
+- Plain UX writing: "Sprint · Lv 2 · +10% Move Speed", never "ZOOM!".
+
+**Wave 2 — a world worth exploring**
+- Much larger arena, a different shape and a signature trap per chapter.
+- Choppable trees drop wood.
+- Bushes conceal the hero and the horde; killing inside one blows your cover.
+- Traps that damage both sides.
+- Minimap.
+
+**Wave 3 — towers**
+- Build from wood, feed ammo dropped by elites (×5 and up).
+- Only fires while the hero is in range; firing makes it a target.
+
+**Wave 4 — combat depth**
+- Physical / magic / true damage, each with its own colour.
+- Attack speed and burst damage as first-class stats.
+- The two ranged weapons mount left and right of the hero, not centred.
+- Beasts and fairy-tale monsters: wolf, great snake, forest mage.
+- Swap a maxed weapon for another one at the same level.
+
+**Wave 5 — meta**
+- Boss entrance cutscene: everything freezes, the boss walks in and laughs.
+- Bosses drop a one-shot item or skill for the *next* run; it sits in the Bag
+  until used and is lost on death.
+- Revive for coins at 100 / 200 / 400 / 800 …
+- Home store: buy consumables into the inventory, carry them in the Travel Bag.
+- Build panel listing every buff taken and the damage it adds up to.
+
+**Wave 6 — presentation**
+- Real ground: tiling grass and bush texture that varies without tiling
+  visibly, instead of the painted-mud shader.
+- A "Max" quality setting that turns everything up.
+- Metal Slug touches: driveable vehicles with their own ammo, rescuable
+  survivors that hand over an item.

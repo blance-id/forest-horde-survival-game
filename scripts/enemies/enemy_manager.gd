@@ -7,6 +7,10 @@ extends Node3D
 signal enemy_killed(enemy: Enemy)
 signal boss_spawned(enemy: Enemy)
 signal boss_killed(enemy: Enemy)
+## An enemy started its wind-up: the tell, before any damage exists.
+signal enemy_winding_up(enemy: Enemy)
+## The strike landed (melee) or the bolt left the caster (ranged).
+signal enemy_struck(enemy: Enemy, target: Vector2)
 
 const CELL := 1.5
 const DEATH_DURATION := 1.6
@@ -15,6 +19,8 @@ const DEATH_DURATION := 1.6
 const RESPAWN_DISTANCE := 20.0
 const SPAWN_RING_MIN := 10.5
 const SPAWN_RING_MAX := 12.5
+## Strike lunge decay: how long the forward snap is visible.
+const STRIKE_TIME := 0.18
 const HIDDEN := Transform3D(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, -50, 0))
 
 
@@ -29,6 +35,13 @@ class Enemy:
 	var dying := false
 	var death_time := 0.0
 	var attack_cd := 0.0
+	## Seconds left in the wind-up; 0 = not winding up.
+	var windup := 0.0
+	## Strike animation: 1 at the moment of impact, decaying to 0. Drives the
+	## forward lunge in `_write_transform`.
+	var strike := 0.0
+	## Wind-up pose: the body rears back and swells as it charges the hit.
+	var charge := 0.0
 	var knock := Vector2.ZERO
 	var sep := Vector2.ZERO
 	var hit_time := -100.0
@@ -206,29 +219,41 @@ func _move(e: Enemy, delta: float, player_pos: Vector2, player_alive: bool) -> v
 	var to_player := player_pos - e.pos
 	var dist := to_player.length()
 	var dir := to_player / dist if dist > 0.001 else Vector2.RIGHT
-	var speed := d.speed
-	var vel := dir * speed
-	var contact := e.radius() + Player.RADIUS
+	var vel := dir * d.speed
+	var reach := e.radius() + Player.RADIUS + d.attack_reach
 
 	if dist > RESPAWN_DISTANCE:
 		e.pos = spawn_position()
 		e.knock = Vector2.ZERO
+		e.windup = 0.0
 		_write_transform(e)
 		return
 
-	# Separation is refreshed on alternate frames; the cached push is reused.
-	if (_frame + e.slot) & 1 == 0:
-		e.sep = _separation(e)
-	vel += e.sep * 5.0
+	e.strike = maxf(0.0, e.strike - delta / STRIKE_TIME)
+	e.attack_cd = maxf(0.0, e.attack_cd - delta)
 
-	if dist < contact:
-		vel -= dir * speed
-		e.attack_cd -= delta
-		if player_alive and e.attack_cd <= 0.0:
-			if player.take_damage(d.damage):
-				e.attack_cd = d.attack_cooldown
+	if e.windup > 0.0:
+		# Rooted while charging: the wind-up is the player's cue to leave.
+		e.windup -= delta
+		e.charge = 1.0 - clampf(e.windup / maxf(0.001, d.attack_windup), 0.0, 1.0)
+		vel = Vector2.ZERO
+		if e.windup <= 0.0:
+			_land_attack(e, dir, dist, reach, player_pos, player_alive)
 	else:
-		e.attack_cd = minf(e.attack_cd, 0.15)
+		e.charge = maxf(0.0, e.charge - delta * 5.0)
+		# Separation is refreshed on alternate frames; the cached push is reused.
+		if (_frame + e.slot) & 1 == 0:
+			e.sep = _separation(e)
+		vel += e.sep * 5.0
+		var trigger := d.cast_range if d.ranged else reach
+		if player_alive and dist < trigger and e.attack_cd <= 0.0:
+			e.windup = d.attack_windup
+			# The cooldown covers the wind-up so the rhythm stays readable.
+			e.attack_cd = d.attack_cooldown + d.attack_windup
+			vel = Vector2.ZERO
+			enemy_winding_up.emit(e)
+		elif dist < reach:
+			vel -= dir * d.speed  # touching already; stop shoving
 
 	e.pos += (vel + e.knock) * delta
 	e.knock = e.knock.lerp(Vector2.ZERO, minf(1.0, 9.0 * delta))
@@ -236,6 +261,21 @@ func _move(e: Enemy, delta: float, player_pos: Vector2, player_alive: bool) -> v
 	e.pos.y = clampf(e.pos.y, -arena_half, arena_half)
 	e.yaw = lerp_angle(e.yaw, atan2(dir.x, dir.y), minf(1.0, 8.0 * delta))
 	_write_transform(e)
+
+
+## End of the wind-up. Melee only connects if the hero is still in reach —
+## walking out of a telegraphed swing has to work, or the tell is decoration.
+func _land_attack(e: Enemy, dir: Vector2, dist: float, reach: float, player_pos: Vector2, player_alive: bool) -> void:
+	var d := e.pool.data
+	e.windup = 0.0
+	e.charge = 0.0
+	e.strike = 1.0
+	if d.ranged:
+		enemy_struck.emit(e, player_pos)
+		return
+	if player_alive and dist <= reach + d.lunge:
+		player.take_damage(d.damage)
+		enemy_struck.emit(e, e.pos + dir * reach)
 
 
 func _separation(e: Enemy) -> Vector2:
@@ -272,9 +312,16 @@ func _separation(e: Enemy) -> Vector2:
 
 
 func _write_transform(e: Enemy) -> void:
-	var s := e.pool.data.scale
+	var d := e.pool.data
+	var s := d.scale
+	var offset := Vector2.ZERO
+	if e.charge > 0.0 or e.strike > 0.0:
+		# Rear back over the wind-up, then snap forward on the strike.
+		var forward := Vector2(sin(e.yaw), cos(e.yaw))
+		offset = forward * d.lunge * (e.strike - e.charge * 0.4)
+		s *= 1.0 + e.charge * 0.12 + e.strike * 0.08
 	var basis := Basis(Vector3.UP, e.yaw).scaled(Vector3(s, s, s))
-	e.pool.multimesh.set_instance_transform(e.slot, Transform3D(basis, Vector3(e.pos.x, 0.0, e.pos.y)))
+	e.pool.multimesh.set_instance_transform(e.slot, Transform3D(basis, Vector3(e.pos.x + offset.x, 0.0, e.pos.y + offset.y)))
 
 
 func _write_custom(e: Enemy) -> void:

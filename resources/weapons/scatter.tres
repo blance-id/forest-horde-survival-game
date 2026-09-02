@@ -7,7 +7,6 @@
 script = ExtResource("1")
 id = "scatter"
 display_name = "Scatter Blaster"
-card_title = "NEW WEAPON!"
 description = "A wide blast of pellets that shoves zombies back."
 icon = ExtResource("2")
 kind = 0

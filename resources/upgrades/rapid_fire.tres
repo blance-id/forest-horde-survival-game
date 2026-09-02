@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1")
 id = "rapid_fire"
-display_name = "Rapid Fire"
-card_title = "PEW PEW PEW!"
-description = "+12% attack speed per level."
+display_name = "Attack Speed"
+description = "+12% Attack Speed"
 icon = ExtResource("2")
 stat = "attack_speed_mult"
 value_per_level = 0.12
 max_level = 5
+percent = true

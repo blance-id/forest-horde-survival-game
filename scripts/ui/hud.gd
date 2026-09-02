@@ -13,9 +13,15 @@ const LOW_HP_PULSE := 0.22
 const COMBO_WINDOW := 1.3
 const COMBO_MIN := 5
 const COMBO_COLORS: Array[Color] = [Color(1.0, 0.96, 0.85), Color(1.0, 0.82, 0.3), Color(1.0, 0.45, 0.25), Color(1.0, 0.25, 0.35)]
+## The HP bar reads as a gauge: full green, half yellow, empty red, with the
+## two halves interpolated so the colour moves continuously with the ratio.
+const HP_FULL := Color(0.35, 0.82, 0.28)
+const HP_HALF := Color(0.98, 0.82, 0.15)
+const HP_LOW := Color(0.9, 0.18, 0.16)
 
 @onready var joystick: TouchJoystick = %Joystick
 @onready var damage_numbers: DamageNumbers = %DamageNumbers
+@onready var enemy_bars: EnemyBars = %EnemyBars
 @onready var vignette: ColorRect = %Vignette
 @onready var hero_hp: ProgressBar = %HeroHp
 @onready var hp_bar: ProgressBar = %HpBar
@@ -54,12 +60,34 @@ var _combo := 0
 var _combo_timer := 0.0
 var _combo_tween: Tween
 var _punches: Dictionary = {}  # Control -> Tween
+var _hero_position := Vector3.ZERO
+var _hp_fill: StyleBoxFlat
+var _hero_hp_fill: StyleBoxFlat
 
 
 func _ready() -> void:
 	pause_button.pressed.connect(func() -> void: pause_pressed.emit())
 	SafeArea.pad_top(top)
 	joystick.pressed_changed.connect(_on_joystick_pressed)
+	# Own copies of the fill boxes so the gradient can repaint them per frame
+	# without touching the shared theme.
+	_hp_fill = _own_fill(hp_bar)
+	_hero_hp_fill = _own_fill(hero_hp)
+
+
+func _own_fill(bar: ProgressBar) -> StyleBoxFlat:
+	var box := bar.get_theme_stylebox("fill") as StyleBoxFlat
+	if box == null:
+		return null
+	var mine := box.duplicate() as StyleBoxFlat
+	bar.add_theme_stylebox_override("fill", mine)
+	return mine
+
+
+static func hp_color(ratio: float) -> Color:
+	if ratio >= 0.5:
+		return HP_HALF.lerp(HP_FULL, (ratio - 0.5) * 2.0)
+	return HP_LOW.lerp(HP_HALF, ratio * 2.0)
 
 
 func setup(chapter: ChapterData) -> void:
@@ -97,6 +125,11 @@ func set_hp(current: float, max_hp: float) -> void:
 	hero_hp.value = ratio
 	hp_bar.value = ratio
 	hp_label.text = "%d / %d" % [ceili(current), roundi(max_hp)]
+	var tint := hp_color(ratio)
+	if _hp_fill != null:
+		_hp_fill.bg_color = tint
+	if _hero_hp_fill != null:
+		_hero_hp_fill.bg_color = tint
 	_low_hp = current > 0.0 and ratio <= LOW_HP
 
 
@@ -108,6 +141,7 @@ func flash_damage(strength: float = 0.7) -> void:
 ## Per-frame HUD animation: floating numbers, the vignette and the combo timer.
 func tick(camera: Camera3D, delta: float) -> void:
 	damage_numbers.update(camera, delta)
+	enemy_bars.tick(camera, _hero_position)
 	_vignette_flash = maxf(0.0, _vignette_flash - delta * 3.2)
 	var strength := _vignette_flash
 	if _low_hp:
@@ -122,6 +156,7 @@ func tick(camera: Camera3D, delta: float) -> void:
 
 ## Keeps the HP bar under the hero's feet (camera space).
 func place_hero_hp(camera: Camera3D, hero_position: Vector3) -> void:
+	_hero_position = hero_position
 	var screen := camera.unproject_position(hero_position + Vector3(0, 0.0, 0.3))
 	hero_hp.position = screen - Vector2(hero_hp.size.x * 0.5, 0.0)
 

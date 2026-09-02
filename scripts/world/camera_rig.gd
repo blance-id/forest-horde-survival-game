@@ -7,7 +7,7 @@ class_name CameraRig
 extends Node3D
 
 @export var pitch_degrees := 55.0
-@export var distance := 9.5
+@export var distance := 10.45
 @export var fov := 40.0
 @export var smoothing := 8.0
 ## Shifts the look-at point along Z: positive moves it towards the camera, so

@@ -7,9 +7,10 @@
 script = ExtResource("1")
 id = "armor"
 display_name = "Armor"
-card_title = "TANKY!"
-description = "Every hit deals 1 less damage per level."
+description = "Blocks 1 damage per hit"
 icon = ExtResource("2")
 stat = "armor_add"
 value_per_level = 1.0
 max_level = 5
+percent = false
+unit = " damage blocked"

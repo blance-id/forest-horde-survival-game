@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1")
 id = "wisdom"
-display_name = "Wisdom"
-card_title = "BIG BRAIN!"
-description = "+15% XP per level."
+display_name = "XP Gain"
+description = "+15% XP"
 icon = ExtResource("2")
 stat = "xp_mult"
 value_per_level = 0.15
 max_level = 3
+percent = true

@@ -13,6 +13,8 @@ const HEAL_DROP_CHANCE := 0.012
 const HEAL_AMOUNT := 0.3
 const FOOTSTEP_INTERVAL := 0.32
 const GROWL_RANGE := 7.0
+## Enemies further than this wind up silently: 200 tells at once is noise.
+const TELL_RANGE := 6.0
 
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
@@ -92,9 +94,13 @@ func _start_run() -> void:
 	enemies.enemy_killed.connect(_on_enemy_killed)
 	enemies.boss_spawned.connect(_on_boss_spawned)
 	enemies.boss_killed.connect(_on_boss_killed)
+	enemies.enemy_winding_up.connect(_on_enemy_winding_up)
+	enemies.enemy_struck.connect(_on_enemy_struck)
 
 	projectiles.enemies = enemies
+	projectiles.player = player
 	projectiles.enemy_hit.connect(_on_enemy_hit)
+	projectiles.bolt_landed.connect(_on_bolt_landed)
 
 	weapon_system.player = player
 	weapon_system.enemies = enemies
@@ -112,6 +118,7 @@ func _start_run() -> void:
 	camera_rig.make_current()
 
 	hud.pause_pressed.connect(_pause)
+	hud.enemy_bars.enemies = enemies
 	hud.setup(chapter)
 	hud.set_time(chapter.duration)
 	hud.set_xp(0.0, xp_needed(level), level)
@@ -340,6 +347,33 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 		camera_rig.shake(0.8)
 		Haptics.heavy()
 		_hit_stop(0.05, 0.16)
+
+
+## The tell. Only enemies close enough to matter make a sound or throw sparks,
+## otherwise a big horde would wind up as one wall of noise.
+func _on_enemy_winding_up(e: EnemyManager.Enemy) -> void:
+	var d := e.data()
+	var dist := e.pos.distance_to(Vector2(player.position.x, player.position.z))
+	if dist > TELL_RANGE:
+		return
+	if d.windup_sound != "":
+		SoundBank.sfx(d.windup_sound, lerpf(-12.0, -22.0, dist / TELL_RANGE), 0.12)
+	fx.hit(e.position3d() + Vector3(0.0, 0.9 * d.scale, 0.0), Vector2.ZERO, d.tint.lightened(0.4))
+
+
+func _on_enemy_struck(e: EnemyManager.Enemy, target: Vector2) -> void:
+	var d := e.data()
+	if d.ranged:
+		projectiles.spawn_enemy_bolt(e.position3d() + Vector3(0.0, 0.9 * d.scale, 0.0), target, d)
+		SoundBank.sfx("force_field", -12.0, 0.1)
+		return
+	SoundBank.sfx("zombie_attack", -12.0, 0.12)
+	fx.hit(Vector3(target.x, 0.7, target.y), (target - e.pos).normalized(), d.tint)
+
+
+func _on_bolt_landed(position: Vector3, _damage: float, hit_player: bool) -> void:
+	fx.death(position, Color(0.7, 0.4, 1.0))
+	SoundBank.sfx("glass_break" if hit_player else "slime", -14.0, 0.08)
 
 
 func _on_boss_spawned(e: EnemyManager.Enemy) -> void:

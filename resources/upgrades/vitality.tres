@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1")
 id = "vitality"
-display_name = "Vitality"
-card_title = "BEEFY!"
-description = "+20% max HP per level."
+display_name = "Max Health"
+description = "+20% Max HP"
 icon = ExtResource("2")
 stat = "max_hp_mult"
 value_per_level = 0.2
 max_level = 5
+percent = true

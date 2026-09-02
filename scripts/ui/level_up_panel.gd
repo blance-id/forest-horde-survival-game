@@ -48,16 +48,19 @@ func _fill(card: Button, option: Dictionary) -> void:
 	var level := int(option.get("level", 1))
 	if option.has("weapon"):
 		var w: WeaponData = option["weapon"]
+		var stats := w.stats_at(level)
 		icon.texture = w.icon
-		card_title.text = w.card_title if level == 1 else "UPGRADE!"
-		name_label.text = "%s  ·  LV %d" % [w.display_name, level]
-		desc.text = w.description if level == 1 else w.level_text(level)
+		card_title.text = "NEW WEAPON" if level == 1 else "WEAPON UPGRADE"
+		name_label.text = "%s  ·  Lv %d" % [w.display_name, level]
+		# Always show what the weapon will actually do at this level, not just
+		# what changed, so a card can be judged on its own.
+		desc.text = "%s\n%s" % [w.description if level == 1 else w.level_text(level), w.stat_line(level, stats)]
 	else:
 		var u: UpgradeData = option["upgrade"]
 		icon.texture = u.icon
-		card_title.text = u.card_title
-		name_label.text = "%s  ·  LV %d" % [u.display_name, level]
-		desc.text = u.description
+		card_title.text = "NEW SKILL" if level == 1 else "SKILL UPGRADE"
+		name_label.text = "%s  ·  Lv %d" % [u.display_name, level]
+		desc.text = "%s\nTotal: %s" % [u.description, u.total_text(level)]
 
 
 func _animate_in() -> void:
