@@ -1,0 +1,110 @@
+name: Android release
+
+# Every push to main rebuilds the APK and republishes it as the rolling
+# "latest-build" pre-release; a v* tag publishes a proper versioned release.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: "4.7.2"
+  EXPORT_NAME: forest-zombie-survival
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.7.2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Move export templates and Android editor settings into $HOME
+        # The image installs them under /root, but Actions runs container
+        # steps with HOME=/github/home.
+        run: |
+          if [ "$HOME" != "/root" ]; then
+            mkdir -p ~/.local/share/godot/export_templates ~/.config
+            mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/
+            mv /root/.config/godot ~/.config/godot
+          fi
+          cat ~/.config/godot/editor_settings-4.7.tres
+
+      - name: Stamp the Android version code with the run number
+        run: |
+          sed -i "s|^version/code=.*|version/code=${GITHUB_RUN_NUMBER}|" export_presets.cfg
+          grep -n '^version/' export_presets.cfg
+
+      - name: Import resources
+        run: godot --headless --import --path .
+
+      - name: Export debug-signed APK
+        run: |
+          mkdir -p build/android
+          godot --headless --verbose --export-debug "Android" "build/android/${EXPORT_NAME}.apk"
+          ls -la build/android
+
+      - name: Run headless checks
+        # The first boot after a fresh import can end with a spurious
+        # "resources still in use at exit" while the shader cache settles
+        # (see KNOWN_ISSUES.md), so the smoke boot gets one retry.
+        run: |
+          tools/test.sh
+          tools/check.sh 120 -- --screen=res://scenes/gameplay/game.tscn \
+            || tools/check.sh 120 -- --screen=res://scenes/gameplay/game.tscn
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/android/*.apk
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: dist
+
+      - name: Create or refresh the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="${GITHUB_SHA::7}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            TAG="$GITHUB_REF_NAME"
+            TITLE="Forest Zombie Survival $TAG"
+            EXTRA=()
+          else
+            TAG="latest-build"
+            TITLE="Latest build #${GITHUB_RUN_NUMBER} ($SHORT_SHA)"
+            EXTRA=(--prerelease)
+            # Move the rolling tag: delete the old release + tag, recreate on this commit.
+            gh release delete "$TAG" --cleanup-tag --yes || true
+          fi
+          APK="dist/${EXPORT_NAME}-${TAG}.apk"
+          mv dist/*.apk "$APK"
+          cat > notes.md <<EOF
+          Debug-signed Android APK built by GitHub Actions from \`$SHORT_SHA\` (version code ${GITHUB_RUN_NUMBER}).
+
+          **Install:** download the APK on your phone, allow installs from this source when asked, open it.
+
+          Commit: $(git log -1 --format='%s')
+          EOF
+          gh release create "$TAG" "$APK" --title "$TITLE" --notes-file notes.md --target "$GITHUB_SHA" "${EXTRA[@]}"
+          echo "Published $APK to release $TAG"
