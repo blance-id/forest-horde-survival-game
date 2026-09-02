@@ -50,6 +50,12 @@ func _fill(card: Button, option: Dictionary) -> void:
 		var w: WeaponData = option["weapon"]
 		var stats := w.stats_at(level)
 		icon.texture = w.icon
+		if option.has("swap_from"):
+			var old: WeaponData = option["swap_from"]
+			card_title.text = "SWAP WEAPON"
+			name_label.text = "%s → %s  ·  Lv %d" % [old.display_name, w.display_name, level]
+			desc.text = "Replaces %s, keeps the level.\n%s" % [old.display_name, w.stat_line(level, stats)]
+			return
 		card_title.text = "NEW WEAPON" if level == 1 else "WEAPON UPGRADE"
 		name_label.text = "%s  ·  Lv %d" % [w.display_name, level]
 		# Always show what the weapon will actually do at this level, not just

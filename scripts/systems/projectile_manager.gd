@@ -172,8 +172,8 @@ func tick(delta: float) -> void:
 				if b.hit.has(e):
 					continue
 				b.hit.append(e)
-				var killed := enemies.hit(e, b.damage, b.pos - b.dir, b.knockback)
-				enemy_hit.emit(e, Vector3(b.pos.x, HEIGHT, b.pos.y), b.dir, b.damage, killed, b.weapon)
+				var killed := enemies.hit(e, b.damage, b.pos - b.dir, b.knockback, b.weapon.damage_type)
+				enemy_hit.emit(e, Vector3(b.pos.x, HEIGHT, b.pos.y), b.dir, enemies.last_dealt, killed, b.weapon)
 				if b.pierce <= 0:
 					alive = false
 					break

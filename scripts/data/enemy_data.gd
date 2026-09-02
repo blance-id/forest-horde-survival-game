@@ -21,6 +21,9 @@ extends Resource
 ## Body radius used for separation, hits and contact damage.
 @export var radius: float = 0.3
 @export var knockback_resist: float = 0.0
+## 0..0.95 cut taken off physical / magic hits. True damage ignores both.
+@export var physical_resist: float = 0.0
+@export var magic_resist: float = 0.0
 ## XP tier: 1, 2, 5, 10, 20, 50 or 100. Everything from 5 up counts as elite
 ## and drops tower ammo.
 @export var xp: int = 1

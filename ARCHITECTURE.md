@@ -143,6 +143,18 @@ its own. Each tick:
 
 `ammo_spent` bills the run so the HUD counter and the towers never disagree.
 
+### Damage types
+
+`Damage` (scripts/gameplay/damage.gd) owns the three types, their colours and
+`resolve()`. `EnemyManager.hit()` takes the type and applies the target's
+`physical_resist` / `magic_resist` itself, so no caller can forget; it also
+records `last_dealt`, which every `enemy_hit` signal reports instead of the
+raw number, keeping the floating damage number honest about the health bar.
+Hits are painted with `Damage.color()`, which is the entire tutorial: a player
+who watches pale numbers bounce off a wisp and violet ones land learns the
+system without a tooltip. Traps deal TRUE damage — spikes do not care about
+armour.
+
 ### Enemy attacks
 
 Nothing damages the hero on contact. Every attack runs wind-up → strike →

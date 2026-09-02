@@ -1,5 +1,8 @@
 ## Owns the hero's weapons for a run: auto-aims and fires projectile weapons,
 ## spins orbit weapons and pulses auras. Weapons are WeaponData + a level.
+##
+## Ranged weapons alternate shoulders — the first mounts on the right, the
+## second on the left — so a two-gun build reads as two guns.
 class_name WeaponSystem
 extends Node3D
 
@@ -23,6 +26,8 @@ class Slot:
 	var mmi: MultiMeshInstance3D
 	var aura: MeshInstance3D
 	var pulse := 0.0
+	## -1 left shoulder, +1 right; 0 for weapons that are not carried.
+	var side := 0.0
 
 	func refresh() -> void:
 		stats = data.stats_at(level)
@@ -47,11 +52,60 @@ func add_or_upgrade(data: WeaponData) -> Slot:
 			slot.mmi = _make_orbit_visual(data)
 		elif data.kind == WeaponData.Kind.AURA:
 			slot.aura = _make_aura_visual(data)
+		else:
+			slot.side = _next_side()
 	else:
 		slot.level = mini(slot.level + 1, data.max_level)
 	slot.refresh()
 	_refresh_visual(slot)
 	return slot
+
+
+## Right shoulder first, then left, then back to the middle for a third gun.
+func _next_side() -> float:
+	var taken := 0
+	for s in slots:
+		if s.data.kind == WeaponData.Kind.PROJECTILE and s.side != 0.0:
+			taken += 1
+	return [1.0, -1.0, 0.0][mini(taken, 2)]
+
+
+## Replaces a maxed weapon with another one *at the same level*. A build that
+## has topped out should be able to change shape without starting over, which
+## is the whole point of offering the swap.
+func swap(from: WeaponData, to: WeaponData) -> Slot:
+	var old := get_slot(from)
+	if old == null or get_slot(to) != null:
+		return null
+	var level := old.level
+	var side := old.side
+	_free_visuals(old)
+	slots.erase(old)
+	var slot := add_or_upgrade(to)
+	slot.level = mini(level, to.max_level)
+	if slot.data.kind == WeaponData.Kind.PROJECTILE:
+		slot.side = side
+	slot.refresh()
+	_refresh_visual(slot)
+	return slot
+
+
+func _free_visuals(slot: Slot) -> void:
+	if slot.mmi != null:
+		slot.mmi.queue_free()
+		slot.mmi = null
+	if slot.aura != null:
+		slot.aura.queue_free()
+		slot.aura = null
+
+
+## Weapons that have nothing left to learn — the ones a swap can trade away.
+func maxed() -> Array[WeaponData]:
+	var out: Array[WeaponData] = []
+	for s in slots:
+		if s.level >= s.data.max_level:
+			out.append(s.data)
+	return out
 
 
 func get_slot(data: WeaponData) -> Slot:
@@ -98,7 +152,7 @@ func _tick_projectile(slot: Slot, delta: float, origin: Vector2, aim_set: bool) 
 	slot.cooldown += float(s["cooldown"])
 	var count := int(s["projectile_count"]) + run_stats.projectile_add()
 	var spread := deg_to_rad(float(s["spread_degrees"]))
-	var muzzle := player.muzzle_position()
+	var muzzle := player.muzzle_position(slot.side)
 	var from := Vector2(muzzle.x, muzzle.z)
 	var damage := float(s["damage"]) * run_stats.damage_mult()
 	for i in count:
@@ -128,8 +182,8 @@ func _tick_orbit(slot: Slot, delta: float, origin: Vector2) -> void:
 			if float(e.hit_cooldowns.get(key, -1.0)) > now:
 				continue
 			e.hit_cooldowns[key] = now + ORBIT_HIT_INTERVAL
-			var killed := enemies.hit(e, damage, origin, float(s["knockback"]))
-			enemy_hit.emit(e, Vector3(p.x, ORBIT_HEIGHT, p.y), (e.pos - origin).normalized(), damage, killed, slot.data)
+			var killed := enemies.hit(e, damage, origin, float(s["knockback"]), slot.data.damage_type)
+			enemy_hit.emit(e, Vector3(p.x, ORBIT_HEIGHT, p.y), (e.pos - origin).normalized(), enemies.last_dealt, killed, slot.data)
 
 
 func _tick_aura(slot: Slot, delta: float, origin: Vector2) -> void:
@@ -149,8 +203,8 @@ func _tick_aura(slot: Slot, delta: float, origin: Vector2) -> void:
 	_query.clear()
 	enemies.query_circle(origin, radius, _query)
 	for e: EnemyManager.Enemy in _query:
-		var killed := enemies.hit(e, damage, origin, float(s["knockback"]))
-		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.4, 0), (e.pos - origin).normalized(), damage, killed, slot.data)
+		var killed := enemies.hit(e, damage, origin, float(s["knockback"]), slot.data.damage_type)
+		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.4, 0), (e.pos - origin).normalized(), enemies.last_dealt, killed, slot.data)
 
 
 func _make_orbit_visual(data: WeaponData) -> MultiMeshInstance3D:

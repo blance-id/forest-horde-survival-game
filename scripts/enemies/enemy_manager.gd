@@ -88,6 +88,8 @@ var bounds := ArenaBounds.new()
 var player_hidden := false
 var last_seen := Vector2.ZERO
 var lures: Array[Lure] = []
+## What the most recent `hit()` actually landed, after resistances.
+var last_dealt := 0.0
 var time := 0.0
 var enemies: Array[Enemy] = []
 var alive := 0
@@ -421,11 +423,15 @@ func nearest(center: Vector2, max_dist: float) -> Enemy:
 
 # --- Damage ------------------------------------------------------------------
 
-## Applies damage. Returns true when the hit killed the enemy.
-func hit(e: Enemy, amount: float, from: Vector2, knockback: float) -> bool:
+## Applies damage after the target's resistances. Returns true when the hit
+## killed the enemy; `dealt` reports what actually landed so the damage number
+## matches the health bar.
+func hit(e: Enemy, amount: float, from: Vector2, knockback: float, type: Damage.Type = Damage.Type.PHYSICAL) -> bool:
 	if e.dying:
 		return false
-	e.hp -= amount
+	var dealt := Damage.resolve(amount, type, e.pool.data)
+	last_dealt = dealt
+	e.hp -= dealt
 	e.hit_time = time
 	if knockback > 0.0:
 		var dir := (e.pos - from)

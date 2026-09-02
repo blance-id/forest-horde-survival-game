@@ -88,6 +88,6 @@ func tick(delta: float, player: Player, enemies: EnemyManager) -> void:
 		# One victim per spring, so a horde funnels through instead of the
 		# whole wave evaporating on one trap.
 		var victim: EnemyManager.Enemy = _query[0]
-		enemies.hit(victim, t.damage, t.pos, 0.0)
+		enemies.hit(victim, t.damage, t.pos, 0.0, Damage.Type.TRUE)
 		t.cooldown = REARM
 		triggered.emit(Vector3(t.pos.x, 0.2, t.pos.y), false)

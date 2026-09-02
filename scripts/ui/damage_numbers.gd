@@ -1,6 +1,7 @@
 ## Floating damage numbers. A fixed pool of Labels is recycled oldest-first;
 ## every frame the live ones are re-projected from their world position so
-## they stick to the action while the camera moves.
+## they stick to the action while the camera moves. Colour carries meaning:
+## hits are tinted by damage type, kills are gold, damage to the hero is red.
 class_name DamageNumbers
 extends Control
 
@@ -50,7 +51,9 @@ func _ready() -> void:
 		_labels.append(label)
 
 
-func spawn(world: Vector3, amount: float, style: Style) -> void:
+## A `tint` with any alpha overrides the style colour, which is how hits get
+## painted by damage type.
+func spawn(world: Vector3, amount: float, style: Style, tint: Color = Color(0, 0, 0, 0)) -> void:
 	var label := _labels[_next]
 	_next = (_next + 1) % POOL
 	# Reclaim the entry if that label is still flying.
@@ -64,7 +67,7 @@ func spawn(world: Vector3, amount: float, style: Style) -> void:
 	e.base_scale = float(SCALES[style])
 	e.drift = _rng.randf_range(-0.35, 0.35)
 	label.text = str(maxi(1, roundi(amount)))
-	label.modulate = COLORS[style]
+	label.modulate = tint if tint.a > 0.0 else COLORS[style]
 	label.reset_size()
 	label.pivot_offset = label.size * 0.5
 	label.visible = true

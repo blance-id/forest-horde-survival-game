@@ -19,6 +19,8 @@ const TELL_RANGE := 6.0
 const COVER_BLOWN_TIME := 4.0
 ## Tower ammo dropped by every ×5-and-up enemy.
 const AMMO_PER_ELITE := 2
+## How many weapons the hero can carry at once.
+const WEAPON_SLOTS := 4
 
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
@@ -235,7 +237,7 @@ func dev_command(cmd: String) -> void:
 			# Kills every enemy alive: exercises death effects, drops and kills UI.
 			for e in enemies.enemies.duplicate():
 				if not e.dying:
-					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0)
+					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0, Damage.Type.TRUE)
 		"tower":
 			# Beside the hero, not under them, so the nest is actually visible.
 			run_wood += 40
@@ -446,7 +448,8 @@ func _on_trap_triggered(position: Vector3, hit_player: bool) -> void:
 
 func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, weapon: WeaponData) -> void:
 	hud.damage_numbers.spawn(e.position3d() + Vector3(0, 1.1 * e.data().scale, 0), amount,
-		DamageNumbers.Style.KILL if killed else DamageNumbers.Style.HIT)
+		DamageNumbers.Style.KILL if killed else DamageNumbers.Style.HIT,
+		Color(0, 0, 0, 0) if killed else Damage.color(weapon.damage_type))
 	if killed:
 		return
 	SoundBank.sfx(weapon.hit_sound, -8.0, 0.15)
@@ -618,8 +621,8 @@ func _roll_options(count: int) -> Array[Dictionary]:
 		var lv := weapon_system.level_of(w)
 		if lv >= w.max_level:
 			continue
-		if lv == 0 and held >= 4:
-			continue  # four weapon slots
+		if lv == 0 and held >= WEAPON_SLOTS:
+			continue
 		candidates.append({"weapon": w, "level": lv + 1})
 		weights.append(1.4 if lv > 0 else 1.0)
 	for u in upgrades:
@@ -628,6 +631,16 @@ func _roll_options(count: int) -> Array[Dictionary]:
 			continue
 		candidates.append({"upgrade": u, "level": lv + 1})
 		weights.append(1.0)
+	# With every slot full and something already maxed, offer to trade the
+	# maxed weapon for one the player does not have — at the level it reached,
+	# never back to 1. A finished build should be able to change shape.
+	if held >= WEAPON_SLOTS:
+		for old in weapon_system.maxed():
+			for w in weapons:
+				if weapon_system.level_of(w) > 0:
+					continue
+				candidates.append({"weapon": w, "swap_from": old, "level": weapon_system.level_of(old)})
+				weights.append(0.5)
 	var picked: Array[Dictionary] = []
 	while picked.size() < count and not candidates.is_empty():
 		var total := 0.0
@@ -647,7 +660,9 @@ func _roll_options(count: int) -> Array[Dictionary]:
 
 
 func _on_upgrade_chosen(option: Dictionary) -> void:
-	if option.has("weapon"):
+	if option.has("swap_from"):
+		weapon_system.swap(option["swap_from"], option["weapon"])
+	elif option.has("weapon"):
 		weapon_system.add_or_upgrade(option["weapon"])
 	else:
 		var u: UpgradeData = option["upgrade"]
@@ -675,6 +690,7 @@ func _pause() -> void:
 	state = State.PAUSED
 	_freeze()
 	SoundBank.ui("click")
+	pause_panel.build_panel.show_build(weapon_system.slots, upgrade_levels, stats)
 	pause_panel.open()
 
 

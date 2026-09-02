@@ -11,6 +11,8 @@ signal died
 const RADIUS := 0.35
 const INVULN_TIME := 0.25
 const TURN_SPEED := 14.0
+## Sideways gap between the two ranged mounts.
+const SHOULDER_OFFSET := 0.32
 
 var data: CharacterData
 var stats: RunStats
@@ -115,9 +117,12 @@ func _attach_weapon() -> void:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
-## World position bullets start from.
-func muzzle_position() -> Vector3:
-	return global_position + Basis(Vector3.UP, _yaw) * data.muzzle_offset
+## World position bullets start from. `side` shifts the muzzle across the
+## hero's shoulders (-1 left, +1 right) so two ranged weapons read as two
+## guns instead of one stream out of the sternum.
+func muzzle_position(side: float = 0.0) -> Vector3:
+	var offset := data.muzzle_offset + Vector3(side * SHOULDER_OFFSET, 0.0, 0.0)
+	return global_position + Basis(Vector3.UP, _yaw) * offset
 
 
 func forward() -> Vector2:

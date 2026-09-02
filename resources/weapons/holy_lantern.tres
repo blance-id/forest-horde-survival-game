@@ -14,6 +14,7 @@ max_level = 6
 tint = Color(1, 0.8, 0.3, 1)
 fire_sound = "force_field"
 hit_sound = "hit_zombie"
+damage_type = 1
 damage = 6.0
 cooldown = 0.5
 area = 2.0

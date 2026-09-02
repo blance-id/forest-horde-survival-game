@@ -24,6 +24,7 @@ enum Kind { PROJECTILE, ORBIT, AURA }
 @export var hit_sound: String = "hit_zombie"
 
 @export_group("Base stats")
+@export var damage_type: Damage.Type = Damage.Type.PHYSICAL
 @export var damage: float = 10.0
 @export var cooldown: float = 0.5
 @export var projectile_count: int = 1
@@ -69,7 +70,7 @@ func stat_line(level: int, s: Dictionary) -> String:
 	var cd := maxf(0.01, float(s["cooldown"]))
 	var shots := maxi(1, int(s["projectile_count"]))
 	var dmg := float(s["damage"])
-	var parts := ["%d damage" % roundi(dmg), "%.1f/sec" % (1.0 / cd)]
+	var parts := ["%d %s" % [roundi(dmg), Damage.type_name(damage_type).to_lower()], "%.1f/sec" % (1.0 / cd)]
 	if shots > 1:
 		parts.append("burst %d" % roundi(dmg * float(shots)))
 	if int(s["pierce"]) > 0:
