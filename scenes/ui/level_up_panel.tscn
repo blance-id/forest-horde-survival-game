@@ -1,0 +1,113 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/level_up_panel.gd" id="1_panel"]
+[ext_resource type="Theme" path="res://resources/configs/ui_theme.tres" id="2_theme"]
+
+[node name="LevelUpPanel" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_panel")
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.55)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="Center/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"Title"
+text = "LEVEL UP!"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="Center/VBox"]
+layout_mode = 2
+theme_type_variation = &"Dim"
+text = "Pick your power"
+horizontal_alignment = 1
+
+[node name="Cards" type="VBoxContainer" parent="Center/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Card" type="Button" parent="Center/VBox/Cards"]
+custom_minimum_size = Vector2(640, 176)
+layout_mode = 2
+theme_type_variation = &"CardButton"
+
+[node name="Margin" type="MarginContainer" parent="Center/VBox/Cards/Card"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 14
+
+[node name="HBox" type="HBoxContainer" parent="Center/VBox/Cards/Card/Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 18
+
+[node name="Icon" type="TextureRect" parent="Center/VBox/Cards/Card/Margin/HBox"]
+custom_minimum_size = Vector2(104, 104)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Center/VBox/Cards/Card/Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="CardTitle" type="Label" parent="Center/VBox/Cards/Card/Margin/HBox/Text"]
+layout_mode = 2
+theme_type_variation = &"Big"
+text = "NEW WEAPON!"
+
+[node name="Name" type="Label" parent="Center/VBox/Cards/Card/Margin/HBox/Text"]
+layout_mode = 2
+theme_type_variation = &"Small"
+text = "Shovel Storm  ·  LV 1"
+
+[node name="Desc" type="Label" parent="Center/VBox/Cards/Card/Margin/HBox/Text"]
+layout_mode = 2
+theme_type_variation = &"Dim"
+text = "Shovels spin around you."
+autowrap_mode = 3

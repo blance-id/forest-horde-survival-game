@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/shovel.png" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/shovel.glb" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = "shovel_storm"
+display_name = "Shovel Storm"
+card_title = "NEW WEAPON!"
+description = "Shovels spin around you and smack anything close."
+icon = ExtResource("2")
+kind = 1
+max_level = 6
+projectile_model = ExtResource("3")
+damage = 12.0
+projectile_count = 1
+projectile_speed = 3.5
+area = 1.5
+knockback = 2.5
+projectile_scale = 1.0
+level_ups = Array[Dictionary]([{
+"text": "+1 shovel.",
+"projectile_count": 2
+}, {
+"text": "Spins faster.",
+"projectile_speed": 5.0
+}, {
+"text": "+1 shovel, +33% damage.",
+"projectile_count": 3,
+"damage": 16.0
+}, {
+"text": "Wider orbit, bigger shovels.",
+"area": 2.0,
+"projectile_scale": 1.25
+}, {
+"text": "+1 shovel, +40% damage.",
+"projectile_count": 4,
+"damage": 22.0
+}])

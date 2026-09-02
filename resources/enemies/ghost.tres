@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/character-ghost.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ghost"
+display_name = "Wisp"
+model = ExtResource("2")
+scale = 1.0
+max_hp = 15.0
+speed = 1.9
+damage = 7.0
+attack_cooldown = 0.8
+radius = 0.3
+xp = 2
+coin_chance = 0.06
+stride_rate = 1.2
+leg_swing_degrees = 0.0
+arm_forward_degrees = 60.0
+arm_down_degrees = 10.0
+arm_swing_degrees = 25.0
+bob_height = 0.1
+lean_degrees = 6.0

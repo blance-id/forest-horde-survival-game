@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/character-skeleton.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "runner"
+display_name = "Runner"
+model = ExtResource("2")
+scale = 0.95
+max_hp = 7.0
+speed = 2.7
+damage = 5.0
+attack_cooldown = 0.7
+radius = 0.26
+xp = 1
+coin_chance = 0.04
+stride_rate = 3.2
+leg_swing_degrees = 45.0
+arm_forward_degrees = 70.0
+arm_down_degrees = 20.0
+arm_swing_degrees = 18.0
+bob_height = 0.05
+lean_degrees = 14.0

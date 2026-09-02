@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/lantern.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "holy_lantern"
+display_name = "Holy Lantern"
+card_title = "NEW WEAPON!"
+description = "A ring of holy light burns every zombie that steps inside."
+icon = ExtResource("2")
+kind = 2
+max_level = 6
+tint = Color(1, 0.8, 0.3, 1)
+damage = 6.0
+cooldown = 0.5
+area = 2.0
+knockback = 0.6
+level_ups = Array[Dictionary]([{
+"text": "+25% radius.",
+"area": 2.5
+}, {
+"text": "+50% damage.",
+"damage": 9.0
+}, {
+"text": "Burns faster.",
+"cooldown": 0.35
+}, {
+"text": "+25% radius.",
+"area": 3.1
+}, {
+"text": "Scorching: +100% damage.",
+"damage": 18.0
+}])

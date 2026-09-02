@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/character-vampire.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "vampire"
+display_name = "Count Nosferatu"
+model = ExtResource("2")
+scale = 2.4
+max_hp = 900.0
+speed = 1.25
+damage = 26.0
+attack_cooldown = 1.1
+radius = 0.75
+xp = 40
+coin_chance = 1.0
+is_boss = true
+stride_rate = 1.4
+leg_swing_degrees = 28.0
+arm_forward_degrees = 45.0
+arm_down_degrees = 35.0
+arm_swing_degrees = 12.0
+bob_height = 0.02
+lean_degrees = 6.0

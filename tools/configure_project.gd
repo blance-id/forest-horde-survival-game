@@ -66,6 +66,14 @@ func _set_rendering() -> void:
 	ProjectSettings.set_setting("rendering/textures/canvas_textures/default_texture_filter", 1) # linear
 	ProjectSettings.set_setting("rendering/2d/snap/snap_2d_transforms_to_pixel", false)
 	ProjectSettings.set_setting("rendering/environment/defaults/default_clear_color", Color(0.09, 0.14, 0.09))
+	# 3D: one directional light with a small shadow atlas is all the game needs.
+	ProjectSettings.set_setting("rendering/lights_and_shadows/directional_shadow/size", 2048)
+	ProjectSettings.set_setting("rendering/lights_and_shadows/directional_shadow/size.mobile", 1024)
+	ProjectSettings.set_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality", 1)
+	ProjectSettings.set_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality.mobile", 0)
+	ProjectSettings.set_setting("rendering/anti_aliasing/quality/msaa_3d", 0)
+	# Driven every frame by the run; enemy_parts.gdshader animates the horde with it.
+	ProjectSettings.set_setting("shader_globals/game_time", {"type": "float", "value": 0.0})
 
 
 func _set_autoloads() -> void:

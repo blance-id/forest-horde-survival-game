@@ -1,6 +1,65 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/game.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="3_player"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_manager.gd" id="4_enemies"]
+[ext_resource type="Script" path="res://scripts/systems/projectile_manager.gd" id="5_projectiles"]
+[ext_resource type="Script" path="res://scripts/systems/weapon_system.gd" id="6_weapons"]
+[ext_resource type="Script" path="res://scripts/systems/pickup_manager.gd" id="7_pickups"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/level_up_panel.tscn" id="9_levelup"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_panel.tscn" id="10_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/result_panel.tscn" id="11_result"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
+[ext_resource type="Script" path="res://scripts/data/upgrade_data.gd" id="s_upgrade"]
+[ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
+[ext_resource type="Resource" path="res://resources/weapons/blaster.tres" id="13_w1"]
+[ext_resource type="Resource" path="res://resources/weapons/scatter.tres" id="14_w2"]
+[ext_resource type="Resource" path="res://resources/weapons/shovel_storm.tres" id="15_w3"]
+[ext_resource type="Resource" path="res://resources/weapons/holy_lantern.tres" id="16_w4"]
+[ext_resource type="Resource" path="res://resources/upgrades/vitality.tres" id="17_u1"]
+[ext_resource type="Resource" path="res://resources/upgrades/power.tres" id="18_u2"]
+[ext_resource type="Resource" path="res://resources/upgrades/rapid_fire.tres" id="19_u3"]
+[ext_resource type="Resource" path="res://resources/upgrades/swift.tres" id="20_u4"]
+[ext_resource type="Resource" path="res://resources/upgrades/magnet.tres" id="21_u5"]
+[ext_resource type="Resource" path="res://resources/upgrades/armor.tres" id="22_u6"]
+[ext_resource type="Resource" path="res://resources/upgrades/regen.tres" id="23_u7"]
+[ext_resource type="Resource" path="res://resources/upgrades/wisdom.tres" id="24_u8"]
 
-[node name="Game" type="Node2D"]
+[node name="Game" type="Node3D"]
 script = ExtResource("1_game")
+weapons = Array[ExtResource("s_weapon")]([ExtResource("13_w1"), ExtResource("14_w2"), ExtResource("15_w3"), ExtResource("16_w4")])
+upgrades = Array[ExtResource("s_upgrade")]([ExtResource("17_u1"), ExtResource("18_u2"), ExtResource("19_u3"), ExtResource("20_u4"), ExtResource("21_u5"), ExtResource("22_u6"), ExtResource("23_u7"), ExtResource("24_u8")])
+default_character = ExtResource("12_ranger")
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2_camera")
+
+[node name="Player" type="Node3D" parent="."]
+script = ExtResource("3_player")
+
+[node name="Enemies" type="Node3D" parent="."]
+script = ExtResource("4_enemies")
+
+[node name="Projectiles" type="Node3D" parent="."]
+script = ExtResource("5_projectiles")
+
+[node name="Weapons" type="Node3D" parent="."]
+script = ExtResource("6_weapons")
+
+[node name="Pickups" type="Node3D" parent="."]
+script = ExtResource("7_pickups")
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="HUD" parent="UI" instance=ExtResource("8_hud")]
+
+[node name="LevelUpPanel" parent="UI" instance=ExtResource("9_levelup")]
+
+[node name="PausePanel" parent="UI" instance=ExtResource("10_pause")]
+
+[node name="ResultPanel" parent="UI" instance=ExtResource("11_result")]

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/upgrade_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/clip.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "rapid_fire"
+display_name = "Rapid Fire"
+card_title = "PEW PEW PEW!"
+description = "+12% attack speed per level."
+icon = ExtResource("2")
+stat = "attack_speed_mult"
+value_per_level = 0.12
+max_level = 5

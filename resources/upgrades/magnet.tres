@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/upgrade_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/target.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "magnet"
+display_name = "Magnet"
+card_title = "GIMME!"
+description = "Pick up gems from further away."
+icon = ExtResource("2")
+stat = "pickup_radius_add"
+value_per_level = 0.8
+max_level = 3

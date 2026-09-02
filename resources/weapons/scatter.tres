@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/scatter.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "scatter"
+display_name = "Scatter Blaster"
+card_title = "NEW WEAPON!"
+description = "A wide blast of pellets that shoves zombies back."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+tint = Color(1, 0.6, 0.3, 1)
+damage = 7.0
+cooldown = 1.1
+projectile_count = 4
+spread_degrees = 40.0
+projectile_speed = 13.0
+pierce = 0
+range = 5.5
+knockback = 3.0
+projectile_scale = 0.9
+level_ups = Array[Dictionary]([{
+"text": "+2 pellets per blast.",
+"projectile_count": 6
+}, {
+"text": "+50% damage.",
+"damage": 10.5
+}, {
+"text": "Faster reload.",
+"cooldown": 0.8
+}, {
+"text": "+2 pellets, wider spread.",
+"projectile_count": 8,
+"spread_degrees": 50.0
+}, {
+"text": "Piercing pellets, +33% damage.",
+"pierce": 1,
+"damage": 14.0
+}])

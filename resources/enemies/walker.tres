@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/character-zombie.glb" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "walker"
+display_name = "Walker"
+model = ExtResource("2")
+scale = 1.0
+max_hp = 12.0
+speed = 1.4
+damage = 8.0
+attack_cooldown = 0.9
+radius = 0.3
+xp = 1
+coin_chance = 0.04
+stride_rate = 2.0
+leg_swing_degrees = 32.0
+arm_forward_degrees = 85.0
+arm_down_degrees = 5.0
+arm_swing_degrees = 10.0
+bob_height = 0.03
+lean_degrees = 10.0

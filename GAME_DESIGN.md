@@ -9,10 +9,11 @@ Engine: Godot 4.7.2 (GDScript, GL Compatibility renderer).
 
 ## 1. High Concept
 
-A top-down **horde survivor** set in a cursed pine forest. You drag one finger
-to move; your survivor auto-aims and auto-fires. Zombies pour in from every
-direction in ever-growing numbers. Every kill drops XP; every level-up offers
-three loud, ad-style upgrade cards ("DAMAGE x2", "+3 ARROWS", "SAW BLADES!").
+A **horde survivor** set in a cursed pine forest, rendered in chunky low-poly
+3D and watched from a 45° perspective camera. You drag one finger to move; your
+survivor auto-aims and auto-fires. Zombies pour in from every direction in
+ever-growing numbers. Every kill drops XP; every level-up offers three loud,
+ad-style upgrade cards ("MORE DAKKA!", "PEW PEW PEW!", "NEVER DIE!").
 Survive the chapter timer, kill the boss, bank your coins, buy permanent
 upgrades, go again.
 
@@ -84,7 +85,7 @@ The ad promise is *"you vs. the entire forest"*. The game delivers it.
 | Chapter 1 run length | 5:00 + boss (~30 s) |
 | Later chapters | 6:00 – 8:00 + boss |
 | Fail condition | Hero HP reaches 0 (one optional revive from meta upgrade) |
-| Success condition | Chapter timer expires **and** boss is killed |
+| Success condition | Survive until the chapter timer expires; the boss arrives 60 s before the end |
 | Retry loop | Result screen → *Retry* (same chapter, instant) or *Shop* → *Play* |
 | Pause | Pause button + automatic pause on app backgrounding |
 
@@ -113,60 +114,81 @@ feedback, and disappears on release.
 
 One hero at launch, data-driven so more can be added:
 
-`CharacterData` — display name, sprite/animation set, base HP, move speed,
-starting weapon, pickup radius, base damage multiplier.
+`CharacterData` — display name, rigged model (`.glb`), weapon model + the bone
+it mounts on (offset / rotation / scale), muzzle offset, animation names
+(idle / move / die), base HP, move speed, pickup radius, armor, starting weapon.
 
-Launch hero: **The Ranger** — the last forester. Starts with the *Hunting Rifle*.
+Launch hero: **The Ranger** — the last forester. Starts with the *Blaster*.
+The rig is a Kenney "mini" character: seven bones, upper body plays the
+weapon-holding pose while the legs play the sprint cycle (AnimationTree blend).
 
 ---
 
 ## 7. Weapons (in-run, auto-fire)
 
-All weapons are `WeaponData` resources: damage, cooldown, projectile count,
-projectile scene, speed, pierce, area, knockback, targeting mode, level table
-(1–5) and sprite/VFX references. Adding a weapon = adding a resource + at most
-one small behaviour script.
+All weapons are `WeaponData` resources: kind (**projectile**, **orbit**,
+**aura**), damage, cooldown, projectile count, spread, speed, pierce, range,
+area, knockback, projectile model / tint, icon, card text and a per-level
+table of stat deltas. Adding a weapon of an existing kind = adding a resource;
+a new kind = one branch in `WeaponSystem`.
 
 Launch set:
 
-| Weapon | Behaviour | Ad card flavour |
-|---|---|---|
-| Hunting Rifle | Fast single shots at nearest enemy, pierce grows with level | "MORE BULLETS" |
-| Shotgun | Fan of pellets, short range, strong knockback | "BOOM x5" |
-| Saw Blades | 1–5 blades orbit the hero, continuous damage | "SAW BLADES!!!" |
-| Molotov | Lobbed onto densest cluster, leaves burning pool | "BURN THEM ALL" |
-| Lightning | Random strikes on enemies near the hero, chain at high level | "CALL THE STORM" |
-| Boomerang | Thrown out and back, pierces everything | "IT COMES BACK" |
+| Weapon | Kind | Behaviour | Ad card flavour |
+|---|---|---|---|
+| Blaster | projectile | Fast shots at the nearest zombie; more bullets and pierce per level | "MORE DAKKA!" |
+| Scatter Blaster | projectile | Wide fan of pellets, short range, strong knockback | "NEW WEAPON!" |
+| Shovel Storm | orbit | 1–6 shovels spin around the hero, continuous damage | "NEW WEAPON!" |
+| Holy Lantern | aura | Ring of light on the ground pulses damage on everything inside | "NEW WEAPON!" |
 
-Max 4 weapons per run. Each weapon has 5 levels. Reaching level 5 on a weapon
-shows a special "MAXED" card.
+Planned for later chapters: a lobbed fire pot (burning pool) and a chain
+lightning strike. Max 4 weapons per run; each weapon has 6 levels.
 
 ---
 
 ## 8. Passives (in-run)
 
-`UpgradeData` resources with a stat key and per-level values:
+`UpgradeData` resources with a stat key and a value per level, applied through
+`RunStats`:
 
-Max HP, Damage %, Attack speed %, Move speed %, Pickup radius, Projectile +1,
-Armor, HP regen, XP gain %, Coin gain %.
+| Passive | Card | Effect per level |
+|---|---|---|
+| Vitality | "BEEFY!" | +20% max HP |
+| Power | "HIT HARDER!" | +15% damage |
+| Rapid Fire | "PEW PEW PEW!" | +12% attack speed |
+| Swift Boots | "ZOOM!" | +10% move speed |
+| Magnet | "GIMME!" | larger pickup radius |
+| Armor | "TANKY!" | −1 damage per hit |
+| Regeneration | "NEVER DIE!" | +0.5 HP/s |
+| Wisdom | "BIG BRAIN!" | +15% XP |
 
-Max 4 passives per run, 5 levels each.
+5 levels each. Level-ups roll 3 cards from every weapon and passive that is not
+maxed; a held weapon is weighted slightly higher than a new one so builds
+deepen instead of sprawling.
 
 ---
 
 ## 9. Enemies
 
-`EnemyData` resources: sprite set, HP, speed, damage, size, XP value, coin
-chance, behaviour type, tint, scale, knockback resistance.
+`EnemyData` resources: model (`.glb`), tint, scale, HP, speed, contact damage,
+attack cooldown, body radius, knockback resistance, XP, coin chance, boss flag,
+and the procedural walk-cycle parameters (stride rate, leg / arm swing, bob,
+lean) used by the horde shader.
 
-| Enemy | Role | Behaviour |
-|---|---|---|
-| Walker | Filler | Slow, straight at the hero |
-| Runner | Pressure | Fast, low HP, comes in rings |
-| Brute | Wall | Slow, huge HP, knockback-immune, pushes through |
-| Spitter | Ranged | Keeps distance, lobs acid |
-| Elite | Mini-boss | Any type, 10× HP, glowing, drops treasure chest |
-| Boss | Chapter end | Unique data per chapter: charge, summon, acid rain |
+Every enemy walks at the hero and deals contact damage; the mix, count and HP
+scale are what change. Chapter 1 roster:
+
+| Enemy | Model | Role | Stats |
+|---|---|---|---|
+| Walker | zombie | Filler | 12 HP, slow, 8 dmg |
+| Runner | skeleton | Pressure | 7 HP, fast, comes in rings |
+| Wisp | ghost | Swarm | 15 HP, quick, low damage |
+| Brute | zombie ×1.55 | Wall | 70 HP, slow, 18 dmg, knockback-resistant |
+| Gravekeeper | keeper ×1.6 | Elite | 160 HP, 14 dmg, late-run only |
+| Count Nosferatu | vampire ×2.4 | Boss | 900 HP, 26 dmg, spawns at 5:00 with a health bar |
+
+Planned for later chapters: a ranged spitter and unique boss behaviours
+(charge, summon).
 
 ---
 
@@ -175,12 +197,17 @@ chance, behaviour type, tint, scale, knockback resistance.
 Difficulty is **not** "multiply HP by level". The director reads a
 `ChapterData` curve and changes, over run time:
 
-- concurrent enemy cap (30 → 350)
-- spawn interval
-- enemy mix weights (walkers → runners → brutes → spitters)
-- scripted events at timestamps: *Ring of Runners*, *Brute March*,
-  *Spitter Line*, *Elite*, *Treasure Chest*, *Boss*
-- enemy stat multipliers that grow gently (HP ×1.0 → ×2.5 over a run)
+- concurrent enemy cap (30 → 240)
+- spawn interval (0.7 s → 0.08 s)
+- enemy mix weights with per-enemy start times (walkers → runners → wisps →
+  brutes → gravekeepers)
+- scripted events at timestamps: rings of runners / walkers / wisps / brutes,
+  the *Boss* at 5:00, a final runner ring while the boss is alive
+- enemy HP multiplier that grows gently (×1.0 → ×3.0 over a run)
+
+Enemies that fall more than 20 units behind the hero are silently moved back
+onto the spawn ring, so the pressure never thins out no matter where the
+player runs.
 
 Chapters raise the baseline, unlock enemy types, and change the boss. Later
 chapters also change the environment (night, fog, swamp tint).
@@ -211,8 +238,20 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
 
 ## 12. Presentation & Tone
 
+- **Low-poly 3D** — Kenney "mini" characters and graveyard / forest kits
+  (flat-shaded, one colormap per kit), a noisy two-tone ground plane, a wall of
+  pines at the arena edge, gravestones and pumpkins scattered inside.
+- **Camera** — perspective, pitched 45° down, ~12.5 units from the hero,
+  `KEEP_WIDTH` so the visible width (~6.7 units) is identical on every phone
+  aspect ratio; follows the hero with a soft lag and shakes on hits.
+- **Lighting** — one warm directional sun with shadows, dim green ambient,
+  distance fog fading into a dark sky so the horde appears out of the gloom.
+- **Readability first** — enemies flash white when hit, the hero flashes red,
+  XP gems glow, bullets are bright capsules, the hero has a tiny HP bar at
+  its feet.
 - Bright, chunky, readable — a saturated cartoon forest, not gritty horror.
-- Typography: heavy display font for numbers/headlines, clean sans for body.
+- Typography: heavy display font (Lilita One) for numbers/headlines, clean sans
+  (Nunito) for body.
 - Ad-style UI motifs: giant rotating "x2 / +50 / MAX" callouts, red banners,
   gold coins that rain into the counter, "NEW RECORD!" stamps.
 - Everything that scales power also scales feedback: bigger numbers, bigger
@@ -223,12 +262,14 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
 ## 13. Vertical Slice (minimum playable)
 
 1. Main menu → Play.
-2. Forest arena, hero with Hunting Rifle, drag-to-move.
-3. Walkers + Runners spawn on a rising curve for 3 minutes, boss at the end.
-4. XP gems, level-ups with 3 cards (Rifle, Saw Blades, Shotgun + 3 passives).
-5. HP bar, timer, kill counter, level bar.
+2. Forest arena, hero with Blaster, drag-to-move.
+3. Five enemy types spawn on a rising curve for 6 minutes, boss at 5:00.
+4. XP gems, level-ups with 3 cards (4 weapons + 8 passives).
+5. HP bar, timer, kill counter, level bar, boss bar.
 6. Death → result screen → retry / menu.
 7. Coins persist; one meta upgrade (Max HP) purchasable from the menu.
+
+Items 2–6 are implemented; 1 and 7 are the next two phases.
 
 Everything after the slice widens this loop — it never replaces it.
 

@@ -1,0 +1,102 @@
+[gd_resource type="Resource" script_class="ChapterData" load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
+[ext_resource type="Resource" path="res://resources/enemies/runner.tres" id="e_runner"]
+[ext_resource type="Resource" path="res://resources/enemies/ghost.tres" id="e_ghost"]
+[ext_resource type="Resource" path="res://resources/enemies/brute.tres" id="e_brute"]
+[ext_resource type="Resource" path="res://resources/enemies/keeper.tres" id="e_keeper"]
+[ext_resource type="Resource" path="res://resources/enemies/vampire.tres" id="e_vampire"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/pine-crooked.glb" id="m_pine"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/tree.glb" id="m_tree"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/tree-high.glb" id="m_tree_high"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/gravestone-round.glb" id="m_grave_round"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/gravestone-cross.glb" id="m_grave_cross"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/cross-wood.glb" id="m_cross_wood"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/debris.glb" id="m_debris"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/pumpkin-tall-carved.glb" id="m_pumpkin"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/patch-grass.glb" id="m_grass"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/stones.glb" id="m_stones"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/plant.glb" id="m_plant"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/fence-damaged.glb" id="m_fence"]
+
+[resource]
+script = ExtResource("1")
+id = "chapter_01"
+display_name = "Whispering Forest"
+duration = 360.0
+arena_half_size = 22.0
+ground_color = Color(0.27, 0.43, 0.2, 1)
+ground_color_alt = Color(0.23, 0.38, 0.18, 1)
+sky_color = Color(0.08, 0.13, 0.09, 1)
+fog_color = Color(0.12, 0.2, 0.13, 1)
+sun_color = Color(1, 0.95, 0.85, 1)
+sun_energy = 1.0
+ambient_color = Color(0.55, 0.65, 0.6, 1)
+border_models = Array[PackedScene]([ExtResource("m_pine"), ExtResource("m_tree"), ExtResource("m_tree_high")])
+decor_models = Array[PackedScene]([ExtResource("m_grave_round"), ExtResource("m_grave_cross"), ExtResource("m_cross_wood"), ExtResource("m_debris"), ExtResource("m_pumpkin"), ExtResource("m_grass"), ExtResource("m_grass"), ExtResource("m_stones"), ExtResource("m_plant"), ExtResource("m_fence")])
+decor_count = 90
+waves = Array[Dictionary]([{
+"enemy": ExtResource("e_walker"),
+"start": 0.0,
+"end": 400.0,
+"weight": 10.0
+}, {
+"enemy": ExtResource("e_runner"),
+"start": 45.0,
+"end": 400.0,
+"weight": 5.0
+}, {
+"enemy": ExtResource("e_ghost"),
+"start": 90.0,
+"end": 400.0,
+"weight": 4.0
+}, {
+"enemy": ExtResource("e_brute"),
+"start": 150.0,
+"end": 400.0,
+"weight": 2.0
+}, {
+"enemy": ExtResource("e_keeper"),
+"start": 240.0,
+"end": 400.0,
+"weight": 1.0
+}])
+cap_start = 30
+cap_end = 240
+spawn_interval_start = 0.7
+spawn_interval_end = 0.08
+hp_scale_end = 3.0
+events = Array[Dictionary]([{
+"time": 60.0,
+"kind": "ring",
+"enemy": ExtResource("e_runner"),
+"count": 12
+}, {
+"time": 120.0,
+"kind": "ring",
+"enemy": ExtResource("e_walker"),
+"count": 24
+}, {
+"time": 180.0,
+"kind": "ring",
+"enemy": ExtResource("e_ghost"),
+"count": 16
+}, {
+"time": 240.0,
+"kind": "ring",
+"enemy": ExtResource("e_brute"),
+"count": 8
+}, {
+"time": 300.0,
+"kind": "boss",
+"enemy": ExtResource("e_vampire"),
+"count": 1
+}, {
+"time": 330.0,
+"kind": "ring",
+"enemy": ExtResource("e_runner"),
+"count": 30
+}])
+coins_win = 150
+coins_per_minute = 10
