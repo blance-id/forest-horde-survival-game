@@ -12,6 +12,8 @@ extends Resource
 @export var arena_half_size: float = 22.0
 @export var ground_color: Color = Color(0.27, 0.43, 0.2)
 @export var ground_color_alt: Color = Color(0.23, 0.38, 0.18)
+## Worn dirt patches painted over the grass.
+@export var dirt_color: Color = Color(0.5, 0.36, 0.22)
 @export var sky_color: Color = Color(0.08, 0.13, 0.09)
 @export var fog_color: Color = Color(0.12, 0.2, 0.13)
 @export var sun_color: Color = Color(1.0, 0.95, 0.85)
@@ -20,6 +22,9 @@ extends Resource
 @export var border_models: Array[PackedScene] = []
 @export var decor_models: Array[PackedScene] = []
 @export var decor_count: int = 60
+## Oversized plants / rocks (2-3x) that give the ground scale and depth.
+@export var giant_models: Array[PackedScene] = []
+@export var giant_count: int = 0
 
 @export_group("Spawning")
 ## [{ "enemy": EnemyData, "start": sec, "end": sec, "weight": float }]

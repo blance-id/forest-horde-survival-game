@@ -49,9 +49,9 @@ that resolves `assets/audio/{sfx,ui,jingles}/<name>[_NN].ogg` by name.
 The menu is a **live demo of the run** under an ad-style overlay: the same
 World / CameraRig / Player / Enemies / Projectiles / Weapons nodes as the game,
 minus pickups, XP and the director. `MainMenu` (scripts/ui/main_menu.gd)
-builds the arena, gives the invulnerable hero two demo weapons at level 2,
+builds the arena, gives the invulnerable hero the demo weapons (blaster lv2, shovels lv4),
 strolls it in a slow circle and trickles zombies in from `chapter.pick_enemy`
-(capped at 30). Over it, a CanvasLayer holds the gradient shades, coins pill,
+(capped at 26). Over it, a CanvasLayer holds the gradient shades, coins pill,
 settings gear, title block, chapter card (best record from
 `GameState.get_chapter_record`) and the pulsing PLAY button.
 `SettingsPanel` (scenes/ui/settings_panel.tscn) is a reusable overlay with
@@ -68,8 +68,8 @@ ticks every manager once per frame in a fixed order:
 
 ```
 Game (Node3D)
- ├── World        Arena builds into this: WorldEnvironment, sun, ground plane, border trees, decor
- ├── CameraRig    Camera3D on a pitched arm (45°, 12.5 u, fov 30, KEEP_WIDTH); follow + shake
+ ├── World        Arena builds into this: WorldEnvironment (fog + glow), sun, ground shader, border trees, decor, giants
+ ├── CameraRig    Camera3D on a pitched arm (55°, 9.5 u, fov 40, KEEP_WIDTH); follow + shake
  ├── Player       hero rig + AnimationTree + weapon on a BoneAttachment3D; moves in XZ, contact damage
  ├── Enemies      EnemyManager: one MultiMesh per EnemyData, plain Enemy records, spatial hash
  ├── Projectiles  ProjectileManager: bullet records in one MultiMesh, hit queries against Enemies

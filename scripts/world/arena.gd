@@ -18,6 +18,7 @@ func build(data: ChapterData, seed_value: int = 1) -> void:
 	_build_ground()
 	_build_border()
 	_build_decor()
+	_build_giants()
 
 
 func _build_environment() -> void:
@@ -26,27 +27,37 @@ func _build_environment() -> void:
 	env.background_color = chapter.sky_color
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = chapter.ambient_color
-	env.ambient_light_energy = 0.6
+	env.ambient_light_energy = 0.55
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_DEPTH
 	env.fog_light_color = chapter.fog_color
-	env.fog_depth_begin = 14.0
-	env.fog_depth_end = 34.0
+	env.fog_depth_begin = 10.0
+	env.fog_depth_end = 26.0
 	env.fog_density = 1.0
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	# Bloom carries the VFX: emissive bullets, auras and gems glow over the horde.
+	env.glow_enabled = true
+	env.glow_intensity = 0.55
+	env.glow_bloom = 0.04
+	env.glow_hdr_threshold = 0.9
+	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
+	# Two mid-size blur levels are enough (indices are 0-based, 7 levels).
+	for level in 7:
+		env.set_glow_level(level, 1.0 if level in [2, 4] else 0.0)
 	var world_env := WorldEnvironment.new()
 	world_env.name = "Environment"
 	world_env.environment = env
 	add_child(world_env)
 
+	# Low warm sun so every prop and enemy throws a long soft shadow.
 	var sun := DirectionalLight3D.new()
 	sun.name = "Sun"
 	sun.light_color = chapter.sun_color
 	sun.light_energy = chapter.sun_energy
-	sun.rotation_degrees = Vector3(-52.0, 28.0, 0.0)
+	sun.rotation_degrees = Vector3(-40.0, 34.0, 0.0)
 	sun.shadow_enabled = true
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 32.0
+	sun.directional_shadow_max_distance = 30.0
 	sun.directional_shadow_fade_start = 0.85
 	sun.shadow_bias = 0.06
 	sun.shadow_normal_bias = 1.5
@@ -67,11 +78,25 @@ func _build_ground() -> void:
 	tex.height = 256
 	tex.seamless = true
 	tex.noise = noise
+	# A single smooth octave for the dirt spots so they read as a few soft
+	# worn patches instead of camouflage.
+	var soft := FastNoiseLite.new()
+	soft.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	soft.fractal_type = FastNoiseLite.FRACTAL_NONE
+	soft.frequency = 0.025
+	soft.seed = 11
+	var soft_tex := NoiseTexture2D.new()
+	soft_tex.width = 256
+	soft_tex.height = 256
+	soft_tex.seamless = true
+	soft_tex.noise = soft
 	var mat := ShaderMaterial.new()
 	mat.shader = preload("res://shaders/ground.gdshader")
 	mat.set_shader_parameter("color_a", chapter.ground_color)
 	mat.set_shader_parameter("color_b", chapter.ground_color_alt)
+	mat.set_shader_parameter("dirt_color", chapter.dirt_color)
 	mat.set_shader_parameter("noise", tex)
+	mat.set_shader_parameter("soft_noise", soft_tex)
 	mat.set_shader_parameter("patch_size", 11.0)
 	mat.set_shader_parameter("arena_half", chapter.arena_half_size)
 	var ground := MeshInstance3D.new()
@@ -125,7 +150,35 @@ func _build_decor() -> void:
 			continue  # keep the hero's start clear
 		buckets[_rng.randi_range(0, buckets.size() - 1)].append(p)
 	for m in chapter.decor_models.size():
-		_scatter(chapter.decor_models[m], buckets[m], 0.9, 1.1, "Decor")
+		_scatter(chapter.decor_models[m], buckets[m], 0.9, 1.25, "Decor")
+
+
+func _build_giants() -> void:
+	if chapter.giant_models.is_empty() or chapter.giant_count <= 0:
+		return
+	var half := chapter.arena_half_size - 1.5
+	var positions: Array[Vector2] = []
+	var attempts := chapter.giant_count * 12
+	for i in attempts:
+		if positions.size() >= chapter.giant_count:
+			break
+		var p := Vector2(_rng.randf_range(-half, half), _rng.randf_range(-half, half))
+		if p.length() < 6.0:
+			continue  # keep the hero's start clear
+		var ok := true
+		for q in positions:
+			if q.distance_squared_to(p) < 5.0 * 5.0:
+				ok = false
+				break
+		if ok:
+			positions.append(p)
+	var buckets: Array = []
+	for m in chapter.giant_models:
+		buckets.append([])
+	for p in positions:
+		buckets[_rng.randi_range(0, buckets.size() - 1)].append(p)
+	for m in chapter.giant_models.size():
+		_scatter(chapter.giant_models[m], buckets[m], 1.3, 1.8, "Giant")
 
 
 func _scatter(scene: PackedScene, points: Array, scale_min: float, scale_max: float, prefix: String) -> void:

@@ -40,7 +40,8 @@ func _ready() -> void:
 	mesh.rings = 2
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.albedo_color = Color(1.0, 0.85, 0.35)
+	# Over-bright so the environment glow blooms every bullet.
+	mat.albedo_color = Color(1.8, 1.5, 0.6)
 	mesh.material = mat
 	_mm = MultiMesh.new()
 	_mm.transform_format = MultiMesh.TRANSFORM_3D

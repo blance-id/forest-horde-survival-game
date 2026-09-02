@@ -8,6 +8,7 @@ script = ExtResource("1")
 id = "runner"
 display_name = "Runner"
 model = ExtResource("2")
+tint = Color(1, 0.9, 0.62, 1)
 scale = 0.95
 max_hp = 7.0
 speed = 2.7

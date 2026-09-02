@@ -178,7 +178,7 @@ static func _gem_mesh() -> ArrayMesh:
 	mat.albedo_color = Color(0.35, 0.9, 1.0)
 	mat.emission_enabled = true
 	mat.emission = Color(0.2, 0.7, 1.0)
-	mat.emission_energy_multiplier = 1.4
+	mat.emission_energy_multiplier = 2.2
 	mat.roughness = 0.3
 	mesh.surface_set_material(0, mat)
 	return mesh

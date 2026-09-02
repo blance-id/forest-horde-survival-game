@@ -1,12 +1,14 @@
-## Smoothed 45° follow camera. `pitch_degrees` / `distance` are the two knobs
-## for the look of the game; KEEP_WIDTH keeps the visible ground width fixed
-## across phone aspect ratios so taller screens simply see further ahead.
+## Smoothed angled follow camera: close and fairly wide so the world has real
+## perspective (props lean away at the frame edges) instead of an isometric
+## look. `pitch_degrees` / `distance` / `fov` are the knobs; KEEP_WIDTH keeps
+## the visible ground width fixed across phone aspect ratios so taller screens
+## simply see further ahead.
 class_name CameraRig
 extends Node3D
 
-@export var pitch_degrees := 45.0
-@export var distance := 12.5
-@export var fov := 30.0
+@export var pitch_degrees := 55.0
+@export var distance := 9.5
+@export var fov := 40.0
 @export var smoothing := 8.0
 ## Shifts the look-at point along Z: positive moves it towards the camera, so
 ## the hero sits higher on screen.

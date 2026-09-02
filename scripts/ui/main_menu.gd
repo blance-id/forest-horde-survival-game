@@ -4,11 +4,14 @@
 class_name MainMenu
 extends Node3D
 
-const DEMO_CAP := 30
+const DEMO_CAP := 26
 const DEMO_SPAWN_INTERVAL := 0.35
 ## Director time the demo mix is sampled at (walkers, runners and wisps).
 const DEMO_MIX_TIME := 100.0
-const DEMO_WEAPON_LEVEL := 2
+## Level for each entry of `demo_weapons`; the far-reaching blaster stays low
+## so zombies actually make it on screen, the orbit weapon is high so they
+## never pile onto the hero.
+const DEMO_WEAPON_LEVELS: PackedInt32Array = [2, 4]
 const STROLL_SPEED := 0.45
 const STROLL_TURN := 0.4
 
@@ -61,9 +64,10 @@ func _build_demo() -> void:
 	weapon_system.enemies = enemies
 	weapon_system.projectiles = projectiles
 	weapon_system.run_stats = stats
-	for w in demo_weapons:
-		for i in DEMO_WEAPON_LEVEL:
-			weapon_system.add_or_upgrade(w)
+	for w in demo_weapons.size():
+		var level := DEMO_WEAPON_LEVELS[mini(w, DEMO_WEAPON_LEVELS.size() - 1)]
+		for i in level:
+			weapon_system.add_or_upgrade(demo_weapons[w])
 
 	camera_rig.snap_to(player.position)
 	camera_rig.make_current()

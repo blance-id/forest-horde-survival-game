@@ -37,8 +37,6 @@ demo_weapons = Array[ExtResource("s_weapon")]([ExtResource("13_blaster"), ExtRes
 
 [node name="CameraRig" type="Node3D" parent="."]
 script = ExtResource("2_camera")
-pitch_degrees = 45.0
-distance = 12.5
 
 [node name="Player" type="Node3D" parent="."]
 script = ExtResource("3_player")

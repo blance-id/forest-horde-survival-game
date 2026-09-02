@@ -10,7 +10,7 @@ Engine: Godot 4.7.2 (GDScript, GL Compatibility renderer).
 ## 1. High Concept
 
 A **horde survivor** set in a cursed pine forest, rendered in chunky low-poly
-3D and watched from a 45° perspective camera. You drag one finger to move; your
+3D and watched from a close, angled perspective camera. You drag one finger to move; your
 survivor auto-aims and auto-fires. Zombies pour in from every direction in
 ever-growing numbers. Every kill drops XP; every level-up offers three loud,
 ad-style upgrade cards ("MORE DAKKA!", "PEW PEW PEW!", "NEVER DIE!").
@@ -238,17 +238,30 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
 
 ## 12. Presentation & Tone
 
+- **Reference bar** — Funguys Swarm: a close angled camera with real
+  perspective, a painted saturated world with oversized foliage and long soft
+  shadows, colourful chunky enemies, and bloom-heavy weapon VFX that fill the
+  screen. Portrait instead of landscape, but that is the density and polish to
+  hit.
 - **Low-poly 3D** — Kenney "mini" characters and graveyard / forest kits
-  (flat-shaded, one colormap per kit), a noisy two-tone ground plane, a wall of
-  pines at the arena edge, gravestones and pumpkins scattered inside.
-- **Camera** — perspective, pitched 45° down, ~12.5 units from the hero,
-  `KEEP_WIDTH` so the visible width (~6.7 units) is identical on every phone
+  (flat-shaded, one colormap per kit). The ground is a shader: two grass tones
+  in soft patches, stretched fine noise as brush-stroke grass, and sparse worn
+  dirt trails with a trampled rim. A wall of pines closes the arena; ~130
+  gravestones, pumpkins, stones and grass tufts plus ~18 oversized trees and
+  plants (1.3–1.8×) are scattered inside for scale and depth.
+- **Camera** — perspective, pitched 55° down, 9.5 units from the hero, fov 40
+  so props lean away at the frame edges; `KEEP_WIDTH` keeps the visible width
+  (~7 units, the hero is ~1/8 of the screen width) identical on every phone
   aspect ratio; follows the hero with a soft lag and shakes on hits.
-- **Lighting** — one warm directional sun with shadows, dim green ambient,
-  distance fog fading into a dark sky so the horde appears out of the gloom.
+- **Lighting** — one warm low sun (40° elevation) so every prop and enemy
+  throws a long soft shadow, dim green ambient, distance fog fading into a dark
+  sky so the horde appears out of the gloom. Environment glow is on with two
+  blur levels: anything over-bright (bullets, gems, auras, later particles)
+  blooms.
 - **Readability first** — enemies flash white when hit, the hero flashes red,
-  XP gems glow, bullets are bright capsules, the hero has a tiny HP bar at
-  its feet.
+  XP gems glow, bullets are over-bright capsules, the hero has a tiny HP bar
+  at its feet. Enemy tints keep the roster colourful: bone-yellow skeletons,
+  cyan ghosts, green zombies.
 - Bright, chunky, readable — a saturated cartoon forest, not gritty horror.
 - Typography: heavy display font (Lilita One) for numbers/headlines, clean sans
   (Nunito) for body.
