@@ -6,8 +6,11 @@
 extends Node
 
 const PROFILE_VERSION := 1
+## How many one-shot relics can be carried into a run.
+const BAG_SIZE := 3
 
 signal coins_changed(amount: int)
+signal inventory_changed
 signal profile_loaded
 signal settings_changed
 
@@ -31,6 +34,8 @@ func _default_profile() -> Dictionary:
 		"meta_upgrades": {},           # upgrade_id -> level
 		"unlocked_chapters": ["chapter_01"],
 		"chapter_records": {},         # chapter_id -> {best_time, best_kills, wins}
+		"inventory": {},               # relic_id -> count owned
+		"bag": [],                     # relic_ids taken into the next run (<= BAG_SIZE)
 		"settings": {
 			"music_volume": 0.8,
 			"sfx_volume": 1.0,
@@ -150,6 +155,68 @@ func record_run(chapter_id: String, time_survived: float, kills: int, won: bool,
 	profile["stats"]["total_time"] = float(profile["stats"]["total_time"]) + time_survived
 	add_coins(coins_earned)
 	return new_best
+
+
+# --- Relics ------------------------------------------------------------------
+#
+# Two lists: the `inventory` is everything owned, the `bag` is the subset
+# carried into the next run. Starting a run *moves* the bag out of the
+# inventory, so items in play are genuinely at risk — die and they are gone,
+# survive and whatever went unused comes back.
+
+func relic_count(relic_id: String) -> int:
+	return int(profile["inventory"].get(relic_id, 0))
+
+
+func add_relic(relic_id: String, amount: int = 1) -> void:
+	profile["inventory"][relic_id] = maxi(0, relic_count(relic_id) + amount)
+	if int(profile["inventory"][relic_id]) == 0:
+		profile["inventory"].erase(relic_id)
+	inventory_changed.emit()
+	save()
+
+
+## Ids currently packed for the next run.
+func get_bag() -> Array:
+	return (profile["bag"] as Array).duplicate()
+
+
+## Only ids the player actually owns, capped at BAG_SIZE.
+func set_bag(relic_ids: Array) -> void:
+	var packed: Array = []
+	var used: Dictionary = {}
+	for id: String in relic_ids:
+		if packed.size() >= BAG_SIZE:
+			break
+		var taken := int(used.get(id, 0))
+		if taken < relic_count(id):
+			used[id] = taken + 1
+			packed.append(id)
+	profile["bag"] = packed
+	inventory_changed.emit()
+	save()
+
+
+## Called when a run starts: hands over the bag and takes those items out of
+## the inventory, because they are in the field now.
+func take_bag() -> Array:
+	var taken := get_bag()
+	for id: String in taken:
+		profile["inventory"][id] = maxi(0, relic_count(id) - 1)
+		if int(profile["inventory"][id]) == 0:
+			profile["inventory"].erase(id)
+	profile["bag"] = []
+	inventory_changed.emit()
+	save()
+	return taken
+
+
+## Survived: whatever was not used comes home.
+func return_unused(relic_ids: Array) -> void:
+	for id: String in relic_ids:
+		profile["inventory"][id] = relic_count(id) + 1
+	inventory_changed.emit()
+	save()
 
 
 # --- Settings ----------------------------------------------------------------

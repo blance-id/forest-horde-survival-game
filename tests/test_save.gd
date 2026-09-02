@@ -74,3 +74,28 @@ func test_record_run_banks_coins_once() -> void:
 	var before: int = GameState.profile["coins"]
 	GameState.record_run("chapter_01", 60.0, 10, false, 25)
 	assert_eq(GameState.profile["coins"], before + 25, "record_run banks the reward exactly once")
+
+
+func test_bag_is_taken_out_of_the_inventory() -> void:
+	GameState.profile = GameState._default_profile()
+	GameState.add_relic("field_kit", 2)
+	GameState.set_bag(["field_kit", "field_kit"])
+	var taken := GameState.take_bag()
+	assert_eq(taken.size(), 2, "both copies go into the run")
+	assert_eq(GameState.relic_count("field_kit"), 0, "carried relics leave the inventory")
+	assert_eq(GameState.get_bag().size(), 0, "the bag is empty once packed into a run")
+	GameState.return_unused(["field_kit"])
+	assert_eq(GameState.relic_count("field_kit"), 1, "surviving with one unused brings it home")
+
+
+func test_bag_cannot_pack_more_than_owned() -> void:
+	GameState.profile = GameState._default_profile()
+	GameState.add_relic("field_kit", 1)
+	GameState.set_bag(["field_kit", "field_kit", "field_kit"])
+	assert_eq(GameState.get_bag().size(), 1, "only what the player owns can be packed")
+
+
+func test_revive_price_doubles() -> void:
+	assert_eq(RevivePanel.cost_for(0), 100)
+	assert_eq(RevivePanel.cost_for(1), 200)
+	assert_eq(RevivePanel.cost_for(3), 800)

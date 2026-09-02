@@ -199,3 +199,13 @@ func _die() -> void:
 		die_anim.loop_mode = Animation.LOOP_NONE
 		_anim_player.play(data.anim_die)
 	died.emit()
+
+
+## Back on your feet at full health with a moment of grace — the horde is
+## standing on top of you when this happens.
+func revive(invulnerable_for: float) -> void:
+	is_dead = false
+	_invuln = invulnerable_for
+	_anim_player.stop()
+	_anim_tree.active = true
+	_set_hp(stats.max_hp())

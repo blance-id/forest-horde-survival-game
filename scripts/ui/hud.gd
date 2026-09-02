@@ -7,6 +7,8 @@ extends Control
 
 signal pause_pressed
 signal build_pressed
+## The player tapped a bag slot: index into the bag handed to `set_bag_items`.
+signal relic_used(index: int)
 
 const HINT_DELAY := 0.6
 const LOW_HP := 0.3
@@ -45,6 +47,7 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 @onready var build_button: Button = %BuildButton
 @onready var build_icon: TextureRect = %BuildIcon
 @onready var build_cost: Label = %BuildCost
+@onready var bag_row: HBoxContainer = %BagRow
 @onready var hidden_badge: Label = %HiddenBadge
 @onready var pause_button: Button = %PauseButton
 @onready var timeline: RunTimeline = %Timeline
@@ -259,6 +262,25 @@ func add_coins(amount: int, world_position: Vector3, camera: Camera3D) -> void:
 func set_coins(coins: int) -> void:
 	_shown_coins = coins
 	coins_label.text = str(coins)
+
+
+## Draws the relics carried into this run as tappable buttons. Spent slots
+## stay in place, greyed out, so the row does not jump around mid-fight.
+func set_bag_items(relics: Array[RelicData], spent: Array[bool]) -> void:
+	for c in bag_row.get_children():
+		c.queue_free()
+	for i in relics.size():
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(88, 88)
+		button.theme_type_variation = &"RoundButton"
+		button.icon = relics[i].icon
+		button.expand_icon = true
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		button.disabled = spent[i]
+		button.modulate.a = 0.4 if spent[i] else 1.0
+		button.tooltip_text = "%s — %s" % [relics[i].display_name, relics[i].description]
+		button.pressed.connect(func() -> void: relic_used.emit(i))
+		bag_row.add_child(button)
 
 
 func setup_build_button(tower: TowerData) -> void:

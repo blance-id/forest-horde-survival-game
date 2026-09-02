@@ -401,6 +401,14 @@ deciding when a gun nest is worth the noise.
 - Home store: buy consumables into the inventory, carry them in the Travel Bag.
 - Build panel listing every buff taken and the damage it adds up to.
 
+Waves 4 and 5 are in as well: physical / magic / true damage with matching
+colours and per-enemy resistances (bullets barely scratch a wisp — bring the
+lantern), guns on both shoulders, swapping a maxed weapon for a new one at the
+same level, a build sheet on the pause screen, a boss entrance where the world
+stops and the Count laughs his way in, revives at 100/200/400/800 coins, and a
+store whose purchases ride into the run in a three-slot travel bag you lose if
+you die.
+
 **Wave 6 — presentation**
 - Real ground: tiling grass and bush texture that varies without tiling
   visibly, instead of the painted-mud shader.

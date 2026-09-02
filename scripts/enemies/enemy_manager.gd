@@ -356,6 +356,12 @@ func _separation(e: Enemy) -> Vector2:
 	return push
 
 
+## Pushes a record's current pose to the GPU. Used by the boss entrance, which
+## animates one enemy while the rest of the horde is frozen.
+func refresh(e: Enemy) -> void:
+	_write_transform(e)
+
+
 func _write_transform(e: Enemy) -> void:
 	var d := e.pool.data
 	var s := d.scale

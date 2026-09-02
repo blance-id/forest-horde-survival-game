@@ -29,6 +29,8 @@ extends Resource
 @export var xp: int = 1
 @export var coin_chance: float = 0.04
 @export var is_boss: bool = false
+## Bosses only: the one-shot relic they leave for the next run.
+@export var boss_drop: RelicData
 
 @export_group("Attack")
 ## Enemies never damage on touch. They stop, wind up for `attack_windup`

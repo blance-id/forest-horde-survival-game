@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3]
+[gd_scene load_steps=30 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/level_up_panel.tscn" id="9_levelup"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_panel.tscn" id="10_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/result_panel.tscn" id="11_result"]
+[ext_resource type="PackedScene" path="res://scenes/ui/revive_panel.tscn" id="11b_revive"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
 [ext_resource type="Script" path="res://scripts/data/upgrade_data.gd" id="s_upgrade"]
 [ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
@@ -71,5 +72,7 @@ layer = 10
 [node name="LevelUpPanel" parent="UI" instance=ExtResource("9_levelup")]
 
 [node name="PausePanel" parent="UI" instance=ExtResource("10_pause")]
+
+[node name="RevivePanel" parent="UI" instance=ExtResource("11b_revive")]
 
 [node name="ResultPanel" parent="UI" instance=ExtResource("11_result")]

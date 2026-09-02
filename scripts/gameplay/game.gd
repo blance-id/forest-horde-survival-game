@@ -4,7 +4,7 @@
 class_name Game
 extends Node3D
 
-enum State { RUNNING, LEVEL_UP, PAUSED, OVER }
+enum State { RUNNING, BOSS_INTRO, LEVEL_UP, PAUSED, DYING, OVER }
 
 const RESULT_DELAY := 1.6
 const RING_RADIUS := 9.0
@@ -21,6 +21,14 @@ const COVER_BLOWN_TIME := 4.0
 const AMMO_PER_ELITE := 2
 ## How many weapons the hero can carry at once.
 const WEAPON_SLOTS := 4
+## Slow-motion beat after the hero falls, before the revive offer.
+const DEATH_PAUSE := 1.1
+## Seconds of grace after a revive, and how far the horde is blown back.
+const REVIVE_GRACE := 2.0
+const REVIVE_CLEAR := 6.0
+## The boss entrance: how long everything else stands still.
+const BOSS_INTRO_TIME := 3.0
+const LAUGH_BEAT := 1.1
 
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
@@ -39,6 +47,7 @@ const WEAPON_SLOTS := 4
 @onready var level_up_panel: LevelUpPanel = $UI/LevelUpPanel
 @onready var pause_panel: PausePanel = $UI/PausePanel
 @onready var result_panel: ResultPanel = $UI/ResultPanel
+@onready var revive_panel: RevivePanel = $UI/RevivePanel
 
 var chapter: ChapterData
 var character: CharacterData
@@ -53,6 +62,9 @@ var run_ammo := 0
 var upgrade_levels: Dictionary = {}  # UpgradeData -> level
 var forest: Forest
 var traps: Traps
+## Relics carried into this run, and whether each has been spent.
+var bag: Array[RelicData] = []
+var bag_spent: Array[bool] = []
 
 var _chapter_id := "chapter_01"
 var _spawn_timer := 0.0
@@ -60,6 +72,9 @@ var _events: Array[Dictionary] = []
 var _rng := RandomNumberGenerator.new()
 var _pending_level_ups := 0
 var _result_timer := -1.0
+var _death_timer := 0.0
+var _intro_time := -1.0
+var _last_laugh := -1
 var _won := false
 var _new_best := false
 var _dev_move := Vector2.ZERO
@@ -68,6 +83,8 @@ var _step_timer := 0.0
 var _growl_timer := 1.0
 ## Seconds of blown cover left: killing from inside a bush gives you away.
 var _exposed := 0.0
+## Revives bought this run; each one doubles the next price.
+var _revives := 0
 
 
 func setup(data: Dictionary) -> void:
@@ -154,6 +171,7 @@ func _start_run() -> void:
 
 	hud.pause_pressed.connect(_pause)
 	hud.build_pressed.connect(_build_tower)
+	hud.relic_used.connect(_use_relic)
 	hud.setup_build_button(towers.data)
 	hud.world_bars.enemies = enemies
 	hud.world_bars.towers = towers
@@ -166,12 +184,20 @@ func _start_run() -> void:
 	hud.set_coins(0)
 	hud.set_wood(0)
 	hud.set_ammo(0)
+	# Taking the bag removes it from the inventory: these are in the field now.
+	bag = RelicCatalog.resolve(GameState.take_bag())
+	bag_spent.clear()
+	for i in bag.size():
+		bag_spent.append(false)
+	hud.set_bag_items(bag, bag_spent)
 	hud.set_build(weapon_system.slots, upgrade_levels)
 	hud.show_move_hint()
 	hud.show_announcement("SURVIVE %d MINUTES!" % roundi(chapter.duration / 60.0), 1.6)
 	level_up_panel.chosen.connect(_on_upgrade_chosen)
 	pause_panel.resume_pressed.connect(_resume)
 	pause_panel.quit_pressed.connect(_give_up)
+	revive_panel.revive_pressed.connect(_do_revive)
+	revive_panel.declined.connect(_after_death)
 	result_panel.retry_pressed.connect(_retry)
 	result_panel.menu_pressed.connect(_to_menu)
 
@@ -285,6 +311,12 @@ func dev_command(cmd: String) -> void:
 
 func _process(delta: float) -> void:
 	if chapter == null:
+		return
+	if state == State.BOSS_INTRO:
+		_tick_boss_intro(delta)
+		return
+	if state == State.DYING:
+		_tick_dying(delta)
 		return
 	if state == State.OVER:
 		_tick_world(delta)
@@ -521,19 +553,73 @@ func _on_bolt_landed(position: Vector3, _damage: float, hit_player: bool) -> voi
 
 func _on_boss_spawned(e: EnemyManager.Enemy) -> void:
 	hud.set_boss(e.hp, e.max_hp, e.data().display_name)
-	hud.show_announcement("BOSS INCOMING!", 2.2)
 	SoundBank.sfx("bell", -2.0, 0.0)
 	SoundBank.sfx("boss_roar", 0.0, 0.1)
 	AudioManager.play_music(chapter.boss_music, 0.8)
 	camera_rig.shake(0.5)
 	Haptics.heavy()
+	# It walks in on its own: the horde, the hero and every bullet stop, and
+	# the camera goes to look at it.
+	state = State.BOSS_INTRO
+	_intro_time = 0.0
+	_last_laugh = 0
+	hud.joystick.reset()
+	player.move_input = Vector2.ZERO
+	hud.show_announcement(e.data().display_name.to_upper(), BOSS_INTRO_TIME - 0.6)
 
 
-func _on_boss_killed(_e: EnemyManager.Enemy) -> void:
+## The entrance. Only the boss moves: it turns on the hero, stalks a step
+## closer and rocks with a laugh, punctuated by roars.
+func _tick_boss_intro(delta: float) -> void:
+	_intro_time += delta
+	var e := enemies.boss
+	if e != null and not e.dying:
+		var to_hero := Vector2(player.position.x, player.position.z) - e.pos
+		if to_hero.length() > 0.001:
+			e.yaw = atan2(to_hero.x, to_hero.y)
+			e.pos += to_hero.normalized() * e.data().speed * 0.55 * delta
+		# `charge` is the wind-up pose: swelling it on a fast sine reads as a
+		# belly laugh without needing a second animation.
+		e.charge = 0.35 + 0.35 * sin(_intro_time * 9.0)
+		enemies.refresh(e)
+		if _laugh_due():
+			SoundBank.sfx("boss_roar", -4.0, 0.0)
+			camera_rig.shake(0.25)
+	fx.tick(delta)
+	hud.tick(camera_rig.camera, delta)
+	var look := e.position3d() if e != null else player.position
+	camera_rig.follow(look, delta)
+	if _intro_time >= BOSS_INTRO_TIME:
+		if e != null:
+			e.charge = 0.0
+			enemies.refresh(e)
+		camera_rig.snap_to(player.position)
+		hud.show_announcement("RUN!", 1.2)
+		state = State.RUNNING
+
+
+## True once per LAUGH_BEAT seconds of the entrance, and never on the first
+## beat — the spawn roar already covers that one.
+func _laugh_due() -> bool:
+	var beat := floori(_intro_time / LAUGH_BEAT)
+	if beat == _last_laugh or beat == 0:
+		return false
+	_last_laugh = beat
+	return true
+
+
+func _on_boss_killed(e: EnemyManager.Enemy) -> void:
 	hud.set_boss(0.0, 1.0)
-	hud.show_announcement("BOSS DOWN!", 2.0)
 	SoundBank.jingle("reward", -2.0)
 	AudioManager.play_music(chapter.music, 2.5)
+	# The boss leaves something behind for the *next* run — it goes to the
+	# inventory, not the bag, so the player chooses whether to risk it.
+	var drop := e.data().boss_drop
+	if drop != null:
+		GameState.add_relic(drop.id)
+		hud.show_announcement("%s!" % drop.display_name.to_upper(), 2.4)
+	else:
+		hud.show_announcement("BOSS DOWN!", 2.0)
 
 
 func _on_player_damaged(amount: float) -> void:
@@ -581,6 +667,50 @@ func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vect
 			fx.pickup(position, Color(0.9, 0.85, 0.4))
 			run_ammo += int(value)
 			hud.set_ammo(run_ammo)
+
+
+# --- Relics ------------------------------------------------------------------
+
+func _use_relic(index: int) -> void:
+	if state != State.RUNNING or index < 0 or index >= bag.size() or bag_spent[index]:
+		return
+	bag_spent[index] = true
+	hud.set_bag_items(bag, bag_spent)
+	var relic := bag[index]
+	SoundBank.jingle("reward", -6.0)
+	hud.show_announcement(relic.display_name.to_upper(), 1.3)
+	fx.level_up(player.position)
+	match relic.kind:
+		RelicData.Kind.HEAL:
+			player.heal(stats.max_hp() * relic.value)
+		RelicData.Kind.NUKE:
+			camera_rig.shake(0.7)
+			_hit_stop(0.1, 0.14)
+			for e in enemies.enemies.duplicate():
+				if not e.dying and e.pos.distance_to(Vector2(player.position.x, player.position.z)) < relic.value:
+					enemies.hit(e, 1e9, e.pos, 0.0, Damage.Type.TRUE)
+		RelicData.Kind.RAGE:
+			stats.add("damage_mult", relic.value)
+			_timed(relic.duration, func() -> void: stats.add("damage_mult", -relic.value))
+		RelicData.Kind.MAGNET:
+			pickups.attract_all(PickupManager.Kind.XP)
+			pickups.attract_all(PickupManager.Kind.COIN)
+			pickups.attract_all(PickupManager.Kind.WOOD)
+			pickups.attract_all(PickupManager.Kind.AMMO)
+		RelicData.Kind.SUPPLY:
+			run_wood += int(relic.value)
+			run_ammo += int(relic.value * 4.0)
+			hud.set_wood(run_wood)
+			hud.set_ammo(run_ammo)
+		RelicData.Kind.WARD:
+			player.invulnerable = true
+			_timed(relic.duration, func() -> void: player.invulnerable = false)
+
+
+## Runs `action` after `seconds` of game time. Relic effects that wear off use
+## this rather than each keeping their own countdown in `_process`.
+func _timed(seconds: float, action: Callable) -> void:
+	get_tree().create_timer(seconds, false).timeout.connect(action)
 
 
 # --- XP / level ups ----------------------------------------------------------
@@ -739,7 +869,47 @@ func _on_player_died() -> void:
 	camera_rig.shake(0.6)
 	Haptics.heavy()
 	_hit_stop(0.25, 0.9)
+	state = State.DYING
+	_death_timer = DEATH_PAUSE
+
+
+## The pause after death, before the run is actually over: long enough for the
+## slow-motion to land, then the offer to buy the run back.
+func _tick_dying(delta: float) -> void:
+	_tick_world(delta)
+	if revive_panel.visible:
+		revive_panel.tick(delta)
+		return
+	_death_timer -= delta
+	if _death_timer > 0.0:
+		return
+	if not revive_panel.open(_revives, GameState.get_coins()):
+		_after_death()
+
+
+func _do_revive() -> void:
+	var price := RevivePanel.cost_for(_revives)
+	if not GameState.spend_coins(price):
+		_after_death()
+		return
+	_revives += 1
+	get_tree().paused = false
+	player.revive(REVIVE_GRACE)
+	# Clear the pile that killed you, or the revive is worth nothing.
+	for e in enemies.enemies.duplicate():
+		if not e.dying and e.pos.distance_to(Vector2(player.position.x, player.position.z)) < REVIVE_CLEAR:
+			enemies.hit(e, 1e9, e.pos, 0.0, Damage.Type.TRUE)
+	fx.level_up(player.position)
+	camera_rig.shake(0.5)
+	SoundBank.jingle("reward", -4.0)
+	hud.show_announcement("BACK UP!", 1.4)
+	AudioManager.play_music(chapter.boss_music if enemies.boss != null else chapter.music, 1.0)
+	state = State.RUNNING
+
+
+func _after_death() -> void:
 	_end(false)
+	state = State.OVER
 	_result_timer = RESULT_DELAY
 
 
@@ -765,6 +935,13 @@ func _end(won: bool) -> void:
 	if won:
 		reward += chapter.coins_win
 	run_coins = reward
+	# Unused relics only survive a win: dying costs you what you were carrying.
+	if won:
+		var leftovers: Array = []
+		for i in bag.size():
+			if not bag_spent[i]:
+				leftovers.append(bag[i].id)
+		GameState.return_unused(leftovers)
 	# record_run banks the coins as well.
 	_new_best = GameState.record_run(chapter.id, run_time, enemies.kills, won, reward)
 	Log.info("Game", "Run over: won=%s time=%.1f kills=%d level=%d coins=%d" % [won, run_time, enemies.kills, level, reward])

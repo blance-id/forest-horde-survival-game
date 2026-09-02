@@ -124,6 +124,27 @@ bush, `EnemyManager.player_hidden` is set and the horde walks to `last_seen`
 instead of tracking. Killing from cover sets `_exposed`, which gives the
 position away for `COVER_BLOWN_TIME`.
 
+### Relics, the bag and revives
+
+`RelicData` is a one-shot item; `RelicCatalog` is the one place that turns the
+ids stored in the save file back into resources (a profile must never hold
+resource paths). The profile keeps two lists: `inventory` is everything owned,
+`bag` is the up-to-`BAG_SIZE` subset packed for the next run.
+
+Starting a run calls `GameState.take_bag()`, which **moves** those relics out
+of the inventory — they are in the field now. `Game` shows them as tappable
+HUD buttons, `_use_relic` spends one and applies its effect, and only a win
+calls `return_unused()`. Dying keeps them gone, which is what makes packing a
+relic a decision rather than a formality.
+
+Bosses drop a relic into the inventory (`EnemyData.boss_drop`), so a kill pays
+off in the *next* run. `StorePanel` is the store and the bag in one list —
+BUY and PACK on the same row, because they answer the same question.
+
+`RevivePanel` sells the run back for `100 · 2^n` coins with a countdown; the
+run sits in `State.DYING` while it is open, still ticking the world so the
+slow-motion death keeps playing behind it.
+
 ### Towers
 
 `TowerManager` (scripts/systems/tower_manager.gd) + `TowerData`. A nest costs

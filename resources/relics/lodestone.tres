@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/chest.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "lodestone"
+display_name = "Lodestone"
+description = "Pulls every gem and coin on the map to you."
+icon = ExtResource("2")
+kind = 3
+value = 1.0
+price = 150

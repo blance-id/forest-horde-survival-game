@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
@@ -10,6 +10,8 @@
 [ext_resource type="Texture2D" path="res://assets/ui/items/coin.png" id="8_coin"]
 [ext_resource type="Texture2D" path="res://assets/ui/icons/gear.png" id="9_gear"]
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="10_settings"]
+[ext_resource type="PackedScene" path="res://scenes/ui/store_panel.tscn" id="10b_store"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/shoppingCart.png" id="10c_cart"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
 [ext_resource type="Resource" path="res://resources/chapters/chapter_01.tres" id="11_chapter"]
 [ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
@@ -243,6 +245,18 @@ size_flags_horizontal = 4
 theme_type_variation = &"PrimaryButton"
 theme_override_font_sizes/font_size = 54
 text = "PLAY"
+
+[node name="StoreButton" type="Button" parent="UI/Root/Bottom"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 78)
+layout_mode = 2
+size_flags_horizontal = 4
+icon = ExtResource("10c_cart")
+text = "STORE & BAG"
+
+[node name="StorePanel" parent="UI/Root" instance=ExtResource("10b_store")]
+unique_name_in_owner = true
+layout_mode = 1
 
 [node name="SettingsPanel" parent="UI/Root" instance=ExtResource("10_settings")]
 unique_name_in_owner = true

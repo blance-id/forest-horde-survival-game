@@ -32,6 +32,8 @@ const STROLL_TURN := 0.4
 @onready var chapter_name: Label = %ChapterName
 @onready var chapter_best: Label = %ChapterBest
 @onready var settings_panel: SettingsPanel = %SettingsPanel
+@onready var store_button: Button = %StoreButton
+@onready var store_panel: StorePanel = %StorePanel
 @onready var top_bar: MarginContainer = $UI/Root/TopBar
 
 var _rng := RandomNumberGenerator.new()
@@ -83,6 +85,8 @@ func _build_ui() -> void:
 	play_button.pressed.connect(_on_play_pressed)
 	settings_button.pressed.connect(_on_settings_pressed)
 	settings_panel.closed.connect(_start_pulse)
+	store_button.pressed.connect(_on_store_pressed)
+	store_panel.closed.connect(_start_pulse)
 
 	var index := GameState.get_unlocked_chapters().find(chapter.id)
 	chapter_label.text = "CHAPTER %d" % (maxi(index, 0) + 1)
@@ -127,6 +131,14 @@ func _start_pulse() -> void:
 	_pulse.tween_property(play_button, "scale", Vector2.ONE, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
+func _on_store_pressed() -> void:
+	SoundBank.ui("click")
+	if _pulse != null and _pulse.is_valid():
+		_pulse.kill()
+	play_button.scale = Vector2.ONE
+	store_panel.open()
+
+
 func _on_play_pressed() -> void:
 	if SceneRouter.is_busy():
 		return
@@ -158,5 +170,11 @@ func dev_command(cmd: String) -> void:
 	match cmd:
 		"settings":
 			_on_settings_pressed()
+		"store":
+			_on_store_pressed()
+		"rich":
+			# Enough coins to exercise every store row.
+			GameState.add_coins(2000)
+			_on_store_pressed()
 		_:
 			Log.warn("Menu", "Unknown dev command: " + cmd)

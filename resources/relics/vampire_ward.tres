@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RelicData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/relic_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/shield.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "vampire_ward"
+display_name = "Nosferatu's Ward"
+description = "Nothing can touch you for 8 seconds. Taken from the Count."
+icon = ExtResource("2")
+kind = 5
+value = 1.0
+duration = 8.0
+price = 0
