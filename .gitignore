@@ -1,0 +1,27 @@
+# Godot 4
+.godot/
+*.import.tmp
+export_presets.cfg.bak
+
+# Build outputs
+build/
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+
+# Android signing / local secrets
+*.keystore
+*.jks
+.env
+.env.*
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Downloaded asset archives (extracted files are committed)
+assets/_downloads/
