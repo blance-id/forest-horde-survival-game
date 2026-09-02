@@ -74,6 +74,7 @@ func _build_demo() -> void:
 
 	camera_rig.snap_to(player.position)
 	camera_rig.make_current()
+	Quality.apply_to_viewport(get_viewport())
 
 
 func _build_ui() -> void:

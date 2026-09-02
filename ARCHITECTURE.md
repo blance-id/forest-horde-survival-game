@@ -99,6 +99,12 @@ everything that has to stay inside — the hero, the horde, prop scatter, spawn
 rings, the minimap outline — asks it rather than clamping to a square of its
 own. A chapter changes its map shape by changing one enum.
 
+`Quality` (scripts/core/quality.gd) is the single budget for visual work:
+LOW / NORMAL / MAX, chosen in Settings and stored in the profile. Ground blade
+detail, shadow distance and resolution, foliage counts, which glow blur levels
+are mixed in, and MSAA all read from it instead of guessing, so MAX is a real
+step up on a good phone and LOW actually saves work on a bad one.
+
 `Arena` builds the static dressing (environment, ground, border band, decor,
 giants). Two managers sit beside it and own things that change during a run:
 

@@ -260,12 +260,13 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   shadows, colourful chunky enemies, and bloom-heavy weapon VFX that fill the
   screen. Portrait instead of landscape, but that is the density and polish to
   hit.
-- **Low-poly 3D** — Kenney "mini" characters and graveyard / forest kits
-  (flat-shaded, one colormap per kit). The ground is a shader: two grass tones
-  in soft patches, stretched fine noise as brush-stroke grass, and sparse worn
-  dirt trails with a trampled rim. A wall of pines closes the arena; ~130
-  gravestones, pumpkins, stones and grass tufts plus ~18 oversized trees and
-  plants (1.3–1.8×) are scattered inside for scale and depth.
+- **Low-poly 3D** — Kenney "mini" characters for the cast, the Nature Kit for
+  the forest itself (detailed trees, bushes, stumps, logs, flowers,
+  mushrooms). The ground is a shader with no texture at all: broad colour
+  drift, a mid mottle, and fine blades that lie in a direction which itself
+  wanders, so grass reads as grass and never visibly tiles across a 90-unit
+  map. Dirt is rare worn trails, not blobs. A wall of pines follows the arena
+  shape; hundreds of props and ~60 oversized trees and rocks fill the inside.
 - **Camera** — perspective, pitched 55° down, 9.5 units from the hero, fov 40
   so props lean away at the frame edges; `KEEP_WIDTH` keeps the visible width
   (~7 units, the hero is ~1/8 of the screen width) identical on every phone

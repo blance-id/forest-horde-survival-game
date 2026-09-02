@@ -41,7 +41,7 @@ func _ready() -> void:
 	_pools[Kind.XP] = _make_pool(Kind.XP, _gem_mesh(), 1.0)
 	_pools[Kind.COIN] = _make_pool(Kind.COIN, _scene_mesh("res://assets/models/dungeon/coin.glb"), 0.45)
 	_pools[Kind.HEAL] = _make_pool(Kind.HEAL, _scene_mesh("res://assets/models/dungeon/potion.glb"), 1.0)
-	_pools[Kind.WOOD] = _make_pool(Kind.WOOD, _scene_mesh("res://assets/models/graveyard/debris-wood.glb"), 0.9)
+	_pools[Kind.WOOD] = _make_pool(Kind.WOOD, _scene_mesh("res://assets/models/nature/log.glb"), 0.55)
 	_pools[Kind.AMMO] = _make_pool(Kind.AMMO, _scene_mesh("res://assets/models/dungeon/barrel.glb"), 0.55)
 
 

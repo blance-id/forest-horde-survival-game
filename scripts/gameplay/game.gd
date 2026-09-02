@@ -148,6 +148,7 @@ func _start_run() -> void:
 
 	camera_rig.snap_to(player.position)
 	camera_rig.make_current()
+	Quality.apply_to_viewport(get_viewport())
 
 	hud.pause_pressed.connect(_pause)
 	hud.build_pressed.connect(_build_tower)

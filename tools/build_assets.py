@@ -69,6 +69,22 @@ MODELS = {
         "coin", "chest", "potion", "key", "character-orc", "character-human", "barrel", "pot",
         "weapon-sword", "weapon-spear", "shield-round", "trap",
     ]),
+    # The nature kit is the detailed foliage set: real bushes you can stand in,
+    # stumps left by felled trees, logs for wood drops, and trees with enough
+    # variety that a 90x90 map does not read as one tree copy-pasted.
+    "nature": ("3d/nature-kit/Models/GLTF format", [
+        "tree_default", "tree_default_dark", "tree_oak", "tree_oak_dark", "tree_detailed",
+        "tree_detailed_dark", "tree_tall", "tree_thin", "tree_fat", "tree_blocks",
+        "tree_pineTallA", "tree_pineTallB", "tree_pineTallC", "tree_pineRoundA", "tree_pineRoundC",
+        "tree_pineSmallA", "tree_pineSmallC",
+        "plant_bush", "plant_bushDetailed", "plant_bushLarge", "plant_bushLargeTriangle",
+        "plant_bushSmall", "plant_bushTriangle", "plant_flatShort", "plant_flatTall",
+        "stump_round", "stump_roundDetailed", "stump_old", "stump_square",
+        "log", "log_large", "log_stack",
+        "grass", "grass_large", "flower_redA", "flower_purpleA", "flower_yellowA",
+        "mushroom_red", "mushroom_redGroup", "mushroom_tanGroup",
+        "rock_smallA", "rock_largeA", "statue_obelisk", "campfire_logs", "fence_simple",
+    ]),
     "blasters": ("3d/blaster-kit/Models/GLB format", [
         *[f"blaster-{c}" for c in "abcdefghijklmnopqr"],
         "bullet-foam", "bullet-foam-tip", "grenade-a", "grenade-b", "smoke",
@@ -80,7 +96,9 @@ def build_models() -> None:
     for pack, (folder, names) in MODELS.items():
         src = DL / folder
         dst = ensure(OUT / "models" / pack)
-        copy_png(src / "Textures/colormap.png", dst / "Textures/colormap.png")
+        colormap = src / "Textures/colormap.png"
+        if colormap.exists():
+            copy_png(colormap, dst / "Textures/colormap.png")
         for name in names:
             glb = src / f"{name}.glb"
             if not glb.exists():

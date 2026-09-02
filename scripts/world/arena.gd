@@ -40,13 +40,15 @@ func _build_environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	# Bloom carries the VFX: emissive bullets, auras and gems glow over the horde.
 	env.glow_enabled = true
-	env.glow_intensity = 0.55
+	env.glow_intensity = Quality.glow_strength()
 	env.glow_bloom = 0.04
 	env.glow_hdr_threshold = 0.9
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
-	# Two mid-size blur levels are enough (indices are 0-based, 7 levels).
+	# Which blur levels are mixed in is the quality knob: one tight level on
+	# LOW, a wide soft halo on top on MAX (indices are 0-based, 7 levels).
+	var levels := Quality.glow_levels()
 	for level in 7:
-		env.set_glow_level(level, 1.0 if level in [2, 4] else 0.0)
+		env.set_glow_level(level, 1.0 if levels.has(level) else 0.0)
 	var world_env := WorldEnvironment.new()
 	world_env.name = "Environment"
 	world_env.environment = env
@@ -58,9 +60,9 @@ func _build_environment() -> void:
 	sun.light_color = chapter.sun_color
 	sun.light_energy = chapter.sun_energy
 	sun.rotation_degrees = Vector3(-40.0, 34.0, 0.0)
-	sun.shadow_enabled = true
+	sun.shadow_enabled = Quality.shadows()
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sun.directional_shadow_max_distance = 30.0
+	sun.directional_shadow_max_distance = Quality.shadow_distance()
 	sun.directional_shadow_fade_start = 0.85
 	sun.shadow_bias = 0.06
 	sun.shadow_normal_bias = 1.5
@@ -102,6 +104,8 @@ func _build_ground() -> void:
 	mat.set_shader_parameter("soft_noise", soft_tex)
 	mat.set_shader_parameter("patch_size", 11.0)
 	mat.set_shader_parameter("arena_half", chapter.arena_half_size)
+	mat.set_shader_parameter("arena_shape", int(chapter.arena_shape))
+	mat.set_shader_parameter("detail", 1.0 if Quality.ground_detail() else 0.0)
 	var ground := MeshInstance3D.new()
 	ground.name = "Ground"
 	ground.mesh = plane
@@ -148,7 +152,7 @@ func _build_decor() -> void:
 	var buckets: Array = []
 	for m in chapter.decor_models:
 		buckets.append([])
-	for i in chapter.decor_count:
+	for i in roundi(chapter.decor_count * Quality.decor_scale()):
 		var p := bounds.random_point(_rng, 1.0)
 		if p.length() < 4.0:
 			continue  # keep the hero's start clear
@@ -161,9 +165,10 @@ func _build_giants() -> void:
 	if chapter.giant_models.is_empty() or chapter.giant_count <= 0:
 		return
 	var positions: Array[Vector2] = []
-	var attempts := chapter.giant_count * 12
+	var wanted := roundi(chapter.giant_count * Quality.decor_scale())
+	var attempts := wanted * 12
 	for i in attempts:
-		if positions.size() >= chapter.giant_count:
+		if positions.size() >= wanted:
 			break
 		var p := bounds.random_point(_rng, 1.5)
 		if p.length() < 6.0:
