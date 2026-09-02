@@ -72,7 +72,7 @@ ticks every manager once per frame in a fixed order:
 ```
 Game (Node3D)
  ├── World        Arena builds into this: WorldEnvironment (fog + glow), sun, ground shader, border trees, decor, giants
- ├── CameraRig    Camera3D on a pitched arm (55°, 9.5 u, fov 40, KEEP_WIDTH); follow + shake
+ ├── CameraRig    Camera3D on a pitched arm (55°, 9.5 u, fov 40, KEEP_WIDTH); smoothed follow, 0.9 u movement lead, trauma² noise shake
  ├── Player       hero rig + AnimationTree + weapon on a BoneAttachment3D; moves in XZ, contact damage
  ├── Enemies      EnemyManager: one MultiMesh per EnemyData, plain Enemy records, spatial hash
  ├── Projectiles  ProjectileManager: bullet records in one MultiMesh, hit queries against Enemies

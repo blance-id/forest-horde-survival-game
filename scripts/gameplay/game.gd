@@ -206,7 +206,7 @@ func _tick_world(delta: float) -> void:
 	enemies.tick(delta)
 	projectiles.tick(delta)
 	pickups.tick(delta)
-	camera_rig.follow(player.position, delta)
+	camera_rig.follow(player.position, delta, player.move_input)
 	hud.place_hero_hp(camera_rig.camera, player.position)
 
 
