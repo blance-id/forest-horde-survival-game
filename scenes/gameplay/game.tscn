@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/gameplay/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://scripts/systems/weapon_system.gd" id="6_weapons"]
 [ext_resource type="Script" path="res://scripts/systems/pickup_manager.gd" id="7_pickups"]
 [ext_resource type="Script" path="res://scripts/systems/fx_manager.gd" id="7b_fx"]
+[ext_resource type="Script" path="res://scripts/systems/tower_manager.gd" id="7c_towers"]
+[ext_resource type="Resource" path="res://resources/towers/gun_nest.tres" id="7d_nest"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="8_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/level_up_panel.tscn" id="9_levelup"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_panel.tscn" id="10_pause"]
@@ -56,6 +58,10 @@ script = ExtResource("7_pickups")
 
 [node name="Fx" type="Node3D" parent="."]
 script = ExtResource("7b_fx")
+
+[node name="Towers" type="Node3D" parent="."]
+script = ExtResource("7c_towers")
+data = ExtResource("7d_nest")
 
 [node name="UI" type="CanvasLayer" parent="."]
 layer = 10

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="TowerData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/tower_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/hay-bale.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/blasters/blaster-k.glb" id="3"]
+[ext_resource type="Resource" path="res://resources/weapons/tower_gun.tres" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/blaster.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+id = "gun_nest"
+display_name = "Gun Nest"
+icon = ExtResource("5")
+wood_cost = 9
+base_model = ExtResource("2")
+gun_model = ExtResource("3")
+gun_height = 0.52
+scale = 2.2
+gun_scale = 1.35
+weapon = ExtResource("4")
+damage = 14.0
+cooldown = 0.32
+range = 8.5
+supply_range = 7.0
+ammo_per_shot = 1
+max_hp = 360.0
+noise_range = 10.0
+body_radius = 1.2

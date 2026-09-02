@@ -6,6 +6,7 @@ class_name HUD
 extends Control
 
 signal pause_pressed
+signal build_pressed
 
 const HINT_DELAY := 0.6
 const LOW_HP := 0.3
@@ -22,7 +23,7 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 
 @onready var joystick: TouchJoystick = %Joystick
 @onready var damage_numbers: DamageNumbers = %DamageNumbers
-@onready var enemy_bars: EnemyBars = %EnemyBars
+@onready var world_bars: WorldBars = %WorldBars
 @onready var vignette: ColorRect = %Vignette
 @onready var hero_hp: ProgressBar = %HeroHp
 @onready var hp_bar: ProgressBar = %HpBar
@@ -41,6 +42,9 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 @onready var ammo_label: Label = %AmmoLabel
 @onready var minimap: Minimap = %Minimap
 @onready var chop_bar: ProgressBar = %ChopBar
+@onready var build_button: Button = %BuildButton
+@onready var build_icon: TextureRect = %BuildIcon
+@onready var build_cost: Label = %BuildCost
 @onready var hidden_badge: Label = %HiddenBadge
 @onready var pause_button: Button = %PauseButton
 @onready var timeline: RunTimeline = %Timeline
@@ -69,12 +73,14 @@ var _combo_timer := 0.0
 var _combo_tween: Tween
 var _punches: Dictionary = {}  # Control -> Tween
 var _hero_position := Vector3.ZERO
+var _can_build := true
 var _hp_fill: StyleBox
 var _hero_hp_fill: StyleBox
 
 
 func _ready() -> void:
 	pause_button.pressed.connect(func() -> void: pause_pressed.emit())
+	build_button.pressed.connect(func() -> void: build_pressed.emit())
 	SafeArea.pad_top(top)
 	joystick.pressed_changed.connect(_on_joystick_pressed)
 	# Own copies of the fill boxes so the gradient can repaint them per frame
@@ -161,7 +167,7 @@ func flash_damage(strength: float = 0.7) -> void:
 ## Per-frame HUD animation: floating numbers, the vignette and the combo timer.
 func tick(camera: Camera3D, delta: float) -> void:
 	damage_numbers.update(camera, delta)
-	enemy_bars.tick(camera, _hero_position)
+	world_bars.tick(camera, _hero_position)
 	minimap.tick(_hero_position)
 	_vignette_flash = maxf(0.0, _vignette_flash - delta * 3.2)
 	var strength := _vignette_flash
@@ -253,6 +259,21 @@ func add_coins(amount: int, world_position: Vector3, camera: Camera3D) -> void:
 func set_coins(coins: int) -> void:
 	_shown_coins = coins
 	coins_label.text = str(coins)
+
+
+func setup_build_button(tower: TowerData) -> void:
+	build_icon.texture = tower.icon
+	build_cost.text = "%d WOOD" % tower.wood_cost
+
+
+## Greyed out until the hero has the wood and a legal spot, so the button
+## itself teaches the rule.
+func set_can_build(can_build: bool) -> void:
+	if can_build == _can_build:
+		return
+	_can_build = can_build
+	build_button.disabled = not can_build
+	build_button.modulate.a = 1.0 if can_build else 0.55
 
 
 func set_wood(wood: int) -> void:

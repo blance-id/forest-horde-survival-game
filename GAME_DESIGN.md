@@ -379,6 +379,12 @@ Waves are shipped in order; each keeps the game runnable.
 - Build from wood, feed ammo dropped by elites (×5 and up).
 - Only fires while the hero is in range; firing makes it a target.
 
+Waves 1–3 are in. What that changed in practice: a run is now five minutes on
+a round clearing four times the old size, enemies telegraph every hit, the
+horde is worth ×1 to ×100 XP by type, and the player spends their time
+chopping wood, ducking into bushes, kiting the horde through spike traps and
+deciding when a gun nest is worth the noise.
+
 **Wave 4 — combat depth**
 - Physical / magic / true damage, each with its own colour.
 - Attack speed and burst damage as first-class stats.

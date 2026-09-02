@@ -118,6 +118,25 @@ bush, `EnemyManager.player_hidden` is set and the horde walks to `last_seen`
 instead of tracking. Killing from cover sets `_exposed`, which gives the
 position away for `COVER_BLOWN_TIME`.
 
+### Towers
+
+`TowerManager` (scripts/systems/tower_manager.gd) + `TowerData`. A nest costs
+wood, is raised at the hero's feet by one HUD button, and then does nothing on
+its own. Each tick:
+
+1. It fires only while the hero is inside `supply_range` *and* the run has
+   ammo left — the player is handing over their own magazines. Shots go
+   through `ProjectileManager.fire()` with the tower's `WeaponData`, so they
+   reuse the hero's bullets, hit routing, sounds and sparks for free.
+2. `_set_noise` registers an `EnemyManager.Lure` while, and only while, the
+   tower is firing. `EnemyManager._pick_lure` steers any enemy inside the
+   noise radius at the tower instead of the hero, and `_land_attack` sends the
+   damage into the lure's `damage_sink` — which is what lets a tower be torn
+   down. Stop feeding it and the lure is removed: a silent nest is invisible
+   and untouchable.
+
+`ammo_spent` bills the run so the HUD counter and the towers never disagree.
+
 ### Enemy attacks
 
 Nothing damages the hero on contact. Every attack runs wind-up → strike →

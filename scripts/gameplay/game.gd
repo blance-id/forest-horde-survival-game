@@ -32,6 +32,7 @@ const AMMO_PER_ELITE := 2
 @onready var weapon_system: WeaponSystem = $Weapons
 @onready var pickups: PickupManager = $Pickups
 @onready var fx: FxManager = $Fx
+@onready var towers: TowerManager = $Towers
 @onready var hud: HUD = $UI/HUD
 @onready var level_up_panel: LevelUpPanel = $UI/LevelUpPanel
 @onready var pause_panel: PausePanel = $UI/PausePanel
@@ -122,6 +123,12 @@ func _start_run() -> void:
 	enemies.enemy_winding_up.connect(_on_enemy_winding_up)
 	enemies.enemy_struck.connect(_on_enemy_struck)
 
+	towers.configure(chapter, enemies, projectiles)
+	towers.built.connect(_on_tower_built)
+	towers.fired.connect(_on_tower_fired)
+	towers.destroyed.connect(_on_tower_destroyed)
+	towers.ammo_spent.connect(_on_tower_ammo_spent)
+
 	projectiles.enemies = enemies
 	projectiles.player = player
 	projectiles.enemy_hit.connect(_on_enemy_hit)
@@ -143,7 +150,10 @@ func _start_run() -> void:
 	camera_rig.make_current()
 
 	hud.pause_pressed.connect(_pause)
-	hud.enemy_bars.enemies = enemies
+	hud.build_pressed.connect(_build_tower)
+	hud.setup_build_button(towers.data)
+	hud.world_bars.enemies = enemies
+	hud.world_bars.towers = towers
 	hud.minimap.enemies = enemies
 	hud.minimap.forest = forest
 	hud.minimap.traps = traps
@@ -225,6 +235,13 @@ func dev_command(cmd: String) -> void:
 			for e in enemies.enemies.duplicate():
 				if not e.dying:
 					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0)
+		"tower":
+			# Beside the hero, not under them, so the nest is actually visible.
+			run_wood += 40
+			run_ammo += 400
+			hud.set_wood(run_wood)
+			hud.set_ammo(run_ammo)
+			towers.build(Vector2(player.position.x + 2.5, player.position.z))
 		"chop":
 			# Park the hero next to a trunk so the chop loop can be watched.
 			var trunk := forest.nearest_trunk(Vector2.ZERO, 1e9)
@@ -292,8 +309,11 @@ func _process(delta: float) -> void:
 func _tick_world(delta: float) -> void:
 	player.tick(delta)
 	_tick_cover(delta)
-	forest.tick(delta, Vector2(player.position.x, player.position.z))
+	var hero := Vector2(player.position.x, player.position.z)
+	forest.tick(delta, hero)
 	traps.tick(delta, player, enemies)
+	towers.tick(delta, hero, run_ammo)
+	hud.set_can_build(towers.can_build(hero, run_wood))
 	weapon_system.tick(delta)
 	enemies.tick(delta)
 	projectiles.tick(delta)
@@ -364,6 +384,41 @@ func _tick_cover(delta: float) -> void:
 	if hidden != enemies.player_hidden:
 		enemies.player_hidden = hidden
 		hud.set_hidden(hidden)
+
+
+## One tap, no placement mode: the nest goes up where the hero is standing.
+func _build_tower() -> void:
+	var hero := Vector2(player.position.x, player.position.z)
+	if not towers.can_build(hero, run_wood):
+		SoundBank.ui("back")
+		hud.show_announcement("NEED %d WOOD" % towers.data.wood_cost, 1.2)
+		return
+	run_wood -= towers.data.wood_cost
+	hud.set_wood(run_wood)
+	towers.build(hero)
+
+
+func _on_tower_built(position: Vector2) -> void:
+	SoundBank.sfx("wood_impact", -4.0, 0.0)
+	SoundBank.ui("confirm")
+	fx.level_up(Vector3(position.x, 0.2, position.y))
+	camera_rig.shake(0.2)
+
+
+func _on_tower_fired(position: Vector3, dir: Vector2) -> void:
+	fx.muzzle(position, dir, towers.data.weapon.tint)
+
+
+func _on_tower_destroyed(position: Vector3) -> void:
+	SoundBank.sfx("explosion", -4.0, 0.05)
+	fx.boss_death(position, Color(0.6, 0.85, 1.0))
+	camera_rig.shake(0.4)
+	hud.show_announcement("NEST DOWN!", 1.4)
+
+
+func _on_tower_ammo_spent(amount: int) -> void:
+	run_ammo = maxi(0, run_ammo - amount)
+	hud.set_ammo(run_ammo)
 
 
 func _on_tree_chopped(position: Vector3, ratio: float) -> void:

@@ -12,6 +12,20 @@ signal enemy_winding_up(enemy: Enemy)
 ## The strike landed (melee) or the bolt left the caster (ranged).
 signal enemy_struck(enemy: Enemy, target: Vector2)
 
+
+## Something noisy that pulls the horde off the hero — a firing tower. Only
+## registered while it is actually making noise, which is the whole point: a
+## silent nest is invisible to the horde.
+class Lure:
+	var pos: Vector2
+	## How far the noise carries.
+	var radius: float
+	## The thing's actual footprint: enemies stop at its edge and ring it
+	## instead of piling onto a single point.
+	var body_radius := 1.0
+	## Takes the damage of one strike.
+	var damage_sink: Callable
+
 const CELL := 1.5
 const DEATH_DURATION := 1.6
 ## Enemies this far from the hero are moved back to the spawn ring so the
@@ -45,6 +59,8 @@ class Enemy:
 	var knock := Vector2.ZERO
 	var sep := Vector2.ZERO
 	var hit_time := -100.0
+	## Set each frame when a lure is closer than the hero.
+	var lure: Lure
 	## weapon instance id -> next time it may hit this enemy (orbit/aura ticks)
 	var hit_cooldowns := {}
 
@@ -71,6 +87,7 @@ var bounds := ArenaBounds.new()
 ## mills around there instead of tracking.
 var player_hidden := false
 var last_seen := Vector2.ZERO
+var lures: Array[Lure] = []
 var time := 0.0
 var enemies: Array[Enemy] = []
 var alive := 0
@@ -168,6 +185,7 @@ func spawn_ring(data: EnemyData, count: int, radius: float, hp_scale: float = 1.
 
 
 func clear_all() -> void:
+	lures.clear()
 	for e in enemies:
 		_release(e)
 	enemies.clear()
@@ -220,11 +238,15 @@ func _rebuild_grid() -> void:
 ## `target` is the hero, or the last place the horde saw them while concealed.
 func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 	var d := e.pool.data
+	e.lure = _pick_lure(e.pos)
+	if e.lure != null:
+		target = e.lure.pos
 	var to_player := target - e.pos
 	var dist := to_player.length()
 	var dir := to_player / dist if dist > 0.001 else Vector2.RIGHT
 	var vel := dir * d.speed
-	var reach := e.radius() + Player.RADIUS + d.attack_reach
+	var target_radius := e.lure.body_radius if e.lure != null else Player.RADIUS
+	var reach := e.radius() + target_radius + d.attack_reach
 
 	if dist > RESPAWN_DISTANCE:
 		e.pos = spawn_position()
@@ -248,9 +270,9 @@ func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 		# Separation is refreshed on alternate frames; the cached push is reused.
 		if (_frame + e.slot) & 1 == 0:
 			e.sep = _separation(e)
-		vel += e.sep * 5.0
+		vel += e.sep * 7.0
 		var trigger := d.cast_range if d.ranged else reach
-		if player_alive and dist < trigger and e.attack_cd <= 0.0:
+		if (player_alive or e.lure != null) and dist < trigger and e.attack_cd <= 0.0:
 			e.windup = d.attack_windup
 			# The cooldown covers the wind-up so the rhythm stays readable.
 			e.attack_cd = d.attack_cooldown + d.attack_windup
@@ -276,9 +298,27 @@ func _land_attack(e: Enemy, dir: Vector2, dist: float, reach: float, target: Vec
 	if d.ranged:
 		enemy_struck.emit(e, target)
 		return
-	if player_alive and dist <= reach + d.lunge:
+	if dist > reach + d.lunge:
+		return
+	if e.lure != null:
+		e.lure.damage_sink.call(d.damage)
+		enemy_struck.emit(e, e.pos + dir * reach)
+	elif player_alive:
 		player.take_damage(d.damage)
 		enemy_struck.emit(e, e.pos + dir * reach)
+
+
+## Closest lure whose noise reaches this enemy. There are only ever a handful,
+## so a linear scan beats keeping them in the grid.
+func _pick_lure(p: Vector2) -> Lure:
+	var best: Lure = null
+	var best_d := INF
+	for l in lures:
+		var d := p.distance_squared_to(l.pos)
+		if d <= l.radius * l.radius and d < best_d:
+			best_d = d
+			best = l
+	return best
 
 
 func _separation(e: Enemy) -> Vector2:
