@@ -8,7 +8,8 @@ extends Node3D
 @export var distance := 12.5
 @export var fov := 30.0
 @export var smoothing := 8.0
-## Where the hero sits on screen: 0 = centre, positive = lower (more room ahead).
+## Shifts the look-at point along Z: positive moves it towards the camera, so
+## the hero sits higher on screen.
 @export var look_ahead := 0.0
 
 var camera: Camera3D

@@ -23,8 +23,8 @@ func _init() -> void:
 	theme.set_color("font_color", "Label", TEXT)
 	theme.set_color("font_outline_color", "Label", OUTLINE)
 	theme.set_constant("outline_size", "Label", 6)
-	for v in [["Title", title, 60, 12], ["Heading", title, 42, 9], ["Big", title, 34, 8],
-			["Small", body, 22, 5], ["Number", title, 30, 7]]:
+	for v in [["Hero", title, 80, 16], ["Title", title, 60, 12], ["Heading", title, 42, 9],
+			["Big", title, 34, 8], ["Small", body, 22, 5], ["Number", title, 30, 7]]:
 		theme.add_type(v[0])
 		theme.set_type_variation(v[0], "Label")
 		theme.set_font("font", v[0], v[1])
@@ -63,6 +63,21 @@ func _init() -> void:
 	theme.set_stylebox("pressed", "CardButton", card_pressed)
 	theme.set_stylebox("disabled", "CardButton", _nine(UI + "panel_grey.png", 18, 18, 18))
 	theme.set_stylebox("focus", "CardButton", StyleBoxEmpty.new())
+
+	# --- Checkboxes (settings toggles) ---------------------------------------
+	for state in ["normal", "hover", "pressed", "disabled", "focus", "hover_pressed"]:
+		theme.set_stylebox(state, "CheckBox", StyleBoxEmpty.new())
+	for v in [["checked", "checkbox_brown_checked"], ["unchecked", "checkbox_brown_empty"],
+			["checked_disabled", "checkbox_grey_checked"], ["unchecked_disabled", "checkbox_grey_empty"]]:
+		theme.set_icon(v[0], "CheckBox", load(UI + v[1] + ".png"))
+	theme.set_font("font", "CheckBox", title)
+	theme.set_font_size("font_size", "CheckBox", 30)
+	theme.set_constant("h_separation", "CheckBox", 16)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
+		theme.set_color(state, "CheckBox", TEXT)
+	theme.set_color("font_disabled_color", "CheckBox", TEXT_DIM)
+	theme.set_color("font_outline_color", "CheckBox", OUTLINE)
+	theme.set_constant("outline_size", "CheckBox", 7)
 
 	# --- Panels -------------------------------------------------------------
 	theme.set_stylebox("panel", "Panel", _nine(UI + "panel_brown.png", 18, 18))

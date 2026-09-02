@@ -44,6 +44,21 @@ ready before any screen), `AudioManager` reads `GameState` settings.
 `SoundBank` (scripts/systems) is a static helper on top of `AudioManager`
 that resolves `assets/audio/{sfx,ui,jingles}/<name>[_NN].ogg` by name.
 
+## Main menu: `scenes/ui/main_menu.tscn`
+
+The menu is a **live demo of the run** under an ad-style overlay: the same
+World / CameraRig / Player / Enemies / Projectiles / Weapons nodes as the game,
+minus pickups, XP and the director. `MainMenu` (scripts/ui/main_menu.gd)
+builds the arena, gives the invulnerable hero two demo weapons at level 2,
+strolls it in a slow circle and trickles zombies in from `chapter.pick_enemy`
+(capped at 30). Over it, a CanvasLayer holds the gradient shades, coins pill,
+settings gear, title block, chapter card (best record from
+`GameState.get_chapter_record`) and the pulsing PLAY button.
+`SettingsPanel` (scenes/ui/settings_panel.tscn) is a reusable overlay with
+`ToggleSwitch` controls (scripts/ui/toggle_switch.gd, drawn in code) that
+write `music_volume` / `sfx_volume` through `GameState.set_setting`, which
+`AudioManager` already listens to.
+
 ## The run: `scenes/gameplay/game.tscn`
 
 The run is **manager-driven**: there are no per-enemy nodes, physics bodies or

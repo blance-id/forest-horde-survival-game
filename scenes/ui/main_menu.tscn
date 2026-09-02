@@ -1,39 +1,251 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
+[ext_resource type="Script" path="res://scripts/player/player.gd" id="3_player"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_manager.gd" id="4_enemies"]
+[ext_resource type="Script" path="res://scripts/systems/projectile_manager.gd" id="5_projectiles"]
+[ext_resource type="Script" path="res://scripts/systems/weapon_system.gd" id="6_weapons"]
+[ext_resource type="Theme" path="res://resources/configs/ui_theme.tres" id="7_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/coin.png" id="8_coin"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/gear.png" id="9_gear"]
+[ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="10_settings"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
+[ext_resource type="Resource" path="res://resources/chapters/chapter_01.tres" id="11_chapter"]
+[ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
+[ext_resource type="Resource" path="res://resources/weapons/blaster.tres" id="13_blaster"]
+[ext_resource type="Resource" path="res://resources/weapons/shovel_storm.tres" id="14_shovel"]
 
-[node name="MainMenu" type="Control"]
+[sub_resource type="Gradient" id="Gradient_top"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(0, 0, 0, 0.72, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_top"]
+gradient = SubResource("Gradient_top")
+width = 4
+height = 256
+fill_from = Vector2(0, 0)
+fill_to = Vector2(0, 1)
+
+[node name="MainMenu" type="Node3D"]
+script = ExtResource("1_menu")
+chapter = ExtResource("11_chapter")
+character = ExtResource("12_ranger")
+demo_weapons = Array[ExtResource("s_weapon")]([ExtResource("13_blaster"), ExtResource("14_shovel")])
+
+[node name="World" type="Node3D" parent="."]
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = ExtResource("2_camera")
+pitch_degrees = 45.0
+distance = 12.5
+
+[node name="Player" type="Node3D" parent="."]
+script = ExtResource("3_player")
+
+[node name="Enemies" type="Node3D" parent="."]
+script = ExtResource("4_enemies")
+
+[node name="Projectiles" type="Node3D" parent="."]
+script = ExtResource("5_projectiles")
+
+[node name="Weapons" type="Node3D" parent="."]
+script = ExtResource("6_weapons")
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Root" type="Control" parent="UI"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_menu")
+mouse_filter = 2
+theme = ExtResource("7_theme")
 
-[node name="Layout" type="VBoxContainer" parent="."]
+[node name="TopShade" type="TextureRect" parent="UI/Root"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 420.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_top")
+expand_mode = 1
+
+[node name="BottomShade" type="TextureRect" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -520.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
+mouse_filter = 2
+texture = SubResource("GradientTexture2D_top")
+expand_mode = 1
+flip_v = true
+
+[node name="TopBar" type="MarginContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 120.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 0
+
+[node name="HBox" type="HBoxContainer" parent="UI/Root/TopBar"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="CoinsPill" type="PanelContainer" parent="UI/Root/TopBar/HBox"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"DarkPanel"
+
+[node name="Margin" type="MarginContainer" parent="UI/Root/TopBar/HBox/CoinsPill"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 6
+
+[node name="Row" type="HBoxContainer" parent="UI/Root/TopBar/HBox/CoinsPill/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="UI/Root/TopBar/HBox/CoinsPill/Margin/Row"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("8_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoinsLabel" type="Label" parent="UI/Root/TopBar/HBox/CoinsPill/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"Number"
+text = "0"
+
+[node name="Spacer" type="Control" parent="UI/Root/TopBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="SettingsButton" type="Button" parent="UI/Root/TopBar/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+size_flags_vertical = 0
+theme_type_variation = &"RoundButton"
+icon = ExtResource("9_gear")
+icon_alignment = 1
+expand_icon = true
+
+[node name="TitleBlock" type="VBoxContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 150.0
+offset_bottom = 420.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_constants/separation = -18
 alignment = 1
 
-[node name="Title" type="Label" parent="Layout"]
+[node name="Line1" type="Label" parent="UI/Root/TitleBlock"]
 layout_mode = 2
-text = "FOREST ZOMBIE SURVIVAL"
+theme_type_variation = &"Hero"
+text = "FOREST ZOMBIE"
 horizontal_alignment = 1
 
-[node name="CoinsLabel" type="Label" parent="Layout"]
-unique_name_in_owner = true
+[node name="Line2" type="Label" parent="UI/Root/TitleBlock"]
 layout_mode = 2
-text = "0"
+theme_type_variation = &"Hero"
+theme_override_colors/font_color = Color(1, 0.35, 0.25, 1)
+theme_override_font_sizes/font_size = 96
+text = "SURVIVAL"
 horizontal_alignment = 1
 
-[node name="PlayButton" type="Button" parent="Layout"]
+[node name="Tagline" type="Label" parent="UI/Root/TitleBlock"]
+layout_mode = 2
+theme_type_variation = &"Big"
+theme_override_colors/font_color = Color(1, 0.9, 0.55, 1)
+text = "Only 1% survive the forest.  Can you?"
+horizontal_alignment = 1
+
+[node name="Bottom" type="VBoxContainer" parent="UI/Root"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -290.0
+offset_top = -400.0
+offset_right = 290.0
+offset_bottom = -64.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 26
+alignment = 2
+
+[node name="ChapterCard" type="PanelContainer" parent="UI/Root/Bottom"]
+layout_mode = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="UI/Root/Bottom/ChapterCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 26
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 26
+theme_override_constants/margin_bottom = 18
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/Bottom/ChapterCard/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="ChapterLabel" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(320, 96)
+layout_mode = 2
+theme_type_variation = &"Small"
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+text = "CHAPTER 1"
+horizontal_alignment = 1
+
+[node name="ChapterName" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"Heading"
+text = "Whispering Forest"
+horizontal_alignment = 1
+
+[node name="ChapterBest" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"Dim"
+text = "The forest is waiting..."
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="UI/Root/Bottom"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(460, 118)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_type_variation = &"PrimaryButton"
+theme_override_font_sizes/font_size = 54
 text = "PLAY"
+
+[node name="SettingsPanel" parent="UI/Root" instance=ExtResource("10_settings")]
+unique_name_in_owner = true
+layout_mode = 1

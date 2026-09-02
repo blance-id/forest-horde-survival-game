@@ -19,6 +19,8 @@ var move_input := Vector2.ZERO
 ## Direction the weapon should point (world XZ); set by the weapon system.
 var aim_dir := Vector2.ZERO
 var is_dead := false
+## Ignores all damage (main-menu demo hero).
+var invulnerable := false
 var arena_half := 20.0
 
 var _model: Node3D
@@ -147,7 +149,7 @@ func tick(delta: float) -> void:
 
 
 func take_damage(amount: float) -> bool:
-	if is_dead or _invuln > 0.0:
+	if is_dead or invulnerable or _invuln > 0.0:
 		return false
 	var dealt := maxf(1.0, amount - stats.armor())
 	_invuln = INVULN_TIME
