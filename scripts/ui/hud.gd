@@ -6,8 +6,12 @@ extends Control
 signal pause_pressed
 
 const HINT_DELAY := 0.6
+const LOW_HP := 0.3
+const LOW_HP_PULSE := 0.22
 
 @onready var joystick: TouchJoystick = %Joystick
+@onready var damage_numbers: DamageNumbers = %DamageNumbers
+@onready var vignette: ColorRect = %Vignette
 @onready var hero_hp: ProgressBar = %HeroHp
 @onready var xp_bar: ProgressBar = %XpBar
 @onready var level_label: Label = %LevelLabel
@@ -23,6 +27,9 @@ const HINT_DELAY := 0.6
 var _announce_tween: Tween
 var _hint_tween: Tween
 var _last_timer := -1
+var _vignette_flash := 0.0
+var _low_hp := false
+var _pulse := 0.0
 
 
 func _ready() -> void:
@@ -56,6 +63,23 @@ func _on_joystick_pressed(is_pressed: bool) -> void:
 
 func set_hp(current: float, max_hp: float) -> void:
 	hero_hp.value = current / maxf(1.0, max_hp)
+	_low_hp = current > 0.0 and hero_hp.value <= LOW_HP
+
+
+## Red screen-edge flash when the hero takes damage.
+func flash_damage(strength: float = 0.7) -> void:
+	_vignette_flash = maxf(_vignette_flash, strength)
+
+
+## Per-frame HUD animation: floating numbers and the vignette.
+func tick(camera: Camera3D, delta: float) -> void:
+	damage_numbers.update(camera, delta)
+	_vignette_flash = maxf(0.0, _vignette_flash - delta * 3.2)
+	var strength := _vignette_flash
+	if _low_hp:
+		_pulse += delta * 3.4
+		strength = maxf(strength, LOW_HP_PULSE * (0.6 + 0.4 * sin(_pulse)))
+	(vignette.material as ShaderMaterial).set_shader_parameter("strength", strength)
 
 
 ## Keeps the HP bar under the hero's feet (camera space).

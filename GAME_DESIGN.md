@@ -279,6 +279,15 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   XP gems glow, bullets are over-bright capsules, the hero has a tiny HP bar
   at its feet. Enemy tints keep the roster colourful: bone-yellow skeletons,
   cyan ghosts, green zombies.
+- **Game feel** — every hit is answered: a glow pop plus sparks in the weapon's
+  colour, a cream damage number that pops and floats; kills get a green
+  smoke puff, hot embers and a dark splat that stays on the grass (~9 s) so a
+  long fight leaves a visible trail of carnage; boss deaths add a white shock
+  ring, a star burst and a 0.16 s freeze. Muzzle flashes on every shot, aura
+  pulses ripple across the ground, pickups sparkle in their colour. Taking
+  damage: red hero burst, red "50" number, camera shake, haptic tap and a
+  screen-edge red vignette that pulses continuously under 30 % HP. Death is a
+  0.9 s slow-motion. Level-ups fire a gold star ring around the hero.
 - Bright, chunky, readable — a saturated cartoon forest, not gritty horror.
 - Typography: heavy display font (Lilita One) for numbers/headlines, clean sans
   (Nunito) for body.

@@ -14,7 +14,8 @@ struck through — git history keeps the record.
 - **Slow Xvfb captures.** With glow enabled the software GL renderer manages
   ~3–7 fps, so `tools/shot.sh` clamps delta to 0.133 s. Keep captures at
   ≤ 300 frames (≈ 40 s of game time) or the hero dies and the OVER panel
-  covers the shot.
+  covers the shot. Short particle bursts (0.15–0.4 s) are gone within 2–3
+  frames at that delta, so capture them with `--lead=1..5`.
 
 ## Android
 
@@ -29,6 +30,13 @@ struck through — git history keeps the record.
 
 ## Gameplay / visuals
 
+- **Particle budget is fixed.** Each FX pool is a ring buffer (512 sparks,
+  384 glows, 256 smoke, 96 splats …); a huge burst simply recycles the oldest
+  particle. Sized for ~200 enemies on screen; revisit if weapons grow much
+  denser.
+- **Hit-stop and pause.** `Engine.time_scale` is restored by an unscaled timer,
+  so pausing during the 0.16 s boss-kill freeze is harmless, but a scene change
+  mid-freeze relies on `Game._exit_tree` to reset it.
 - **Giants are walk-through decor.** The oversized in-arena trees and plants
   have no collision: the hero and zombies walk through their trunks. They are
   placed at least 6 u from the centre so the start area stays clear.

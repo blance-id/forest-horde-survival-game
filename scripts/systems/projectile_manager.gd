@@ -3,7 +3,7 @@
 class_name ProjectileManager
 extends Node3D
 
-signal enemy_hit(enemy: EnemyManager.Enemy, position: Vector3, killed: bool)
+signal enemy_hit(enemy: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, tint: Color)
 
 const CAPACITY := 192
 const HEIGHT := 0.45
@@ -21,6 +21,7 @@ class Bullet:
 	var knockback: float
 	var radius: float
 	var scale: float
+	var tint: Color
 	var hit: Array = []
 
 
@@ -58,7 +59,7 @@ func _ready() -> void:
 	add_child(mmi)
 
 
-func fire(from: Vector2, dir: Vector2, s: Dictionary, damage: float) -> void:
+func fire(from: Vector2, dir: Vector2, s: Dictionary, damage: float, tint: Color) -> void:
 	if _free.is_empty():
 		return
 	var b := Bullet.new()
@@ -72,6 +73,7 @@ func fire(from: Vector2, dir: Vector2, s: Dictionary, damage: float) -> void:
 	b.knockback = float(s["knockback"])
 	b.scale = float(s["projectile_scale"])
 	b.radius = 0.12 * b.scale
+	b.tint = tint
 	bullets.append(b)
 	_write(b)
 
@@ -99,7 +101,7 @@ func tick(delta: float) -> void:
 					continue
 				b.hit.append(e)
 				var killed := enemies.hit(e, b.damage, b.pos - b.dir, b.knockback)
-				enemy_hit.emit(e, Vector3(b.pos.x, HEIGHT, b.pos.y), killed)
+				enemy_hit.emit(e, Vector3(b.pos.x, HEIGHT, b.pos.y), b.dir, b.damage, killed, b.tint)
 				if b.pierce <= 0:
 					alive = false
 					break

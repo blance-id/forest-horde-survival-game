@@ -78,16 +78,44 @@ Game (Node3D)
  ├── Projectiles  ProjectileManager: bullet records in one MultiMesh, hit queries against Enemies
  ├── Weapons      WeaponSystem: WeaponData + level slots; projectile / orbit / aura kinds
  ├── Pickups      PickupManager: gems, coins, hearts in MultiMeshes, magnet + collection
+ ├── Fx           FxManager: GPU-replayed particle pools + ground splats (see below)
  └── UI (CanvasLayer 10)
-      ├── HUD           HP/XP bars, timer, kills, coins, boss bar, announcements, move hint, TouchJoystick (floating, drag-to-recentre; reset by Game._freeze on every pause)
+      ├── HUD           Vignette, HP/XP bars, timer, kills, coins, boss bar, announcements, move hint, TouchJoystick (floating, drag-to-recentre; reset by Game._freeze on every pause), DamageNumbers
       ├── LevelUpPanel  3 cards, pauses the tree
       ├── PausePanel
       └── ResultPanel   win/lose stats + coin reward → retry / menu
 ```
 
 Tick order per frame: `player → weapon_system → enemies → projectiles →
-pickups → camera_rig.follow → hud.place_hero_hp`. Everything simulates in XZ
-as `Vector2` and is written to 3D transforms at the end of each tick.
+pickups → fx → camera_rig.follow → hud.place_hero_hp → hud.tick`. Everything
+simulates in XZ as `Vector2` and is written to 3D transforms at the end of
+each tick.
+
+### Game feel
+
+Everything juicy hangs off signals so gameplay code never knows about VFX:
+`ProjectileManager.enemy_hit` / `WeaponSystem.enemy_hit` (with the weapon
+tint), `WeaponSystem.fired` / `aura_pulsed`, `EnemyManager.enemy_killed` /
+`boss_killed`, `PickupManager.collected`, `Player.damaged`. `Game` turns them
+into `FxManager` presets, `DamageNumbers`, camera shake, haptics and hit-stop.
+
+- **FxManager** (scripts/systems/fx_manager.gd) never touches a particle after
+  spawning it. Each pool (spark, glow, star, flash, smoke, splat) is one
+  MultiMesh of unit quads; `emit()` writes the whole particle into one instance
+  and `shaders/fx_particle.gdshaderinc` replays it from the `game_time`
+  uniform: transform origin = spawn position, basis.x = velocity,
+  basis.y = (size_start, size_end, gravity), basis.z = (spin, drag, spawn_time),
+  `INSTANCE_CUSTOM` = (fade_in, life, atlas frame, ground-decal flag),
+  `COLOR` = HDR tint. **Compatibility stores MultiMesh COLOR / CUSTOM as
+  16-bit floats**, which is why the timestamp lives in the 32-bit transform.
+  Dead particles are parked with spawn_time −1e6 so they collapse to zero size.
+  Splats are `mix`-blended ground quads from a 4×2 atlas built at startup.
+- **Hit-stop**: `Game._hit_stop(scale, duration)` sets `Engine.time_scale` and
+  restores it from an unscaled timer (boss kill 0.05 s, hero death slow-mo).
+- **DamageNumbers** (scripts/ui/damage_numbers.gd) recycles 40 `Number` labels
+  and re-projects them from world space every frame (`hud.tick(camera, delta)`).
+- **Vignette**: a full-rect `ColorRect` with `shaders/vignette.gdshader`; the HUD
+  drives `strength` for damage flashes and the low-HP pulse.
 
 ### Horde rendering
 
@@ -140,7 +168,7 @@ reads (`damage_mult()`, `attack_speed_mult()`, `area_mult()` …).
 | Script | Use |
 |---|---|
 | `tools/check.sh [frames] -- --screen=res://…` | Boots the real game headless, fails on `SCRIPT ERROR` / `ERROR` |
-| `tools/shot.sh out.png [frames] --screen=… [--dev=cmd,…]` | Renders under Xvfb + opengl3 and saves a screenshot; `--dev=` drives `dev_command` (levelup, pause, win, die, hurt, horde, boss, weapons, move, stop, touch). With glow on, Xvfb manages ~3–7 fps, so keep captures ≤ 300 frames |
+| `tools/shot.sh out.png [frames] --screen=… [--dev=cmd,…] [--lead=N]` | Renders under Xvfb + opengl3 and saves a screenshot; `--dev=` drives `dev_command` (levelup, pause, win, die, hurt, horde, boss, weapons, fx, splats, nuke, move, stop, touch) `N` frames before the shot (default 30; use 1–5 to catch particle bursts). Frames count from the moment `--screen` is up, so headless and Xvfb agree. With glow on, Xvfb manages ~3–7 fps, so keep captures ≤ 300 frames |
 | `tools/test.sh` | Runs `tests/test_*.gd` headless with autoloads available |
 | `godot --headless --check-only --script <file>` | Per-script parse check with file:line |
 | `godot --headless -s tools/img_crop.gd -- in.png out.png x y w h [scale]` | Crop/zoom a screenshot (no image tools on the box) |

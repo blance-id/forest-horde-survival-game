@@ -23,6 +23,7 @@ const HEAL_AMOUNT := 0.3
 @onready var projectiles: ProjectileManager = $Projectiles
 @onready var weapon_system: WeaponSystem = $Weapons
 @onready var pickups: PickupManager = $Pickups
+@onready var fx: FxManager = $Fx
 @onready var hud: HUD = $UI/HUD
 @onready var level_up_panel: LevelUpPanel = $UI/LevelUpPanel
 @onready var pause_panel: PausePanel = $UI/PausePanel
@@ -46,6 +47,7 @@ var _pending_level_ups := 0
 var _result_timer := -1.0
 var _won := false
 var _dev_move := Vector2.ZERO
+var _hit_stop_until := 0
 
 
 func setup(data: Dictionary) -> void:
@@ -95,6 +97,7 @@ func _start_run() -> void:
 	weapon_system.run_stats = stats
 	weapon_system.enemy_hit.connect(_on_enemy_hit)
 	weapon_system.fired.connect(_on_weapon_fired)
+	weapon_system.aura_pulsed.connect(_on_aura_pulsed)
 	weapon_system.add_or_upgrade(character.starting_weapon)
 
 	pickups.player = player
@@ -153,6 +156,27 @@ func dev_command(cmd: String) -> void:
 			for w in weapons:
 				for i in 3:
 					weapon_system.add_or_upgrade(w)
+		"fx":
+			# Fires every burst preset around the hero (pair with --lead=2).
+			var p := player.position
+			fx.level_up(p)
+			fx.boss_death(p + Vector3(3.0, 0.0, -2.0), Color(0.9, 0.3, 0.3))
+			fx.hero_hurt(p)
+			for i in 6:
+				var a := TAU * float(i) / 6.0
+				var q := p + Vector3(cos(a), 0.0, sin(a)) * 2.2
+				fx.death(q, Color.WHITE)
+				fx.hit(q + Vector3(0, 0.45, 0), Vector2(cos(a), sin(a)), Color(1.0, 0.85, 0.35))
+			fx.muzzle(player.muzzle_position(), player.aim_dir if player.aim_dir != Vector2.ZERO else Vector2.RIGHT, Color(1.0, 0.85, 0.35))
+			fx.pickup(p + Vector3(-1.0, 0.3, 1.0), Color(0.35, 0.9, 1.0))
+		"splats":
+			for i in range(-8, 9):
+				fx.splat(player.position + Vector3(float(i) * 0.4, 0.0, float(i)), Color(0.2, 0.34, 0.1, 0.9), 1.0)
+		"nuke":
+			# Kills every enemy alive: exercises death effects, drops and kills UI.
+			for e in enemies.enemies.duplicate():
+				if not e.dying:
+					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0)
 		"move":
 			_dev_move = Vector2(0.6, -0.8)
 		"stop":
@@ -206,8 +230,10 @@ func _tick_world(delta: float) -> void:
 	enemies.tick(delta)
 	projectiles.tick(delta)
 	pickups.tick(delta)
+	fx.tick(delta)
 	camera_rig.follow(player.position, delta, player.move_input)
 	hud.place_hero_hp(camera_rig.camera, player.position)
+	hud.tick(camera_rig.camera, delta)
 
 
 func _tick_director(delta: float) -> void:
@@ -240,18 +266,31 @@ func _run_event(ev: Dictionary) -> void:
 
 # --- Combat feedback ---------------------------------------------------------
 
-func _on_enemy_hit(_enemy: EnemyManager.Enemy, _position: Vector3, killed: bool) -> void:
-	if not killed:
-		SoundBank.sfx("hit_zombie", -8.0, 0.15)
+func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, tint: Color) -> void:
+	hud.damage_numbers.spawn(e.position3d() + Vector3(0, 1.1 * e.data().scale, 0), amount,
+		DamageNumbers.Style.KILL if killed else DamageNumbers.Style.HIT)
+	if killed:
+		return
+	SoundBank.sfx("hit_zombie", -8.0, 0.15)
+	fx.hit(position, dir, tint)
 
 
-func _on_weapon_fired(_weapon: WeaponData, _from: Vector3, _dir: Vector2) -> void:
+func _on_weapon_fired(weapon: WeaponData, from: Vector3, dir: Vector2) -> void:
 	SoundBank.sfx("knife", -14.0, 0.2)
+	fx.muzzle(from, dir, weapon.tint)
+
+
+func _on_aura_pulsed(weapon: WeaponData, position: Vector3, radius: float) -> void:
+	fx.aura_pulse(position, radius, weapon.tint)
 
 
 func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 	var d := e.data()
 	SoundBank.sfx("zombie_die", -4.0, 0.2)
+	if d.is_boss:
+		fx.boss_death(e.position3d(), d.tint)
+	else:
+		fx.death(e.position3d(), d.tint)
 	hud.set_kills(enemies.kills)
 	pickups.drop(PickupManager.Kind.XP, e.pos, float(d.xp))
 	if _rng.randf() < d.coin_chance:
@@ -261,6 +300,7 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 	if d.is_boss:
 		camera_rig.shake(0.8)
 		Haptics.heavy()
+		_hit_stop(0.05, 0.16)
 
 
 func _on_boss_spawned(_e: EnemyManager.Enemy) -> void:
@@ -276,23 +316,39 @@ func _on_boss_killed(_e: EnemyManager.Enemy) -> void:
 	SoundBank.jingle("reward", -2.0)
 
 
-func _on_player_damaged(_amount: float) -> void:
+func _on_player_damaged(amount: float) -> void:
 	SoundBank.sfx("hit_player", -6.0, 0.1)
 	camera_rig.shake(0.25)
+	fx.hero_hurt(player.position)
+	hud.flash_damage()
+	hud.damage_numbers.spawn(player.position + Vector3(0, 1.3, 0), amount, DamageNumbers.Style.HERO)
 	Haptics.medium()
 
 
-func _on_pickup_collected(kind: PickupManager.Kind, value: float, _position: Vector3) -> void:
+## Freezes the action for `duration` real seconds (boss kill punch). The
+## timer ignores time scale so it always ends; a later call just extends it.
+func _hit_stop(scale: float, duration: float) -> void:
+	Engine.time_scale = scale
+	_hit_stop_until = Time.get_ticks_msec() + int(duration * 1000.0)
+	get_tree().create_timer(duration, true, false, true).timeout.connect(func() -> void:
+		if Time.get_ticks_msec() >= _hit_stop_until:
+			Engine.time_scale = 1.0)
+
+
+func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vector3) -> void:
 	match kind:
 		PickupManager.Kind.XP:
 			SoundBank.sfx("pickup_xp", -16.0, 0.25)
+			fx.pickup(position, Color(0.35, 0.9, 1.0))
 			_gain_xp(value * stats.xp_mult())
 		PickupManager.Kind.COIN:
 			SoundBank.sfx("pickup_coin", -8.0, 0.1)
+			fx.pickup(position, Color(1.0, 0.85, 0.3))
 			run_coins += int(value)
 			hud.set_coins(run_coins)
 		PickupManager.Kind.HEAL:
 			SoundBank.sfx("chest_open", -6.0, 0.05)
+			fx.pickup(position, Color(1.0, 0.4, 0.5))
 			player.heal(stats.max_hp() * value)
 
 
@@ -319,6 +375,7 @@ func _open_level_up() -> void:
 		_pending_level_ups = 0
 		return
 	state = State.LEVEL_UP
+	fx.level_up(player.position)
 	_freeze()
 	SoundBank.jingle("level_up", -4.0)
 	Haptics.light()
@@ -431,6 +488,7 @@ func _on_player_died() -> void:
 	SoundBank.jingle("lose", -2.0)
 	camera_rig.shake(0.6)
 	Haptics.heavy()
+	_hit_stop(0.25, 0.9)
 	_end(false)
 	_result_timer = RESULT_DELAY
 
@@ -466,6 +524,10 @@ func _show_result() -> void:
 	if result_panel.visible:
 		return
 	result_panel.show_result(_won, chapter.display_name, run_time, enemies.kills, level, run_coins)
+
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
 
 
 func _retry() -> void:
