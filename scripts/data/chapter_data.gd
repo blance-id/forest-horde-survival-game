@@ -8,8 +8,11 @@ extends Resource
 @export var duration: float = 300.0
 
 @export_group("Arena")
-## Playable square is [-arena_half_size, +arena_half_size] on X and Z.
-@export var arena_half_size: float = 22.0
+## Shape of the playable area; see ArenaBounds. Each chapter gets its own so
+## the maps do not all read as the same box.
+@export var arena_shape: ArenaBounds.Shape = ArenaBounds.Shape.CIRCLE
+## Distance from the centre to the furthest edge.
+@export var arena_half_size: float = 45.0
 @export var ground_color: Color = Color(0.27, 0.43, 0.2)
 @export var ground_color_alt: Color = Color(0.23, 0.38, 0.18)
 ## Worn dirt patches painted over the grass.
@@ -25,6 +28,27 @@ extends Resource
 ## Oversized plants / rocks (2-3x) that give the ground scale and depth.
 @export var giant_models: Array[PackedScene] = []
 @export var giant_count: int = 0
+
+@export_group("Forest")
+## Choppable trees: stand next to one and the hero swings at it for wood.
+@export var tree_models: Array[PackedScene] = []
+@export var tree_count: int = 70
+@export var tree_hp: float = 4.0
+@export var wood_per_tree: int = 3
+## What is left standing once a tree comes down.
+@export var stump_model: PackedScene
+## Bushes conceal whoever stands inside them, hero and horde alike.
+@export var bush_model: PackedScene
+@export var bush_count: int = 24
+@export var bush_radius: float = 2.2
+
+@export_group("Traps")
+## The chapter's signature hazard. Hurts enemies and the hero equally.
+@export var trap_model: PackedScene
+@export var trap_count: int = 0
+@export var trap_radius: float = 0.7
+@export var trap_damage: float = 12.0
+@export var trap_scale: float = 1.0
 
 @export_group("Spawning")
 ## [{ "enemy": EnemyData, "start": sec, "end": sec, "weight": float }]

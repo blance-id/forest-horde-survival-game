@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://scripts/ui/touch_joystick.gd" id="2_joy"]
@@ -14,6 +14,9 @@
 [ext_resource type="Script" path="res://scripts/ui/build_bar.gd" id="12_build"]
 [ext_resource type="Script" path="res://scripts/ui/coin_rain.gd" id="13_coins"]
 [ext_resource type="Script" path="res://scripts/ui/enemy_bars.gd" id="14_bars"]
+[ext_resource type="Script" path="res://scripts/ui/minimap.gd" id="15_minimap"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/wood.png" id="16_wood"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/clip.png" id="17_ammo"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vignette"]
 shader = ExtResource("8_vignette")
@@ -163,11 +166,12 @@ stretch_mode = 5
 
 [node name="HpBar" type="ProgressBar" parent="Top/VBox/InfoRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(210, 32)
+custom_minimum_size = Vector2(0, 32)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 4
 mouse_filter = 2
-theme_type_variation = &"HpBar"
+theme_type_variation = &"GaugeBar"
 max_value = 1.0
 step = 0.001
 value = 1.0
@@ -187,13 +191,23 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Spacer1" type="Control" parent="Top/VBox/InfoRow"]
+[node name="PauseButton" type="Button" parent="Top/VBox/InfoRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
+size_flags_vertical = 4
+theme_type_variation = &"RoundButton"
+icon = ExtResource("4_pause")
+icon_alignment = 1
+expand_icon = true
 
-[node name="KillsIcon" type="TextureRect" parent="Top/VBox/InfoRow"]
-custom_minimum_size = Vector2(32, 32)
+[node name="ResourceRow" type="HBoxContainer" parent="Top/VBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="KillsIcon" type="TextureRect" parent="Top/VBox/ResourceRow"]
+custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
@@ -201,7 +215,26 @@ texture = ExtResource("5_target")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="KillsLabel" type="Label" parent="Top/VBox/InfoRow"]
+[node name="KillsLabel" type="Label" parent="Top/VBox/ResourceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(76, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"Number"
+text = "0"
+
+[node name="CoinIcon" type="TextureRect" parent="Top/VBox/ResourceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("6_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoinsLabel" type="Label" parent="Top/VBox/ResourceRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
@@ -210,34 +243,43 @@ mouse_filter = 2
 theme_type_variation = &"Number"
 text = "0"
 
-[node name="CoinIcon" type="TextureRect" parent="Top/VBox/InfoRow"]
+[node name="WoodIcon" type="TextureRect" parent="Top/VBox/ResourceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("6_coin")
+texture = ExtResource("16_wood")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CoinsLabel" type="Label" parent="Top/VBox/InfoRow"]
+[node name="WoodLabel" type="Label" parent="Top/VBox/ResourceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
 theme_type_variation = &"Number"
 text = "0"
 
-[node name="PauseButton" type="Button" parent="Top/VBox/InfoRow"]
+[node name="AmmoIcon" type="TextureRect" parent="Top/VBox/ResourceRow"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(76, 76)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_vertical = 4
-theme_type_variation = &"RoundButton"
-icon = ExtResource("4_pause")
-icon_alignment = 1
-expand_icon = true
+mouse_filter = 2
+texture = ExtResource("17_ammo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmmoLabel" type="Label" parent="Top/VBox/ResourceRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 0)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"Number"
+text = "0"
 
 [node name="Timeline" type="Control" parent="Top/VBox"]
 unique_name_in_owner = true
@@ -276,6 +318,51 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("13_coins")
+
+[node name="Minimap" type="Control" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -320.0
+offset_right = 164.0
+offset_bottom = -170.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("15_minimap")
+
+[node name="ChopBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 70.0
+offset_bottom = 10.0
+mouse_filter = 2
+theme_type_variation = &"MiniHpBar"
+max_value = 1.0
+value = 1.0
+show_percentage = false
+
+[node name="HiddenBadge" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 240.0
+offset_right = 200.0
+offset_bottom = 286.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"Big"
+text = "HIDDEN"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Combo" type="VBoxContainer" parent="."]
 unique_name_in_owner = true

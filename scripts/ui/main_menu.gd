@@ -55,12 +55,12 @@ func _build_demo() -> void:
 	arena.build(chapter, _rng.randi())
 
 	var stats := RunStats.from_character(character)
-	player.arena_half = chapter.arena_half_size
+	player.bounds = ArenaBounds.from_chapter(chapter)
 	player.invulnerable = true
 	player.setup(character, stats)
 
 	enemies.player = player
-	enemies.arena_half = chapter.arena_half_size
+	enemies.bounds = ArenaBounds.from_chapter(chapter)
 	projectiles.enemies = enemies
 
 	weapon_system.player = player

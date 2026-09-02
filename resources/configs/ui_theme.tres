@@ -18,14 +18,15 @@
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/progress_green.png" id="12_yjowj"]
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/round_grey.png" id="13_b67p5"]
 [ext_resource type="FontFile" path="res://assets/fonts/Nunito-Variable.ttf" id="13_p6fpi"]
+[ext_resource type="Texture2D" path="res://assets/ui/adventure/progress_white.png" id="13_qxgsb"]
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/progress_blue.png" id="14_h8qu7"]
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/round_brown.png" id="14_hq1c6"]
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/round_brown_dark.png" id="15_2s7kd"]
 
-[sub_resource type="FontVariation" id="FontVariation_yjowj"]
+[sub_resource type="FontVariation" id="FontVariation_ks5j5"]
 base_font = ExtResource("1_wtnup")
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p6fpi"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g7lpc"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -36,7 +37,7 @@ texture_margin_top = 22.0
 texture_margin_right = 22.0
 texture_margin_bottom = 22.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8qu7"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yjowj"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -47,9 +48,9 @@ texture_margin_top = 14.0
 texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sldma"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p6fpi"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6ub5n"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8qu7"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -60,7 +61,7 @@ texture_margin_top = 14.0
 texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_viair"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sldma"]
 content_margin_left = 18.0
 content_margin_top = 22.0
 content_margin_right = 18.0
@@ -72,7 +73,7 @@ texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 modulate_color = Color(0.82, 0.82, 0.82, 1)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1hgmt"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6ub5n"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -83,7 +84,29 @@ texture_margin_top = 18.0
 texture_margin_right = 18.0
 texture_margin_bottom = 18.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_vi31y"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_viair"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1hgmt"]
+content_margin_left = 18.0
+content_margin_top = 14.4
+content_margin_right = 18.0
+content_margin_bottom = 14.4
+texture = ExtResource("5_hq1c6")
+texture_margin_left = 26.0
+texture_margin_top = 26.0
+texture_margin_right = 26.0
+texture_margin_bottom = 26.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vi31y"]
+content_margin_left = 18.0
+content_margin_top = 14.4
+content_margin_right = 18.0
+content_margin_bottom = 14.4
+texture = ExtResource("5_hq1c6")
+texture_margin_left = 26.0
+texture_margin_top = 26.0
+texture_margin_right = 26.0
+texture_margin_bottom = 26.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4m3c3"]
 content_margin_left = 18.0
@@ -95,31 +118,9 @@ texture_margin_left = 26.0
 texture_margin_top = 26.0
 texture_margin_right = 26.0
 texture_margin_bottom = 26.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xljcr"]
-content_margin_left = 18.0
-content_margin_top = 14.4
-content_margin_right = 18.0
-content_margin_bottom = 14.4
-texture = ExtResource("5_hq1c6")
-texture_margin_left = 26.0
-texture_margin_top = 26.0
-texture_margin_right = 26.0
-texture_margin_bottom = 26.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qo4wl"]
-content_margin_left = 18.0
-content_margin_top = 14.4
-content_margin_right = 18.0
-content_margin_bottom = 14.4
-texture = ExtResource("5_hq1c6")
-texture_margin_left = 26.0
-texture_margin_top = 26.0
-texture_margin_right = 26.0
-texture_margin_bottom = 26.0
 modulate_color = Color(0.8, 0.8, 0.8, 1)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1huge"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xljcr"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -129,6 +130,10 @@ texture_margin_left = 26.0
 texture_margin_top = 26.0
 texture_margin_right = 26.0
 texture_margin_bottom = 26.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qo4wl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1huge"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nkmhk"]
 
@@ -138,11 +143,7 @@ texture_margin_bottom = 26.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ev6yg"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wfsxj"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rw7m2"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_idnp6"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wfsxj"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -152,6 +153,20 @@ texture_margin_left = 18.0
 texture_margin_top = 18.0
 texture_margin_right = 18.0
 texture_margin_bottom = 18.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_rw7m2"]
+texture = ExtResource("8_0olty")
+texture_margin_left = 12.0
+texture_margin_top = 14.0
+texture_margin_right = 12.0
+texture_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_idnp6"]
+texture = ExtResource("13_qxgsb")
+texture_margin_left = 12.0
+texture_margin_top = 14.0
+texture_margin_right = 12.0
+texture_margin_bottom = 14.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sufws"]
 content_margin_left = 22.0
@@ -338,9 +353,9 @@ default_font_size = 28
 Big/base_type = &"Label"
 Big/constants/outline_size = 8
 Big/font_sizes/font_size = 34
-Big/fonts/font = SubResource("FontVariation_yjowj")
+Big/fonts/font = SubResource("FontVariation_ks5j5")
 BorderPanel/base_type = &"PanelContainer"
-BorderPanel/styles/panel = SubResource("StyleBoxTexture_p6fpi")
+BorderPanel/styles/panel = SubResource("StyleBoxTexture_g7lpc")
 Button/colors/font_color = Color(1, 0.97, 0.9, 1)
 Button/colors/font_disabled_color = Color(0.85, 0.78, 0.66, 1)
 Button/colors/font_focus_color = Color(1, 0.97, 0.9, 1)
@@ -350,20 +365,20 @@ Button/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 Button/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
 Button/constants/outline_size = 7
 Button/font_sizes/font_size = 34
-Button/fonts/font = SubResource("FontVariation_yjowj")
-Button/styles/disabled = SubResource("StyleBoxTexture_h8qu7")
-Button/styles/focus = SubResource("StyleBoxEmpty_sldma")
-Button/styles/hover = SubResource("StyleBoxTexture_6ub5n")
-Button/styles/normal = SubResource("StyleBoxTexture_6ub5n")
-Button/styles/pressed = SubResource("StyleBoxTexture_viair")
+Button/fonts/font = SubResource("FontVariation_ks5j5")
+Button/styles/disabled = SubResource("StyleBoxTexture_yjowj")
+Button/styles/focus = SubResource("StyleBoxEmpty_p6fpi")
+Button/styles/hover = SubResource("StyleBoxTexture_h8qu7")
+Button/styles/normal = SubResource("StyleBoxTexture_h8qu7")
+Button/styles/pressed = SubResource("StyleBoxTexture_sldma")
 CardButton/base_type = &"Button"
-CardButton/styles/disabled = SubResource("StyleBoxTexture_1hgmt")
-CardButton/styles/focus = SubResource("StyleBoxEmpty_vi31y")
-CardButton/styles/hover = SubResource("StyleBoxTexture_4m3c3")
-CardButton/styles/normal = SubResource("StyleBoxTexture_xljcr")
-CardButton/styles/pressed = SubResource("StyleBoxTexture_qo4wl")
+CardButton/styles/disabled = SubResource("StyleBoxTexture_6ub5n")
+CardButton/styles/focus = SubResource("StyleBoxEmpty_viair")
+CardButton/styles/hover = SubResource("StyleBoxTexture_1hgmt")
+CardButton/styles/normal = SubResource("StyleBoxTexture_vi31y")
+CardButton/styles/pressed = SubResource("StyleBoxTexture_4m3c3")
 CardPanel/base_type = &"PanelContainer"
-CardPanel/styles/panel = SubResource("StyleBoxTexture_1huge")
+CardPanel/styles/panel = SubResource("StyleBoxTexture_xljcr")
 CheckBox/colors/font_color = Color(1, 0.97, 0.9, 1)
 CheckBox/colors/font_disabled_color = Color(0.85, 0.78, 0.66, 1)
 CheckBox/colors/font_focus_color = Color(1, 0.97, 0.9, 1)
@@ -374,39 +389,47 @@ CheckBox/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
 CheckBox/constants/h_separation = 16
 CheckBox/constants/outline_size = 7
 CheckBox/font_sizes/font_size = 30
-CheckBox/fonts/font = SubResource("FontVariation_yjowj")
+CheckBox/fonts/font = SubResource("FontVariation_ks5j5")
 CheckBox/icons/checked = ExtResource("7_0olty")
 CheckBox/icons/checked_disabled = ExtResource("8_qxgsb")
 CheckBox/icons/unchecked = ExtResource("9_ks5j5")
 CheckBox/icons/unchecked_disabled = ExtResource("10_g7lpc")
-CheckBox/styles/disabled = SubResource("StyleBoxEmpty_nkmhk")
-CheckBox/styles/focus = SubResource("StyleBoxEmpty_f3prj")
-CheckBox/styles/hover = SubResource("StyleBoxEmpty_raw4f")
-CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_ev6yg")
-CheckBox/styles/normal = SubResource("StyleBoxEmpty_wfsxj")
-CheckBox/styles/pressed = SubResource("StyleBoxEmpty_rw7m2")
+CheckBox/styles/disabled = SubResource("StyleBoxEmpty_qo4wl")
+CheckBox/styles/focus = SubResource("StyleBoxEmpty_1huge")
+CheckBox/styles/hover = SubResource("StyleBoxEmpty_nkmhk")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_f3prj")
+CheckBox/styles/normal = SubResource("StyleBoxEmpty_raw4f")
+CheckBox/styles/pressed = SubResource("StyleBoxEmpty_ev6yg")
 DarkPanel/base_type = &"PanelContainer"
-DarkPanel/styles/panel = SubResource("StyleBoxTexture_idnp6")
+DarkPanel/styles/panel = SubResource("StyleBoxTexture_wfsxj")
 Dim/base_type = &"Label"
 Dim/colors/font_color = Color(0.85, 0.78, 0.66, 1)
 Dim/constants/outline_size = 4
 Dim/font_sizes/font_size = 24
+GaugeBar/base_type = &"ProgressBar"
+GaugeBar/colors/font_color = Color(1, 0.97, 0.9, 1)
+GaugeBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
+GaugeBar/constants/outline_size = 5
+GaugeBar/font_sizes/font_size = 22
+GaugeBar/fonts/font = SubResource("FontVariation_ks5j5")
+GaugeBar/styles/background = SubResource("StyleBoxTexture_rw7m2")
+GaugeBar/styles/fill = SubResource("StyleBoxTexture_idnp6")
 GreyPanel/base_type = &"PanelContainer"
 GreyPanel/styles/panel = SubResource("StyleBoxTexture_sufws")
 Heading/base_type = &"Label"
 Heading/constants/outline_size = 9
 Heading/font_sizes/font_size = 42
-Heading/fonts/font = SubResource("FontVariation_yjowj")
+Heading/fonts/font = SubResource("FontVariation_ks5j5")
 Hero/base_type = &"Label"
 Hero/constants/outline_size = 16
 Hero/font_sizes/font_size = 80
-Hero/fonts/font = SubResource("FontVariation_yjowj")
+Hero/fonts/font = SubResource("FontVariation_ks5j5")
 HpBar/base_type = &"ProgressBar"
 HpBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 HpBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 HpBar/constants/outline_size = 5
 HpBar/font_sizes/font_size = 22
-HpBar/fonts/font = SubResource("FontVariation_yjowj")
+HpBar/fonts/font = SubResource("FontVariation_ks5j5")
 HpBar/styles/background = SubResource("StyleBoxTexture_s8sgg")
 HpBar/styles/fill = SubResource("StyleBoxTexture_tewrb")
 IconButton/base_type = &"Button"
@@ -424,7 +447,7 @@ MiniHpBar/styles/fill = SubResource("StyleBoxFlat_t157x")
 Number/base_type = &"Label"
 Number/constants/outline_size = 7
 Number/font_sizes/font_size = 30
-Number/fonts/font = SubResource("FontVariation_yjowj")
+Number/fonts/font = SubResource("FontVariation_ks5j5")
 Panel/styles/panel = SubResource("StyleBoxTexture_rngba")
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_cs5r8")
 PrimaryButton/base_type = &"Button"
@@ -437,7 +460,7 @@ PrimaryButton/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 PrimaryButton/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
 PrimaryButton/constants/outline_size = 7
 PrimaryButton/font_sizes/font_size = 40
-PrimaryButton/fonts/font = SubResource("FontVariation_yjowj")
+PrimaryButton/fonts/font = SubResource("FontVariation_ks5j5")
 PrimaryButton/styles/disabled = SubResource("StyleBoxTexture_aeyg7")
 PrimaryButton/styles/focus = SubResource("StyleBoxEmpty_arcpu")
 PrimaryButton/styles/hover = SubResource("StyleBoxTexture_2x8ci")
@@ -447,7 +470,7 @@ ProgressBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 ProgressBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 ProgressBar/constants/outline_size = 5
 ProgressBar/font_sizes/font_size = 22
-ProgressBar/fonts/font = SubResource("FontVariation_yjowj")
+ProgressBar/fonts/font = SubResource("FontVariation_ks5j5")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_misuo")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_76jfw")
 RoundButton/base_type = &"Button"
@@ -463,12 +486,12 @@ Small/fonts/font = SubResource("FontVariation_op3wu")
 Title/base_type = &"Label"
 Title/constants/outline_size = 12
 Title/font_sizes/font_size = 60
-Title/fonts/font = SubResource("FontVariation_yjowj")
+Title/fonts/font = SubResource("FontVariation_ks5j5")
 XpBar/base_type = &"ProgressBar"
 XpBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 XpBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 XpBar/constants/outline_size = 5
 XpBar/font_sizes/font_size = 22
-XpBar/fonts/font = SubResource("FontVariation_yjowj")
+XpBar/fonts/font = SubResource("FontVariation_ks5j5")
 XpBar/styles/background = SubResource("StyleBoxTexture_7y7q7")
 XpBar/styles/fill = SubResource("StyleBoxTexture_f1fsw")

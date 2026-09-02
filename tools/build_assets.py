@@ -166,7 +166,38 @@ def build_ui() -> None:
     for name, (pack, preview) in ITEM_ICONS.items():
         copy_png(DL / "3d" / pack / "Previews" / f"{preview}.png", OUT / "ui/items" / f"{name}.png")
     draw_heart(OUT / "ui/icons/heart.png")
+    draw_log(OUT / "ui/icons/wood.png")
     print("ui ok")
+
+
+def draw_log(dst: Path, size: int = 64) -> None:
+    """No pack ships a wood icon either. A stubby log seen end-on: a tan barrel
+    with a darker end grain and rings, outlined to match the heart."""
+    from PIL import ImageDraw
+
+    s = size * 4
+    im = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    outline = (60, 34, 18, 255)
+    bark = (168, 118, 66, 255)
+    grain = (214, 172, 118, 255)
+    top, bot = s * 0.26, s * 0.74
+    left, right = s * 0.14, s * 0.86
+    ew = s * 0.15  # half-width of the elliptical end cap
+    # Outlined body: a rounded bar with an ellipse at each end.
+    for pad, colour in ((s * 0.05, outline), (0.0, bark)):
+        d.rectangle((left, top - pad, right, bot + pad), fill=colour)
+        d.ellipse((left - ew - pad, top - pad, left + ew + pad, bot + pad), fill=colour)
+        d.ellipse((right - ew - pad, top - pad, right + ew + pad, bot + pad), fill=colour)
+    # End grain plus two rings, so it reads as cut timber and not a sausage.
+    d.ellipse((right - ew, top, right + ew, bot), fill=grain)
+    cx, cy = right, (top + bot) * 0.5
+    for k in (0.62, 0.3):
+        d.ellipse((cx - ew * k, cy - (bot - top) * 0.5 * k, cx + ew * k, cy + (bot - top) * 0.5 * k),
+                  outline=bark, width=int(s * 0.012))
+    im = im.resize((size, size), Image.LANCZOS)
+    ensure(dst.parent)
+    im.save(dst, optimize=True)
 
 
 def draw_heart(dst: Path, size: int = 64) -> None:

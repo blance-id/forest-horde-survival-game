@@ -91,6 +91,33 @@ pickups → fx → camera_rig.follow → hud.place_hero_hp → hud.tick`. Everyt
 simulates in XZ as `Vector2` and is written to 3D transforms at the end of
 each tick.
 
+### The world
+
+`ArenaBounds` (scripts/world/arena_bounds.gd) is the single answer to "is this
+inside the map". It holds a shape (square / circle / clover) and a radius, and
+everything that has to stay inside — the hero, the horde, prop scatter, spawn
+rings, the minimap outline — asks it rather than clamping to a square of its
+own. A chapter changes its map shape by changing one enum.
+
+`Arena` builds the static dressing (environment, ground, border band, decor,
+giants). Two managers sit beside it and own things that change during a run:
+
+- **Forest** (scripts/world/forest.gd) — choppable trees and concealing
+  bushes, both plain records over MultiMeshes. Standing within `CHOP_RANGE` of
+  a trunk auto-swings at it every `CHOP_INTERVAL`; the last swing hides the
+  tree instance, places a stump in a second MultiMesh and emits `felled`, and
+  `Game` scatters wood pickups. `hides()` answers whether a point is inside a
+  bush — a bush is a ring of normal-sized plants, not one scaled-up plant, so
+  the hero can stand in it.
+- **Traps** (scripts/world/traps.gd) — static hazards that damage the hero and
+  the horde equally, one victim per spring with a `REARM` delay, kept clear of
+  the spawn point.
+
+Concealment closes the loop in `Game._tick_cover`: while the hero is inside a
+bush, `EnemyManager.player_hidden` is set and the horde walks to `last_seen`
+instead of tracking. Killing from cover sets `_exposed`, which gives the
+position away for `COVER_BLOWN_TIME`.
+
 ### Enemy attacks
 
 Nothing damages the hero on contact. Every attack runs wind-up → strike →
@@ -131,6 +158,10 @@ into `FxManager` presets, `DamageNumbers`, camera shake, haptics and hit-stop.
   Splats are `mix`-blended ground quads from a 4×2 atlas built at startup.
 - **Hit-stop**: `Game._hit_stop(scale, duration)` sets `Engine.time_scale` and
   restores it from an unscaled timer (boss kill 0.05 s, hero death slow-mo).
+- **Minimap** (scripts/ui/minimap.gd) draws the whole arena in one `_draw()`:
+  the shape outline traced once from `ArenaBounds`, standing trees, bushes,
+  traps, a sampled subset of the horde and the hero. The arena is far larger
+  than the camera sees, so this is how the player reads the map at all.
 - **EnemyBars** (scripts/ui/enemy_bars.gd) draws every on-screen enemy's health
   in one canvas item — a node per enemy would cost more than the horde does.
   Bars are culled past `RANGE`, capped at `MAX_BARS`, and elites (×5 XP and up)

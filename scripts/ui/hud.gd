@@ -1,6 +1,7 @@
-## In-run overlay: XP bar + level badge, HP bar, kills / coins / pause, the run
-## timeline, the current build, kill combos, coin flights into the counter, a
-## mini HP bar that follows the hero, the boss bar and big centre announcements.
+## In-run overlay: XP bar + level badge, HP bar, the resource counters
+## (kills / coins / wood / ammo), the run timeline, the current build, kill
+## combos, coin flights into the counter, a mini HP bar and chop bar that
+## follow the hero, the minimap, the boss bar and big centre announcements.
 class_name HUD
 extends Control
 
@@ -34,6 +35,13 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 @onready var timer_label: Label = %TimerLabel
 @onready var coin_icon: TextureRect = %CoinIcon
 @onready var coins_label: Label = %CoinsLabel
+@onready var wood_icon: TextureRect = %WoodIcon
+@onready var wood_label: Label = %WoodLabel
+@onready var ammo_icon: TextureRect = %AmmoIcon
+@onready var ammo_label: Label = %AmmoLabel
+@onready var minimap: Minimap = %Minimap
+@onready var chop_bar: ProgressBar = %ChopBar
+@onready var hidden_badge: Label = %HiddenBadge
 @onready var pause_button: Button = %PauseButton
 @onready var timeline: RunTimeline = %Timeline
 @onready var build_bar: BuildBar = %BuildBar
@@ -61,8 +69,8 @@ var _combo_timer := 0.0
 var _combo_tween: Tween
 var _punches: Dictionary = {}  # Control -> Tween
 var _hero_position := Vector3.ZERO
-var _hp_fill: StyleBoxFlat
-var _hero_hp_fill: StyleBoxFlat
+var _hp_fill: StyleBox
+var _hero_hp_fill: StyleBox
 
 
 func _ready() -> void:
@@ -72,16 +80,27 @@ func _ready() -> void:
 	# Own copies of the fill boxes so the gradient can repaint them per frame
 	# without touching the shared theme.
 	_hp_fill = _own_fill(hp_bar)
+
 	_hero_hp_fill = _own_fill(hero_hp)
 
 
-func _own_fill(bar: ProgressBar) -> StyleBoxFlat:
-	var box := bar.get_theme_stylebox("fill") as StyleBoxFlat
+## The two HP bars use different fills — a white nine-patch for the big bar,
+## a flat rect for the one under the hero — so the tint goes to whichever
+## property that box actually paints with.
+func _own_fill(bar: ProgressBar) -> StyleBox:
+	var box := bar.get_theme_stylebox("fill")
 	if box == null:
 		return null
-	var mine := box.duplicate() as StyleBoxFlat
+	var mine := box.duplicate() as StyleBox
 	bar.add_theme_stylebox_override("fill", mine)
 	return mine
+
+
+static func _tint(box: StyleBox, color: Color) -> void:
+	if box is StyleBoxFlat:
+		(box as StyleBoxFlat).bg_color = color
+	elif box is StyleBoxTexture:
+		(box as StyleBoxTexture).modulate_color = color
 
 
 static func hp_color(ratio: float) -> Color:
@@ -93,6 +112,7 @@ static func hp_color(ratio: float) -> Color:
 func setup(chapter: ChapterData) -> void:
 	_duration = chapter.duration
 	timeline.setup(chapter)
+	minimap.setup(chapter)
 
 
 ## Shows the "drag to move" hint until the first touch; only players who have
@@ -127,9 +147,9 @@ func set_hp(current: float, max_hp: float) -> void:
 	hp_label.text = "%d / %d" % [ceili(current), roundi(max_hp)]
 	var tint := hp_color(ratio)
 	if _hp_fill != null:
-		_hp_fill.bg_color = tint
+		_tint(_hp_fill, tint)
 	if _hero_hp_fill != null:
-		_hero_hp_fill.bg_color = tint
+		_tint(_hero_hp_fill, tint)
 	_low_hp = current > 0.0 and ratio <= LOW_HP
 
 
@@ -142,6 +162,7 @@ func flash_damage(strength: float = 0.7) -> void:
 func tick(camera: Camera3D, delta: float) -> void:
 	damage_numbers.update(camera, delta)
 	enemy_bars.tick(camera, _hero_position)
+	minimap.tick(_hero_position)
 	_vignette_flash = maxf(0.0, _vignette_flash - delta * 3.2)
 	var strength := _vignette_flash
 	if _low_hp:
@@ -159,6 +180,7 @@ func place_hero_hp(camera: Camera3D, hero_position: Vector3) -> void:
 	_hero_position = hero_position
 	var screen := camera.unproject_position(hero_position + Vector3(0, 0.0, 0.3))
 	hero_hp.position = screen - Vector2(hero_hp.size.x * 0.5, 0.0)
+	chop_bar.position = screen - Vector2(chop_bar.size.x * 0.5, -16.0)
 
 
 func set_xp(current: float, needed: float, level: int) -> void:
@@ -231,6 +253,33 @@ func add_coins(amount: int, world_position: Vector3, camera: Camera3D) -> void:
 func set_coins(coins: int) -> void:
 	_shown_coins = coins
 	coins_label.text = str(coins)
+
+
+func set_wood(wood: int) -> void:
+	wood_label.text = str(wood)
+	_punch(wood_icon, 1.35)
+
+
+func set_ammo(ammo: int) -> void:
+	ammo_label.text = str(ammo)
+	_punch(ammo_icon, 1.35)
+
+
+## Chopping progress, shown under the hero. A negative ratio hides the bar.
+func set_chop(ratio: float) -> void:
+	chop_bar.visible = ratio >= 0.0
+	if ratio >= 0.0:
+		chop_bar.value = 1.0 - ratio
+
+
+## In a bush: the horde loses track of the hero until they attack from cover.
+func set_hidden(hidden: bool) -> void:
+	if hidden == hidden_badge.visible:
+		return
+	hidden_badge.visible = hidden
+	if hidden:
+		hidden_badge.modulate.a = 0.0
+		create_tween().tween_property(hidden_badge, "modulate:a", 0.9, 0.2)
 
 
 func set_boss(current: float, max_hp: float, boss_title: String = "") -> void:

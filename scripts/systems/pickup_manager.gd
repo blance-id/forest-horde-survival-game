@@ -1,13 +1,14 @@
-## XP gems, coins and health potions dropped by enemies. Each kind is one
-## MultiMesh pool; pickups drift to the hero once inside the pickup radius.
+## XP gems, coins, health potions, wood from felled trees and ammo crates
+## looted from elites. Each kind is one MultiMesh pool; pickups drift to the
+## hero once inside the pickup radius.
 class_name PickupManager
 extends Node3D
 
 signal collected(kind: Kind, value: float, position: Vector3)
 
-enum Kind { XP, COIN, HEAL }
+enum Kind { XP, COIN, HEAL, WOOD, AMMO }
 
-const CAPACITY := {Kind.XP: 400, Kind.COIN: 96, Kind.HEAL: 8}
+const CAPACITY := {Kind.XP: 400, Kind.COIN: 96, Kind.HEAL: 8, Kind.WOOD: 120, Kind.AMMO: 48}
 const HEIGHT := 0.25
 const MAGNET_SPEED := 9.0
 const COLLECT_DISTANCE := 0.35
@@ -40,6 +41,8 @@ func _ready() -> void:
 	_pools[Kind.XP] = _make_pool(Kind.XP, _gem_mesh(), 1.0)
 	_pools[Kind.COIN] = _make_pool(Kind.COIN, _scene_mesh("res://assets/models/dungeon/coin.glb"), 0.45)
 	_pools[Kind.HEAL] = _make_pool(Kind.HEAL, _scene_mesh("res://assets/models/dungeon/potion.glb"), 1.0)
+	_pools[Kind.WOOD] = _make_pool(Kind.WOOD, _scene_mesh("res://assets/models/graveyard/debris-wood.glb"), 0.9)
+	_pools[Kind.AMMO] = _make_pool(Kind.AMMO, _scene_mesh("res://assets/models/dungeon/barrel.glb"), 0.55)
 
 
 func drop(kind: Kind, pos: Vector2, value: float) -> void:

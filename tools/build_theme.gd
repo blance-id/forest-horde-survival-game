@@ -100,6 +100,17 @@ func _init() -> void:
 		theme.set_color("font_color", v[0], TEXT)
 		theme.set_color("font_outline_color", v[0], OUTLINE)
 		theme.set_constant("outline_size", v[0], 5)
+	# White fill so a script can modulate it to any colour: the hero's HP bar
+	# runs green -> yellow -> red with the ratio, which a tinted texture cannot.
+	theme.add_type("GaugeBar")
+	theme.set_type_variation("GaugeBar", "ProgressBar")
+	theme.set_stylebox("background", "GaugeBar", _nine(UI + "progress_transparent.png", 12, 14))
+	theme.set_stylebox("fill", "GaugeBar", _nine(UI + "progress_white.png", 12, 14))
+	theme.set_font("font", "GaugeBar", title)
+	theme.set_font_size("font_size", "GaugeBar", 22)
+	theme.set_color("font_color", "GaugeBar", TEXT)
+	theme.set_color("font_outline_color", "GaugeBar", OUTLINE)
+	theme.set_constant("outline_size", "GaugeBar", 5)
 	# Tiny flat bar that floats under the hero / enemies (nine-patches are too fat).
 	theme.add_type("MiniHpBar")
 	theme.set_type_variation("MiniHpBar", "ProgressBar")

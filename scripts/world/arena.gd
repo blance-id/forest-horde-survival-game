@@ -8,11 +8,14 @@ const BORDER_DEPTH := 9.0
 const GROUND_MARGIN := 40.0
 
 var chapter: ChapterData
+var bounds: ArenaBounds
+
 var _rng := RandomNumberGenerator.new()
 
 
 func build(data: ChapterData, seed_value: int = 1) -> void:
 	chapter = data
+	bounds = ArenaBounds.from_chapter(data)
 	_rng.seed = seed_value
 	_build_environment()
 	_build_ground()
@@ -110,15 +113,17 @@ func _build_ground() -> void:
 func _build_border() -> void:
 	if chapter.border_models.is_empty():
 		return
-	var half := chapter.arena_half_size
-	var outer := half + BORDER_DEPTH
+	var outer := chapter.arena_half_size + BORDER_DEPTH
 	var positions: Array[Vector2] = []
-	# Poisson-ish scatter: reject points too close to an accepted one.
-	var attempts := int(BORDER_DEPTH * outer * 2.0)
+	# Poisson-ish scatter: reject points too close to an accepted one. The band
+	# hugs the arena shape, so a round clearing gets a round wall of trees.
+	var attempts := int(BORDER_DEPTH * outer * 2.5)
 	for i in attempts:
 		var p := Vector2(_rng.randf_range(-outer, outer), _rng.randf_range(-outer, outer))
-		var ring := maxf(absf(p.x), absf(p.y))
-		if ring < half + 0.6 or ring > outer:
+		if p.length() > outer:
+			continue
+		var edge := bounds.radius_at(p.angle())
+		if p.length() < edge + 0.6:
 			continue
 		var ok := true
 		for q in positions:
@@ -140,12 +145,11 @@ func _build_border() -> void:
 func _build_decor() -> void:
 	if chapter.decor_models.is_empty() or chapter.decor_count <= 0:
 		return
-	var half := chapter.arena_half_size - 1.0
 	var buckets: Array = []
 	for m in chapter.decor_models:
 		buckets.append([])
 	for i in chapter.decor_count:
-		var p := Vector2(_rng.randf_range(-half, half), _rng.randf_range(-half, half))
+		var p := bounds.random_point(_rng, 1.0)
 		if p.length() < 4.0:
 			continue  # keep the hero's start clear
 		buckets[_rng.randi_range(0, buckets.size() - 1)].append(p)
@@ -156,13 +160,12 @@ func _build_decor() -> void:
 func _build_giants() -> void:
 	if chapter.giant_models.is_empty() or chapter.giant_count <= 0:
 		return
-	var half := chapter.arena_half_size - 1.5
 	var positions: Array[Vector2] = []
 	var attempts := chapter.giant_count * 12
 	for i in attempts:
 		if positions.size() >= chapter.giant_count:
 			break
-		var p := Vector2(_rng.randf_range(-half, half), _rng.randf_range(-half, half))
+		var p := bounds.random_point(_rng, 1.5)
 		if p.length() < 6.0:
 			continue  # keep the hero's start clear
 		var ok := true

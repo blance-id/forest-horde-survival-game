@@ -21,7 +21,7 @@ var aim_dir := Vector2.ZERO
 var is_dead := false
 ## Ignores all damage (main-menu demo hero).
 var invulnerable := false
-var arena_half := 20.0
+var bounds := ArenaBounds.new()
 
 var _model: Node3D
 var _anim_player: AnimationPlayer
@@ -134,10 +134,8 @@ func tick(delta: float) -> void:
 	var moving := move_input.length_squared() > 0.0001
 	if moving:
 		var step := move_input.limit_length(1.0) * stats.move_speed() * delta
-		var p := position
-		p.x = clampf(p.x + step.x, -arena_half + RADIUS, arena_half - RADIUS)
-		p.z = clampf(p.z + step.y, -arena_half + RADIUS, arena_half - RADIUS)
-		position = p
+		var p := bounds.clamp_point(Vector2(position.x + step.x, position.z + step.y), RADIUS)
+		position = Vector3(p.x, position.y, p.y)
 	_anim_tree.set("parameters/blend/blend_amount", 1.0 if moving else 0.0)
 
 	# Face the aim target when there is one, else the direction of travel.

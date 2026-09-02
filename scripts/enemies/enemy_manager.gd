@@ -66,7 +66,11 @@ class Pool:
 
 
 var player: Player
-var arena_half := 20.0
+var bounds := ArenaBounds.new()
+## While the hero is concealed the horde walks to where it last saw them and
+## mills around there instead of tracking.
+var player_hidden := false
+var last_seen := Vector2.ZERO
 var time := 0.0
 var enemies: Array[Enemy] = []
 var alive := 0
@@ -80,7 +84,7 @@ var _frame := 0
 
 
 func configure(chapter: ChapterData, capacity: int) -> void:
-	arena_half = chapter.arena_half_size
+	bounds = ArenaBounds.from_chapter(chapter)
 	for data in chapter.all_enemies():
 		_make_pool(data, 4 if data.is_boss else capacity)
 
@@ -104,7 +108,8 @@ func _make_pool(data: EnemyData, capacity: int) -> void:
 	mmi.multimesh = mm
 	mmi.material_override = EnemyMeshBaker.make_material(data, baked[1])
 	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	mmi.custom_aabb = AABB(Vector3(-arena_half - 5, -2, -arena_half - 5), Vector3(arena_half * 2 + 10, 6, arena_half * 2 + 10))
+	var extent := bounds.half + 5.0
+	mmi.custom_aabb = AABB(Vector3(-extent, -2, -extent), Vector3(extent * 2.0, 6, extent * 2.0))
 	add_child(mmi)
 	_pools[data] = pool
 
@@ -145,9 +150,7 @@ func spawn_position(angle: float = -1.0) -> Vector2:
 	for attempt in 6:
 		var a := angle if angle >= 0.0 and attempt == 0 else _rng.randf() * TAU
 		var r := _rng.randf_range(SPAWN_RING_MIN, SPAWN_RING_MAX)
-		var p := center + Vector2(cos(a), sin(a)) * r
-		p.x = clampf(p.x, -arena_half + 0.5, arena_half - 0.5)
-		p.y = clampf(p.y, -arena_half + 0.5, arena_half - 0.5)
+		var p := bounds.clamp_point(center + Vector2(cos(a), sin(a)) * r, 0.5)
 		var d := p.distance_to(center)
 		if d >= SPAWN_RING_MIN:
 			return p
@@ -161,10 +164,7 @@ func spawn_ring(data: EnemyData, count: int, radius: float, hp_scale: float = 1.
 	var center := Vector2(player.position.x, player.position.z)
 	for i in count:
 		var a := TAU * float(i) / float(count)
-		var p := center + Vector2(cos(a), sin(a)) * radius
-		p.x = clampf(p.x, -arena_half + 0.5, arena_half - 0.5)
-		p.y = clampf(p.y, -arena_half + 0.5, arena_half - 0.5)
-		spawn(data, p, hp_scale)
+		spawn(data, bounds.clamp_point(center + Vector2(cos(a), sin(a)) * radius, 0.5), hp_scale)
 
 
 func clear_all() -> void:
@@ -185,7 +185,10 @@ func tick(delta: float) -> void:
 		return
 	_rebuild_grid()
 	var player_pos := Vector2(player.position.x, player.position.z)
-	var player_alive := not player.is_dead
+	if not player_hidden:
+		last_seen = player_pos
+	var target := player_pos if not player_hidden else last_seen
+	var player_alive := not player.is_dead and not player_hidden
 	var i := 0
 	while i < enemies.size():
 		var e := enemies[i]
@@ -197,7 +200,7 @@ func tick(delta: float) -> void:
 				continue
 			i += 1
 			continue
-		_move(e, delta, player_pos, player_alive)
+		_move(e, delta, target, player_alive)
 		i += 1
 
 
@@ -214,9 +217,10 @@ func _rebuild_grid() -> void:
 			bucket.append(e)
 
 
-func _move(e: Enemy, delta: float, player_pos: Vector2, player_alive: bool) -> void:
+## `target` is the hero, or the last place the horde saw them while concealed.
+func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 	var d := e.pool.data
-	var to_player := player_pos - e.pos
+	var to_player := target - e.pos
 	var dist := to_player.length()
 	var dir := to_player / dist if dist > 0.001 else Vector2.RIGHT
 	var vel := dir * d.speed
@@ -238,7 +242,7 @@ func _move(e: Enemy, delta: float, player_pos: Vector2, player_alive: bool) -> v
 		e.charge = 1.0 - clampf(e.windup / maxf(0.001, d.attack_windup), 0.0, 1.0)
 		vel = Vector2.ZERO
 		if e.windup <= 0.0:
-			_land_attack(e, dir, dist, reach, player_pos, player_alive)
+			_land_attack(e, dir, dist, reach, target, player_alive)
 	else:
 		e.charge = maxf(0.0, e.charge - delta * 5.0)
 		# Separation is refreshed on alternate frames; the cached push is reused.
@@ -257,21 +261,20 @@ func _move(e: Enemy, delta: float, player_pos: Vector2, player_alive: bool) -> v
 
 	e.pos += (vel + e.knock) * delta
 	e.knock = e.knock.lerp(Vector2.ZERO, minf(1.0, 9.0 * delta))
-	e.pos.x = clampf(e.pos.x, -arena_half, arena_half)
-	e.pos.y = clampf(e.pos.y, -arena_half, arena_half)
+	e.pos = bounds.clamp_point(e.pos)
 	e.yaw = lerp_angle(e.yaw, atan2(dir.x, dir.y), minf(1.0, 8.0 * delta))
 	_write_transform(e)
 
 
 ## End of the wind-up. Melee only connects if the hero is still in reach —
 ## walking out of a telegraphed swing has to work, or the tell is decoration.
-func _land_attack(e: Enemy, dir: Vector2, dist: float, reach: float, player_pos: Vector2, player_alive: bool) -> void:
+func _land_attack(e: Enemy, dir: Vector2, dist: float, reach: float, target: Vector2, player_alive: bool) -> void:
 	var d := e.pool.data
 	e.windup = 0.0
 	e.charge = 0.0
 	e.strike = 1.0
 	if d.ranged:
-		enemy_struck.emit(e, player_pos)
+		enemy_struck.emit(e, target)
 		return
 	if player_alive and dist <= reach + d.lunge:
 		player.take_damage(d.damage)

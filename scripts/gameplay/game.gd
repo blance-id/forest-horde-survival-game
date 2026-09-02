@@ -15,6 +15,10 @@ const FOOTSTEP_INTERVAL := 0.32
 const GROWL_RANGE := 7.0
 ## Enemies further than this wind up silently: 200 tells at once is noise.
 const TELL_RANGE := 6.0
+## How long a kill from inside a bush keeps the hero visible.
+const COVER_BLOWN_TIME := 4.0
+## Tower ammo dropped by every ×5-and-up enemy.
+const AMMO_PER_ELITE := 2
 
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
@@ -41,7 +45,11 @@ var run_time := 0.0
 var level := 1
 var xp := 0.0
 var run_coins := 0
+var run_wood := 0
+var run_ammo := 0
 var upgrade_levels: Dictionary = {}  # UpgradeData -> level
+var forest: Forest
+var traps: Traps
 
 var _chapter_id := "chapter_01"
 var _spawn_timer := 0.0
@@ -55,6 +63,8 @@ var _dev_move := Vector2.ZERO
 var _hit_stop_until := 0
 var _step_timer := 0.0
 var _growl_timer := 1.0
+## Seconds of blown cover left: killing from inside a bush gives you away.
+var _exposed := 0.0
 
 
 func setup(data: Dictionary) -> void:
@@ -83,11 +93,26 @@ func _start_run() -> void:
 	world.add_child(arena)
 	arena.build(chapter, _rng.randi())
 
-	player.arena_half = chapter.arena_half_size
-	player.setup(character, stats)
+	forest = Forest.new()
+	forest.name = "Forest"
+	world.add_child(forest)
+	forest.build(chapter, _rng.randi())
+	forest.chopped.connect(_on_tree_chopped)
+	forest.felled.connect(_on_tree_felled)
+
+	traps = Traps.new()
+	traps.name = "Traps"
+	world.add_child(traps)
+	traps.build(chapter, _rng.randi())
+	traps.triggered.connect(_on_trap_triggered)
+
+	player.bounds = ArenaBounds.from_chapter(chapter)
+	# Connect before setup: setup emits the starting HP, and the HUD has to see
+	# it or the bar keeps its scene default until the first hit.
 	player.hp_changed.connect(hud.set_hp)
 	player.damaged.connect(_on_player_damaged)
 	player.died.connect(_on_player_died)
+	player.setup(character, stats)
 
 	enemies.player = player
 	enemies.configure(chapter, ENEMY_CAPACITY)
@@ -119,10 +144,15 @@ func _start_run() -> void:
 
 	hud.pause_pressed.connect(_pause)
 	hud.enemy_bars.enemies = enemies
+	hud.minimap.enemies = enemies
+	hud.minimap.forest = forest
+	hud.minimap.traps = traps
 	hud.setup(chapter)
 	hud.set_time(chapter.duration)
 	hud.set_xp(0.0, xp_needed(level), level)
 	hud.set_coins(0)
+	hud.set_wood(0)
+	hud.set_ammo(0)
 	hud.set_build(weapon_system.slots, upgrade_levels)
 	hud.show_move_hint()
 	hud.show_announcement("SURVIVE %d MINUTES!" % roundi(chapter.duration / 60.0), 1.6)
@@ -195,6 +225,22 @@ func dev_command(cmd: String) -> void:
 			for e in enemies.enemies.duplicate():
 				if not e.dying:
 					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0)
+		"chop":
+			# Park the hero next to a trunk so the chop loop can be watched.
+			var trunk := forest.nearest_trunk(Vector2.ZERO, 1e9)
+			if trunk != null:
+				player.position = Vector3(trunk.pos.x + 1.2, 0.0, trunk.pos.y)
+				camera_rig.snap_to(player.position)
+		"hide":
+			if not forest.bushes.is_empty():
+				var b: Forest.Bush = forest.bushes[0]
+				player.position = Vector3(b.pos.x, 0.0, b.pos.y)
+				camera_rig.snap_to(player.position)
+		"trap":
+			if not traps.traps.is_empty():
+				var t: Traps.Trap = traps.traps[0]
+				player.position = Vector3(t.pos.x, 0.0, t.pos.y)
+				camera_rig.snap_to(player.position)
 		"move":
 			_dev_move = Vector2(0.6, -0.8)
 		"stop":
@@ -245,6 +291,9 @@ func _process(delta: float) -> void:
 
 func _tick_world(delta: float) -> void:
 	player.tick(delta)
+	_tick_cover(delta)
+	forest.tick(delta, Vector2(player.position.x, player.position.z))
+	traps.tick(delta, player, enemies)
 	weapon_system.tick(delta)
 	enemies.tick(delta)
 	projectiles.tick(delta)
@@ -306,6 +355,37 @@ func _tick_ambience(delta: float) -> void:
 	SoundBank.sfx("zombie_growl", lerpf(-8.0, -20.0, dist / GROWL_RANGE), 0.2)
 
 
+## Standing in a bush breaks the horde's line of sight — until you kill from
+## inside it, which gives your position away for a few seconds.
+func _tick_cover(delta: float) -> void:
+	_exposed = maxf(0.0, _exposed - delta)
+	var hidden := _exposed <= 0.0 and not player.is_dead \
+		and forest.hides(Vector2(player.position.x, player.position.z))
+	if hidden != enemies.player_hidden:
+		enemies.player_hidden = hidden
+		hud.set_hidden(hidden)
+
+
+func _on_tree_chopped(position: Vector3, ratio: float) -> void:
+	SoundBank.sfx("chop", -10.0, 0.1)
+	fx.hit(position, Vector2.ZERO, Color(0.75, 0.55, 0.3))
+	hud.set_chop(ratio)
+
+
+func _on_tree_felled(position: Vector2, wood: int) -> void:
+	SoundBank.sfx("wood_impact", -6.0, 0.05)
+	camera_rig.shake(0.15)
+	hud.set_chop(-1.0)
+	for i in wood:
+		var a := TAU * float(i) / float(maxi(1, wood))
+		pickups.drop(PickupManager.Kind.WOOD, position + Vector2(cos(a), sin(a)) * 0.6, 1.0)
+
+
+func _on_trap_triggered(position: Vector3, hit_player: bool) -> void:
+	SoundBank.sfx("metal_impact", -8.0 if hit_player else -14.0, 0.05)
+	fx.hit(position + Vector3(0.0, 0.4, 0.0), Vector2.ZERO, Color(1.0, 0.4, 0.2))
+
+
 # --- Combat feedback ---------------------------------------------------------
 
 func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, weapon: WeaponData) -> void:
@@ -329,6 +409,8 @@ func _on_aura_pulsed(weapon: WeaponData, position: Vector3, radius: float) -> vo
 
 func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 	var d := e.data()
+	if enemies.player_hidden:
+		_exposed = COVER_BLOWN_TIME
 	SoundBank.sfx("zombie_die", -6.0, 0.2)
 	if d.is_boss:
 		SoundBank.sfx("explosion", -2.0, 0.05)
@@ -341,6 +423,8 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 	pickups.drop(PickupManager.Kind.XP, e.pos, float(d.xp))
 	if _rng.randf() < d.coin_chance:
 		pickups.drop(PickupManager.Kind.COIN, e.pos + Vector2(0.3, 0.0), 1.0 if not d.is_boss else 25.0)
+	if d.is_elite():
+		pickups.drop(PickupManager.Kind.AMMO, e.pos + Vector2(0.0, -0.35), float(AMMO_PER_ELITE))
 	if _rng.randf() < HEAL_DROP_CHANCE:
 		pickups.drop(PickupManager.Kind.HEAL, e.pos + Vector2(-0.3, 0.0), HEAL_AMOUNT)
 	if d.is_boss:
@@ -428,6 +512,16 @@ func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vect
 			SoundBank.sfx("chest_open", -6.0, 0.05)
 			fx.pickup(position, Color(1.0, 0.4, 0.5))
 			player.heal(stats.max_hp() * value)
+		PickupManager.Kind.WOOD:
+			SoundBank.sfx("wood_impact", -16.0, 0.08)
+			fx.pickup(position, Color(0.8, 0.6, 0.35))
+			run_wood += int(value)
+			hud.set_wood(run_wood)
+		PickupManager.Kind.AMMO:
+			SoundBank.sfx("reload", -10.0, 0.08)
+			fx.pickup(position, Color(0.9, 0.85, 0.4))
+			run_ammo += int(value)
+			hud.set_ammo(run_ammo)
 
 
 # --- XP / level ups ----------------------------------------------------------

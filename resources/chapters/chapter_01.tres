@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=22 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" path="res://assets/models/forest/stones.glb" id="m_stones"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/plant.glb" id="m_plant"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/fence-damaged.glb" id="m_fence"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/pine.glb" id="m_pine_straight"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/trunk.glb" id="m_trunk"]
+[ext_resource type="PackedScene" path="res://assets/models/dungeon/trap.glb" id="m_trap"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/run.ogg" id="a_run"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/boss.ogg" id="a_boss"]
 
@@ -27,7 +30,8 @@ script = ExtResource("1")
 id = "chapter_01"
 display_name = "Whispering Forest"
 duration = 300.0
-arena_half_size = 22.0
+arena_shape = 1
+arena_half_size = 46.0
 ground_color = Color(0.35, 0.47, 0.18, 1)
 ground_color_alt = Color(0.29, 0.4, 0.15, 1)
 dirt_color = Color(0.44, 0.33, 0.2, 1)
@@ -38,9 +42,22 @@ sun_energy = 1.15
 ambient_color = Color(0.5, 0.62, 0.58, 1)
 border_models = Array[PackedScene]([ExtResource("m_pine"), ExtResource("m_tree"), ExtResource("m_tree_high")])
 decor_models = Array[PackedScene]([ExtResource("m_grave_round"), ExtResource("m_grave_cross"), ExtResource("m_cross_wood"), ExtResource("m_debris"), ExtResource("m_pumpkin"), ExtResource("m_grass"), ExtResource("m_grass"), ExtResource("m_stones"), ExtResource("m_plant"), ExtResource("m_fence")])
-decor_count = 130
+decor_count = 340
 giant_models = Array[PackedScene]([ExtResource("m_tree"), ExtResource("m_plant"), ExtResource("m_plant")])
-giant_count = 18
+giant_count = 46
+tree_models = Array[PackedScene]([ExtResource("m_tree"), ExtResource("m_tree_high"), ExtResource("m_pine_straight")])
+tree_count = 90
+tree_hp = 4.0
+wood_per_tree = 3
+stump_model = ExtResource("m_trunk")
+bush_model = ExtResource("m_plant")
+bush_count = 26
+bush_radius = 2.4
+trap_model = ExtResource("m_trap")
+trap_count = 30
+trap_radius = 0.8
+trap_damage = 14.0
+trap_scale = 1.1
 waves = Array[Dictionary]([{
 "enemy": ExtResource("e_walker"),
 "start": 0.0,
@@ -67,8 +84,8 @@ waves = Array[Dictionary]([{
 "end": 400.0,
 "weight": 1.0
 }])
-cap_start = 30
-cap_end = 240
+cap_start = 45
+cap_end = 280
 spawn_interval_start = 0.7
 spawn_interval_end = 0.08
 hp_scale_end = 3.0
