@@ -1,17 +1,26 @@
 ## Name-based access to the SFX library: `SoundBank.sfx("hit_zombie")` plays
 ## a random variant of assets/audio/sfx/hit_zombie_NN.ogg (or hit_zombie.ogg).
+## An empty name is a silent no-op so data can opt out of a sound.
 class_name SoundBank
 extends RefCounted
 
 const SFX_DIR := "res://assets/audio/sfx/"
 const UI_DIR := "res://assets/audio/ui/"
 const JINGLE_DIR := "res://assets/audio/jingles/"
+const MUSIC_DIR := "res://assets/audio/music/"
 
 static var _cache: Dictionary = {}
 
 
 static func sfx(name: String, volume_db: float = 0.0, pitch_variance: float = 0.1) -> void:
+	if name.is_empty():
+		return
 	AudioManager.play_sfx(_pick(SFX_DIR, name), volume_db, pitch_variance)
+
+
+## Music loop `name` from assets/audio/music/, or null when it does not exist.
+static func music(name: String) -> AudioStream:
+	return _pick(MUSIC_DIR, name)
 
 
 static func ui(name: String, volume_db: float = 0.0) -> void:

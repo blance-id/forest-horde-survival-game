@@ -117,6 +117,43 @@ into `FxManager` presets, `DamageNumbers`, camera shake, haptics and hit-stop.
 - **Vignette**: a full-rect `ColorRect` with `shaders/vignette.gdshader`; the HUD
   drives `strength` for damage flashes and the low-HP pulse.
 
+### Audio
+
+Buses: `Master > Music / SFX / UI / Voice` (`default_bus_layout.tres`).
+Sound is data-driven and hangs off the same signals as the VFX:
+
+- **AudioManager** (autoload) owns pooled `AudioStreamPlayer`s per bus
+  (16 SFX / 4 UI / 2 Voice), a 40 ms per-stream rate limit so a horde hit
+  never stacks 50 copies of one clip, two music players that
+  `play_music(stream, fade)` crossfades between (same stream = no-op,
+  `stop_music(fade)` = crossfade to nothing) and `duck_music(on)` which tweens
+  a −9 dB offset onto the Music bus while a menu covers the action.
+  `set_bus_volume` always folds the duck offset in, so settings changes during
+  a pause keep the duck.
+- **SoundBank** (scripts/systems/sound_bank.gd) resolves clips by name:
+  `sfx/ui/jingle(name)` play `assets/audio/<dir>/<name>.ogg` or a random
+  `<name>_01..09.ogg` variant; `music(name)` returns the stream from
+  `assets/audio/music/`. An empty name is silent (melee weapons have no fire
+  sound). Music `.import` files must set `loop = true` — the importer default
+  is off and `tests/test_audio.gd` asserts it.
+- **Data**: `WeaponData.fire_sound` / `hit_sound` and `ChapterData.music` /
+  `boss_music`. `Game` reads them from the signals: `fired` / `aura_pulsed` →
+  fire sound, `enemy_hit` → hit sound, `enemy_killed` → `zombie_die` + a
+  `zombie_death` vocal (or `explosion` for the boss), `boss_spawned` → roar +
+  boss music, `boss_killed` → back to chapter music, `Player.damaged` →
+  `zombie_attack`. `Game._tick_ambience` adds hero footsteps while moving and
+  a distance-attenuated `zombie_growl` from a random live enemy within 7 m.
+  Pause / level-up duck the music; death, win and give-up fade it out; the
+  main menu plays `menu`.
+- Assets come from `tools/build_assets.py` (`~/tools/pyenv/bin/python`, needs
+  Pillow + soundfile + numpy): Kenney packs are copied, the zombie WAVs are
+  converted to mono normalised OGG and the JRPG tracks copied into
+  `assets/audio/music/`. Sources and the event → clip map: `AUDIO_SOURCES.md`.
+- Godot only releases audio playbacks on a mix step, which never runs during
+  shutdown, so any run that quits with music playing prints
+  `ERROR: N resources still in use at exit` plus a leaked-ObjectDB warning.
+  `tools/check.sh` and `tools/shot.sh` filter exactly that line.
+
 ### Horde rendering
 
 `EnemyMeshBaker` bakes each Kenney "mini" model (rigid-part or skinned) into a
@@ -167,13 +204,13 @@ reads (`damage_mult()`, `attack_speed_mult()`, `area_mult()` …).
 
 | Script | Use |
 |---|---|
-| `tools/check.sh [frames] -- --screen=res://…` | Boots the real game headless, fails on `SCRIPT ERROR` / `ERROR` |
+| `tools/check.sh [frames] -- --screen=res://…` | Boots the real game headless, fails on `SCRIPT ERROR` / `ERROR` (except the audio "resources still in use at exit" line) |
 | `tools/shot.sh out.png [frames] --screen=… [--dev=cmd,…] [--lead=N]` | Renders under Xvfb + opengl3 and saves a screenshot; `--dev=` drives `dev_command` (levelup, pause, win, die, hurt, horde, boss, weapons, fx, splats, nuke, move, stop, touch) `N` frames before the shot (default 30; use 1–5 to catch particle bursts). Frames count from the moment `--screen` is up, so headless and Xvfb agree. With glow on, Xvfb manages ~3–7 fps, so keep captures ≤ 300 frames |
 | `tools/test.sh` | Runs `tests/test_*.gd` headless with autoloads available |
 | `godot --headless --check-only --script <file>` | Per-script parse check with file:line |
 | `godot --headless -s tools/img_crop.gd -- in.png out.png x y w h [scale]` | Crop/zoom a screenshot (no image tools on the box) |
 | `godot --headless -s tools/build_theme.gd` | Regenerates `resources/configs/ui_theme.tres` from the UI kit + fonts |
-| `tools/build_assets.py` | Copies/renames raw downloads from `assets/_downloads/` into `assets/` |
+| `~/tools/pyenv/bin/python tools/build_assets.py` | Copies/renames raw downloads from `assets/_downloads/` into `assets/`; converts zombie WAVs to OGG (Pillow, soundfile, numpy) |
 | `scenes/dev/hero_view.tscn` | Close-up hero viewer (`--hero=`, `--yaw=`, `--move`, `--bones`) for weapon mounting |
 
 SceneTree scripts run with `-s` must live under `res://`; autoloads are not

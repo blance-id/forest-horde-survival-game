@@ -1,7 +1,8 @@
 ## Central audio playback. Buses: Master > Music / SFX / UI / Voice.
 ## - play_sfx()/play_ui()/play_voice() use pooled players with optional pitch
 ##   variation and per-stream rate limiting (hordes must not stack 50 identical hits).
-## - play_music() crossfades between two music players.
+## - play_music() crossfades between two music players; duck_music() pulls
+##   the whole Music bus down while a menu covers the action.
 ## Volumes are read from GameState settings and re-applied when they change.
 extends Node
 
@@ -9,6 +10,8 @@ const SFX_POOL_SIZE := 16
 const UI_POOL_SIZE := 4
 const VOICE_POOL_SIZE := 2
 const SAME_SOUND_MIN_INTERVAL_MSEC := 40
+const DUCK_DB := -9.0
+const DUCK_TIME := 0.35
 
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _ui_pool: Array[AudioStreamPlayer] = []
@@ -17,6 +20,8 @@ var _music_a: AudioStreamPlayer
 var _music_b: AudioStreamPlayer
 var _music_active: AudioStreamPlayer
 var _music_tween: Tween
+var _duck_tween: Tween
+var _duck_db := 0.0
 var _last_play_msec: Dictionary = {}  # stream rid -> msec
 var _current_music: AudioStream
 
@@ -111,6 +116,20 @@ func stop_music(fade_time: float = 0.8) -> void:
 	play_music(null, fade_time)
 
 
+## Lowers (or restores) the music under pause / level-up menus.
+func duck_music(on: bool) -> void:
+	var target := DUCK_DB if on else 0.0
+	if is_equal_approx(target, _duck_db):
+		return
+	if _duck_tween != null and _duck_tween.is_valid():
+		_duck_tween.kill()
+	_duck_tween = create_tween()
+	_duck_tween.tween_method(func(db: float) -> void:
+		_duck_db = db
+		set_bus_volume("Music", float(GameState.get_setting("music_volume", 0.8))),
+		_duck_db, target, DUCK_TIME)
+
+
 # --- Settings ----------------------------------------------------------------
 
 func apply_settings() -> void:
@@ -127,5 +146,8 @@ func set_bus_volume(bus: String, linear: float) -> void:
 	if idx < 0:
 		Log.warn("Audio", "Unknown bus %s" % bus)
 		return
-	AudioServer.set_bus_volume_db(idx, linear_to_db(clampf(linear, 0.0, 1.0)))
+	var db := linear_to_db(clampf(linear, 0.0, 1.0))
+	if bus == "Music":
+		db += _duck_db
+	AudioServer.set_bus_volume_db(idx, db)
 	AudioServer.set_bus_mute(idx, linear <= 0.001)

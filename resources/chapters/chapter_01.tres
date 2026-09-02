@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=20 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
@@ -19,6 +19,8 @@
 [ext_resource type="PackedScene" path="res://assets/models/forest/stones.glb" id="m_stones"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/plant.glb" id="m_plant"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/fence-damaged.glb" id="m_fence"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/run.ogg" id="a_run"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/boss.ogg" id="a_boss"]
 
 [resource]
 script = ExtResource("1")
@@ -103,3 +105,5 @@ events = Array[Dictionary]([{
 }])
 coins_win = 150
 coins_per_minute = 10
+music = ExtResource("a_run")
+boss_music = ExtResource("a_boss")

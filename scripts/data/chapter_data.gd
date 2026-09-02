@@ -43,6 +43,11 @@ extends Resource
 @export var coins_win: int = 150
 @export var coins_per_minute: int = 10
 
+@export_group("Music")
+## Loop for the run; the boss loop plays while a boss is alive.
+@export var music: AudioStream
+@export var boss_music: AudioStream
+
 
 func spawn_interval(t: float) -> float:
 	return lerpf(spawn_interval_start, spawn_interval_end, clampf(t / duration, 0.0, 1.0))

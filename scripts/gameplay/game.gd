@@ -11,6 +11,8 @@ const RING_RADIUS := 9.0
 const ENEMY_CAPACITY := 300
 const HEAL_DROP_CHANCE := 0.012
 const HEAL_AMOUNT := 0.3
+const FOOTSTEP_INTERVAL := 0.32
+const GROWL_RANGE := 7.0
 
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
@@ -48,6 +50,8 @@ var _result_timer := -1.0
 var _won := false
 var _dev_move := Vector2.ZERO
 var _hit_stop_until := 0
+var _step_timer := 0.0
+var _growl_timer := 1.0
 
 
 func setup(data: Dictionary) -> void:
@@ -122,6 +126,7 @@ func _start_run() -> void:
 	_events.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["time"]) < float(b["time"]))
 	_spawn_timer = 0.5
 	state = State.RUNNING
+	AudioManager.play_music(chapter.music, 1.5)
 
 
 func _apply_meta_upgrades() -> void:
@@ -217,6 +222,7 @@ func _process(delta: float) -> void:
 	player.move_input = stick if stick != Vector2.ZERO else _dev_move
 	_tick_world(delta)
 	_tick_director(delta)
+	_tick_ambience(delta)
 	hud.set_time(chapter.duration - run_time)
 	if enemies.boss != null:
 		hud.set_boss(enemies.boss.hp, enemies.boss.max_hp)
@@ -264,32 +270,59 @@ func _run_event(ev: Dictionary) -> void:
 			camera_rig.shake(0.35)
 
 
+## Hero footsteps and the horde's idle groans: the nearest zombies grumble
+## every second or so, louder the closer they are.
+func _tick_ambience(delta: float) -> void:
+	if player.move_input != Vector2.ZERO and not player.is_dead:
+		_step_timer -= delta
+		if _step_timer <= 0.0:
+			_step_timer = FOOTSTEP_INTERVAL
+			SoundBank.sfx("footstep", -22.0, 0.15)
+	else:
+		_step_timer = 0.0
+	_growl_timer -= delta
+	if _growl_timer > 0.0 or enemies.alive == 0:
+		return
+	_growl_timer = _rng.randf_range(0.6, 1.4)
+	var e: EnemyManager.Enemy = enemies.enemies[_rng.randi() % enemies.enemies.size()]
+	if e.dying:
+		return
+	var dist := e.pos.distance_to(Vector2(player.position.x, player.position.z))
+	if dist > GROWL_RANGE:
+		return
+	SoundBank.sfx("zombie_growl", lerpf(-8.0, -20.0, dist / GROWL_RANGE), 0.2)
+
+
 # --- Combat feedback ---------------------------------------------------------
 
-func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, tint: Color) -> void:
+func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, weapon: WeaponData) -> void:
 	hud.damage_numbers.spawn(e.position3d() + Vector3(0, 1.1 * e.data().scale, 0), amount,
 		DamageNumbers.Style.KILL if killed else DamageNumbers.Style.HIT)
 	if killed:
 		return
-	SoundBank.sfx("hit_zombie", -8.0, 0.15)
-	fx.hit(position, dir, tint)
+	SoundBank.sfx(weapon.hit_sound, -8.0, 0.15)
+	fx.hit(position, dir, weapon.tint)
 
 
 func _on_weapon_fired(weapon: WeaponData, from: Vector3, dir: Vector2) -> void:
-	SoundBank.sfx("knife", -14.0, 0.2)
+	SoundBank.sfx(weapon.fire_sound, -12.0, 0.12)
 	fx.muzzle(from, dir, weapon.tint)
 
 
 func _on_aura_pulsed(weapon: WeaponData, position: Vector3, radius: float) -> void:
+	SoundBank.sfx(weapon.fire_sound, -10.0, 0.05)
 	fx.aura_pulse(position, radius, weapon.tint)
 
 
 func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 	var d := e.data()
-	SoundBank.sfx("zombie_die", -4.0, 0.2)
+	SoundBank.sfx("zombie_die", -6.0, 0.2)
 	if d.is_boss:
+		SoundBank.sfx("explosion", -2.0, 0.05)
+		SoundBank.sfx("zombie_death", 0.0, 0.0)
 		fx.boss_death(e.position3d(), d.tint)
 	else:
+		SoundBank.sfx("zombie_death", -9.0, 0.25)
 		fx.death(e.position3d(), d.tint)
 	hud.set_kills(enemies.kills)
 	pickups.drop(PickupManager.Kind.XP, e.pos, float(d.xp))
@@ -306,6 +339,8 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 func _on_boss_spawned(_e: EnemyManager.Enemy) -> void:
 	hud.show_announcement("BOSS INCOMING!", 2.2)
 	SoundBank.sfx("bell", -2.0, 0.0)
+	SoundBank.sfx("boss_roar", 0.0, 0.1)
+	AudioManager.play_music(chapter.boss_music, 0.8)
 	camera_rig.shake(0.5)
 	Haptics.heavy()
 
@@ -314,10 +349,12 @@ func _on_boss_killed(_e: EnemyManager.Enemy) -> void:
 	hud.set_boss(0.0, 1.0)
 	hud.show_announcement("BOSS DOWN!", 2.0)
 	SoundBank.jingle("reward", -2.0)
+	AudioManager.play_music(chapter.music, 2.5)
 
 
 func _on_player_damaged(amount: float) -> void:
 	SoundBank.sfx("hit_player", -6.0, 0.1)
+	SoundBank.sfx("zombie_attack", -9.0, 0.2)
 	camera_rig.shake(0.25)
 	fx.hero_hurt(player.position)
 	hud.flash_damage()
@@ -434,6 +471,7 @@ func _on_upgrade_chosen(option: Dictionary) -> void:
 		_open_level_up()
 		return
 	get_tree().paused = false
+	AudioManager.duck_music(false)
 	state = State.RUNNING
 
 
@@ -455,6 +493,7 @@ func _freeze() -> void:
 	get_tree().paused = true
 	hud.joystick.reset()
 	player.move_input = Vector2.ZERO
+	AudioManager.duck_music(true)
 
 
 func _resume() -> void:
@@ -462,6 +501,7 @@ func _resume() -> void:
 		return
 	pause_panel.close()
 	get_tree().paused = false
+	AudioManager.duck_music(false)
 	state = State.RUNNING
 
 
@@ -480,11 +520,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _give_up() -> void:
 	pause_panel.close()
 	get_tree().paused = false
+	AudioManager.stop_music(0.6)
 	_end(false)
 	_show_result()
 
 
 func _on_player_died() -> void:
+	AudioManager.stop_music(1.2)
 	SoundBank.jingle("lose", -2.0)
 	camera_rig.shake(0.6)
 	Haptics.heavy()
@@ -494,6 +536,7 @@ func _on_player_died() -> void:
 
 
 func _win() -> void:
+	AudioManager.stop_music(0.6)
 	SoundBank.jingle("win", -2.0)
 	enemies.clear_all()
 	projectiles.clear_all()
@@ -528,6 +571,7 @@ func _show_result() -> void:
 
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
+	AudioManager.duck_music(false)
 
 
 func _retry() -> void:

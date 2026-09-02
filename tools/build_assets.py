@@ -9,7 +9,8 @@ turns them into what the game actually loads:
 * particles / splats -> downscaled PNGs
 * UI pack / icons / audio -> copied with stable names
 
-Run from the project root with a Python that has Pillow installed:
+Run from the project root with a Python that has Pillow, soundfile and numpy
+installed (soundfile/numpy only for the zombie WAV -> OGG conversion):
 
     ~/tools/pyenv/bin/python tools/build_assets.py
 """
@@ -173,10 +174,13 @@ def build_ui() -> None:
 # where {n} matches an optional number; count > 0: {n} is a zero-padded index.
 SFX = {
     "bell": ("impact-sounds/Audio", "impactBell_heavy_{n}", 5),
+    "boss_roar": ("sci-fi-sounds/Audio", "lowFrequency_explosion_{n}", 2),
     "chest_open": ("rpg-audio/Audio", "bookOpen", 0),
     "chop": ("rpg-audio/Audio", "chop", 0),
     "cloth": ("rpg-audio/Audio", "cloth{n}", 4),
+    "explosion": ("sci-fi-sounds/Audio", "explosionCrunch_{n}", 5),
     "footstep": ("impact-sounds/Audio", "footstep_grass_{n}", 5),
+    "force_field": ("sci-fi-sounds/Audio", "forceField_{n}", 5),
     "glass_break": ("impact-sounds/Audio", "impactGlass_heavy_{n}", 5),
     "heavy_impact": ("impact-sounds/Audio", "impactPlate_heavy_{n}", 5),
     "hit_player": ("impact-sounds/Audio", "impactPunch_heavy_{n}", 5),
@@ -188,8 +192,24 @@ SFX = {
     "pickup_coin": ("rpg-audio/Audio", "handleCoins{n}", 2),
     "pickup_xp": ("interface-sounds/Audio", "glass_{n}", 5),
     "reload": ("rpg-audio/Audio", "metalLatch", 0),
+    "shot_blaster": ("sci-fi-sounds/Audio", "laserSmall_{n}", 5),
+    "shot_retro": ("sci-fi-sounds/Audio", "laserRetro_{n}", 5),
+    "shot_scatter": ("sci-fi-sounds/Audio", "laserLarge_{n}", 5),
+    "slime": ("sci-fi-sounds/Audio", "slime_{n}", 2),
     "wood_impact": ("impact-sounds/Audio", "impactWood_medium_{n}", 5),
     "zombie_die": ("impact-sounds/Audio", "impactSoft_medium_{n}", 5),
+}
+# artisticdude's zombie pack is 24-bit stereo WAV with unnamed clips; these are
+# sorted by ear into roles and re-encoded as mono OGG (see _convert_wav).
+ZOMBIE_VOICES = {
+    "zombie_attack": [5, 6, 10, 11, 13],   # short bites / lunges
+    "zombie_growl": [1, 2, 8, 14, 23],     # idle groans
+    "zombie_death": [16, 18, 19, 20, 21],  # long dying groans
+}
+MUSIC = {
+    "menu": "jrpg5/Action3 - Preparing For Battle",
+    "run": "jrpg5/Action2 - Army Approaching",
+    "boss": "jrpg5/Action1 - Encounter With The Witches",
 }
 UI_SOUNDS = {
     "back": ("interface-sounds/Audio", "back_{n}", 3),
@@ -243,12 +263,41 @@ def _copy_table(table: dict, out_dir: Path) -> None:
                 shutil.copyfile(f, out_dir / f"{name}_{i:02d}.ogg")
 
 
+def _convert_wav(src: Path, dst: Path) -> bool:
+    """WAV -> mono, peak-normalised OGG Vorbis. Needs `soundfile` + `numpy`
+    (pip install soundfile numpy); returns False when they are missing."""
+    try:
+        import numpy as np
+        import soundfile as sf
+    except ImportError:
+        return False
+    data, rate = sf.read(src, dtype="float32")
+    if data.ndim == 2:
+        data = data.mean(axis=1)
+    peak = float(np.abs(data).max()) or 1.0
+    data = data * (0.9 / peak)
+    sf.write(dst, data, rate, format="OGG", subtype="VORBIS")
+    return True
+
+
 def build_audio() -> None:
     _copy_table(SFX, OUT / "audio/sfx")
     _copy_table(UI_SOUNDS, OUT / "audio/ui")
+    for name, indices in ZOMBIE_VOICES.items():
+        for i, idx in enumerate(indices, start=1):
+            src = DL / "zombies" / f"zombie-{idx}.wav"
+            if not src.exists():
+                print(f"  missing audio {name} ({src.name})")
+                break
+            if not _convert_wav(src, OUT / "audio/sfx" / f"{name}_{i:02d}.ogg"):
+                print("  skipping zombie voices: pip install soundfile numpy")
+                break
     ensure(OUT / "audio/jingles")
     for name, source in JINGLES.items():
         shutil.copyfile(DL / "music-jingles/Audio" / f"{source}.ogg", OUT / "audio/jingles" / f"{name}.ogg")
+    ensure(OUT / "audio/music")
+    for name, source in MUSIC.items():
+        shutil.copyfile(DL / f"{source}.ogg", OUT / "audio/music" / f"{name}.ogg")
     print("audio ok")
 
 

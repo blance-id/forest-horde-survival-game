@@ -5,12 +5,13 @@ struck through — git history keeps the record.
 
 ## Build / tooling
 
-- **Exit-time warnings.** Godot prints `WARNING: 3 ObjectDB instances were
-  leaked at exit` on every run (autoload signal connections still alive at
-  teardown) and, on the *first* run after a shader or script change,
-  `ERROR: 2 resources still in use at exit` while the shader cache is rebuilt.
-  Neither affects gameplay; `tools/check.sh` treats the second one as a failure,
-  so rerun once after editing shaders.
+- **Exit-time warnings.** Any run that quits while audio is playing prints
+  `WARNING: N ObjectDB instances were leaked at exit` and `ERROR: N resources
+  still in use at exit` (the music streams and their playbacks). Godot frees
+  playbacks only on an audio mix step, which never runs during shutdown, so
+  stopping the players in `_exit_tree` does not help. Harmless;
+  `tools/check.sh` and `tools/shot.sh` ignore exactly that line and still fail
+  on every other `ERROR:`.
 - **Slow Xvfb captures.** With glow enabled the software GL renderer manages
   ~3–7 fps, so `tools/shot.sh` clamps delta to 0.133 s. Keep captures at
   ≤ 300 frames (≈ 40 s of game time) or the hero dies and the OVER panel

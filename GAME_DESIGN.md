@@ -288,6 +288,13 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   damage: red hero burst, red "50" number, camera shake, haptic tap and a
   screen-edge red vignette that pulses continuously under 30 % HP. Death is a
   0.9 s slow-motion. Level-ups fire a gold star ring around the hero.
+- **Sound** — each weapon has its own voice (blaster zap, scatter boom, lantern
+  hum, knife slashes for the shovel) and a hit clip; zombies groan when they
+  bite, growl at random when close, and shriek on death. A driving JRPG battle
+  loop runs under the whole run, a heavier track takes over while the boss is
+  alive (announced by a roar), and the music ducks under pause and level-up
+  cards so the choice feels like a breath. Everything is CC0 (Kenney, Juhani
+  Junkala, artisticdude) and credited in Settings.
 - Bright, chunky, readable — a saturated cartoon forest, not gritty horror.
 - Typography: heavy display font (Lilita One) for numbers/headlines, clean sans
   (Nunito) for body.

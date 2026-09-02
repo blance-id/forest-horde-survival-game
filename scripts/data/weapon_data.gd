@@ -18,6 +18,12 @@ enum Kind { PROJECTILE, ORBIT, AURA }
 ## AURA: disc colour. PROJECTILE: bullet colour.
 @export var tint: Color = Color(1.0, 0.85, 0.35)
 
+@export_group("Sounds")
+## SoundBank name played per shot (PROJECTILE) or per pulse (AURA); "" = silent.
+@export var fire_sound: String = "shot_blaster"
+## SoundBank name played when this weapon damages an enemy without killing it.
+@export var hit_sound: String = "hit_zombie"
+
 @export_group("Base stats")
 @export var damage: float = 10.0
 @export var cooldown: float = 0.5

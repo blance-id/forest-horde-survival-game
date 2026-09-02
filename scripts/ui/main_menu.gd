@@ -45,6 +45,7 @@ func _ready() -> void:
 	SafeArea.pad_top(top_bar)
 	_build_demo()
 	_build_ui()
+	AudioManager.play_music(SoundBank.music("menu"), 1.0)
 
 
 func _build_demo() -> void:

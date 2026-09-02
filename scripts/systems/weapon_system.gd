@@ -4,7 +4,7 @@ class_name WeaponSystem
 extends Node3D
 
 signal fired(weapon: WeaponData, from: Vector3, dir: Vector2)
-signal enemy_hit(enemy: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, tint: Color)
+signal enemy_hit(enemy: EnemyManager.Enemy, position: Vector3, dir: Vector2, amount: float, killed: bool, weapon: WeaponData)
 ## An aura weapon pulsed at `position` with damage radius `radius`.
 signal aura_pulsed(weapon: WeaponData, position: Vector3, radius: float)
 
@@ -103,7 +103,7 @@ func _tick_projectile(slot: Slot, delta: float, origin: Vector2, aim_set: bool) 
 	var damage := float(s["damage"]) * run_stats.damage_mult()
 	for i in count:
 		var offset := 0.0 if count == 1 else lerpf(-spread * 0.5, spread * 0.5, float(i) / float(count - 1))
-		projectiles.fire(from, dir.rotated(offset), s, damage, slot.data.tint)
+		projectiles.fire(from, dir.rotated(offset), s, damage, slot.data)
 	fired.emit(slot.data, muzzle, dir)
 	return true
 
@@ -129,7 +129,7 @@ func _tick_orbit(slot: Slot, delta: float, origin: Vector2) -> void:
 				continue
 			e.hit_cooldowns[key] = now + ORBIT_HIT_INTERVAL
 			var killed := enemies.hit(e, damage, origin, float(s["knockback"]))
-			enemy_hit.emit(e, Vector3(p.x, ORBIT_HEIGHT, p.y), (e.pos - origin).normalized(), damage, killed, slot.data.tint)
+			enemy_hit.emit(e, Vector3(p.x, ORBIT_HEIGHT, p.y), (e.pos - origin).normalized(), damage, killed, slot.data)
 
 
 func _tick_aura(slot: Slot, delta: float, origin: Vector2) -> void:
@@ -150,7 +150,7 @@ func _tick_aura(slot: Slot, delta: float, origin: Vector2) -> void:
 	enemies.query_circle(origin, radius, _query)
 	for e: EnemyManager.Enemy in _query:
 		var killed := enemies.hit(e, damage, origin, float(s["knockback"]))
-		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.4, 0), (e.pos - origin).normalized(), damage, killed, slot.data.tint)
+		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.4, 0), (e.pos - origin).normalized(), damage, killed, slot.data)
 
 
 func _make_orbit_visual(data: WeaponData) -> MultiMeshInstance3D:
