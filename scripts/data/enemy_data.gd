@@ -8,6 +8,8 @@ extends Resource
 @export var id: String = "walker"
 @export var display_name: String = "Walker"
 @export var model: PackedScene
+## Portrait used on the run timeline (event / boss markers).
+@export var icon: Texture2D
 @export var tint: Color = Color.WHITE
 @export var scale: float = 1.0
 

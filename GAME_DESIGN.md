@@ -295,6 +295,14 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   alive (announced by a roar), and the music ducks under pause and level-up
   cards so the choice feels like a breath. Everything is CC0 (Kenney, Juhani
   Junkala, artisticdude) and credited in Settings.
+- **HUD** — one top block: an XP bar with a hexagon level badge, then a heart
+  + HP bar reading "72 / 100" beside kills, coins and pause, then the run
+  timeline (a filling track with a portrait for every scripted horde and a red
+  hexagon for the boss) with the countdown over it, then the build bar of
+  hexagon slots showing the four weapons and every passive with its level.
+  Coins arc from where they drop into the counter, kill chains pop a
+  "MEGA COMBO / RAMPAGE!" callout, and the result card counts the reward up
+  before stamping "NEW RECORD!".
 - Bright, chunky, readable — a saturated cartoon forest, not gritty horror.
 - Typography: heavy display font (Lilita One) for numbers/headlines, clean sans
   (Nunito) for body.

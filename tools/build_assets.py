@@ -165,7 +165,31 @@ def build_ui() -> None:
         copy_png(png, OUT / "ui/icons" / f"{name}.png")
     for name, (pack, preview) in ITEM_ICONS.items():
         copy_png(DL / "3d" / pack / "Previews" / f"{preview}.png", OUT / "ui/items" / f"{name}.png")
+    draw_heart(OUT / "ui/icons/heart.png")
     print("ui ok")
+
+
+def draw_heart(dst: Path, size: int = 64) -> None:
+    """None of the packs ship a heart, so the HP icon is drawn here: a white
+    heart with a dark outline, matching the game-icons style (white, 2x)."""
+    from PIL import ImageDraw
+
+    s = size * 4  # draw big, downsample for smooth edges
+    im = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    r = s * 0.26
+    cx_l, cx_r, cy = s * 0.31, s * 0.69, s * 0.36
+    for pad, colour in ((s * 0.045, (60, 30, 20, 255)), (0.0, (255, 255, 255, 255))):
+        rr = r + pad
+        d.ellipse((cx_l - rr, cy - rr, cx_l + rr, cy + rr), fill=colour)
+        d.ellipse((cx_r - rr, cy - rr, cx_r + rr, cy + rr), fill=colour)
+        tip = (s * 0.5, s * 0.93 + pad * 1.4)
+        left = (cx_l - rr * 0.985, cy + rr * 0.17)
+        right = (cx_r + rr * 0.985, cy + rr * 0.17)
+        d.polygon([left, right, tip], fill=colour)
+    im = im.resize((size, size), Image.LANCZOS)
+    ensure(dst.parent)
+    im.save(dst, optimize=True)
 
 
 # --- Audio -------------------------------------------------------------------

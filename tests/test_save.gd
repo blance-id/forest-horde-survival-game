@@ -67,3 +67,10 @@ func test_record_run_tracks_best() -> void:
 	assert_eq(rec["best_kills"], 50)
 	assert_eq(rec["wins"], 1)
 	assert_eq(GameState.profile["stats"]["runs"], 2)
+
+
+func test_record_run_banks_coins_once() -> void:
+	GameState.profile = GameState._default_profile()
+	var before: int = GameState.profile["coins"]
+	GameState.record_run("chapter_01", 60.0, 10, false, 25)
+	assert_eq(GameState.profile["coins"], before + 25, "record_run banks the reward exactly once")

@@ -48,6 +48,7 @@ var _rng := RandomNumberGenerator.new()
 var _pending_level_ups := 0
 var _result_timer := -1.0
 var _won := false
+var _new_best := false
 var _dev_move := Vector2.ZERO
 var _hit_stop_until := 0
 var _step_timer := 0.0
@@ -111,11 +112,13 @@ func _start_run() -> void:
 	camera_rig.make_current()
 
 	hud.pause_pressed.connect(_pause)
+	hud.setup(chapter)
 	hud.set_time(chapter.duration)
 	hud.set_xp(0.0, xp_needed(level), level)
-	hud.set_kills(0)
 	hud.set_coins(0)
+	hud.set_build(weapon_system.slots, upgrade_levels)
 	hud.show_move_hint()
+	hud.show_announcement("SURVIVE %d MINUTES!" % roundi(chapter.duration / 60.0), 1.6)
 	level_up_panel.chosen.connect(_on_upgrade_chosen)
 	pause_panel.resume_pressed.connect(_resume)
 	pause_panel.quit_pressed.connect(_give_up)
@@ -161,6 +164,9 @@ func dev_command(cmd: String) -> void:
 			for w in weapons:
 				for i in 3:
 					weapon_system.add_or_upgrade(w)
+			for u in upgrades.slice(0, 3):
+				upgrade_levels[u] = 2
+			hud.set_build(weapon_system.slots, upgrade_levels)
 		"fx":
 			# Fires every burst preset around the hero (pair with --lead=2).
 			var p := player.position
@@ -336,7 +342,8 @@ func _on_enemy_killed(e: EnemyManager.Enemy) -> void:
 		_hit_stop(0.05, 0.16)
 
 
-func _on_boss_spawned(_e: EnemyManager.Enemy) -> void:
+func _on_boss_spawned(e: EnemyManager.Enemy) -> void:
+	hud.set_boss(e.hp, e.max_hp, e.data().display_name)
 	hud.show_announcement("BOSS INCOMING!", 2.2)
 	SoundBank.sfx("bell", -2.0, 0.0)
 	SoundBank.sfx("boss_roar", 0.0, 0.1)
@@ -382,7 +389,7 @@ func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vect
 			SoundBank.sfx("pickup_coin", -8.0, 0.1)
 			fx.pickup(position, Color(1.0, 0.85, 0.3))
 			run_coins += int(value)
-			hud.set_coins(run_coins)
+			hud.add_coins(int(value), position, camera_rig.camera)
 		PickupManager.Kind.HEAL:
 			SoundBank.sfx("chest_open", -6.0, 0.05)
 			fx.pickup(position, Color(1.0, 0.4, 0.5))
@@ -466,6 +473,7 @@ func _on_upgrade_chosen(option: Dictionary) -> void:
 		if u.stat == "max_hp_mult":
 			player.refresh_max_hp(previous_max)
 	SoundBank.ui("confirm")
+	hud.set_build(weapon_system.slots, upgrade_levels)
 	_pending_level_ups = maxi(0, _pending_level_ups - 1)
 	if _pending_level_ups > 0:
 		_open_level_up()
@@ -557,8 +565,8 @@ func _end(won: bool) -> void:
 	if won:
 		reward += chapter.coins_win
 	run_coins = reward
-	GameState.record_run(chapter.id, run_time, enemies.kills, won, reward)
-	GameState.add_coins(reward)
+	# record_run banks the coins as well.
+	_new_best = GameState.record_run(chapter.id, run_time, enemies.kills, won, reward)
 	Log.info("Game", "Run over: won=%s time=%.1f kills=%d level=%d coins=%d" % [won, run_time, enemies.kills, level, reward])
 
 
@@ -566,7 +574,7 @@ func _show_result() -> void:
 	_result_timer = -1.0
 	if result_panel.visible:
 		return
-	result_panel.show_result(_won, chapter.display_name, run_time, enemies.kills, level, run_coins)
+	result_panel.show_result(_won, chapter.display_name, run_time, enemies.kills, level, run_coins, _new_best)
 
 
 func _exit_tree() -> void:
