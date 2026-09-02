@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/dungeon/character-orc.glb" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/orc.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = "hexer"
+display_name = "Forest Hexer"
+model = ExtResource("2")
+icon = ExtResource("3")
+tint = Color(0.78, 0.6, 1, 1)
+scale = 1.25
+max_hp = 45.0
+speed = 0.95
+damage = 17.0
+attack_cooldown = 3.4
+radius = 0.45
+physical_resist = 0.00
+magic_resist = 0.60
+xp = 20
+coin_chance = 0.35
+attack_windup = 2.0
+attack_reach = 0.2
+lunge = 0.2
+windup_sound = "force_field"
+ranged = true
+cast_range = 7.5
+bolt_speed = 2.6
+bolt_color = Color(0.72, 0.35, 1, 1)
+stride_rate = 1.5
+leg_swing_degrees = 22.0
+arm_forward_degrees = 75.0
+arm_down_degrees = 10.0
+arm_swing_degrees = 8.0
+bob_height = 0.05
+lean_degrees = 4.0

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=49 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=50 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
@@ -7,6 +7,7 @@
 [ext_resource type="Resource" path="res://resources/enemies/brute.tres" id="e_brute"]
 [ext_resource type="Resource" path="res://resources/enemies/keeper.tres" id="e_keeper"]
 [ext_resource type="Resource" path="res://resources/enemies/vampire.tres" id="e_vampire"]
+[ext_resource type="Resource" path="res://resources/enemies/hexer.tres" id="e_hexer"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/pine-crooked.glb" id="m_pine"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/tree.glb" id="m_tree"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/tree-high.glb" id="m_tree_high"]
@@ -103,6 +104,11 @@ waves = Array[Dictionary]([{
 "end": 400.0,
 "weight": 2.0
 }, {
+"enemy": ExtResource("e_hexer"),
+"start": 100.0,
+"end": 400.0,
+"weight": 1.5
+}, {
 "enemy": ExtResource("e_keeper"),
 "start": 200.0,
 "end": 400.0,
@@ -128,6 +134,11 @@ events = Array[Dictionary]([{
 "kind": "ring",
 "enemy": ExtResource("e_ghost"),
 "count": 16
+}, {
+"time": 170.0,
+"kind": "ring",
+"enemy": ExtResource("e_hexer"),
+"count": 6
 }, {
 "time": 200.0,
 "kind": "ring",

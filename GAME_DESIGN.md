@@ -409,9 +409,21 @@ stops and the Count laughs his way in, revives at 100/200/400/800 coins, and a
 store whose purchases ride into the run in a three-slot travel bag you lose if
 you die.
 
-**Wave 6 — presentation**
-- Real ground: tiling grass and bush texture that varies without tiling
-  visibly, instead of the painted-mud shader.
-- A "Max" quality setting that turns everything up.
+**Wave 6 — presentation** *(ground, foliage and quality are in)*
+- ~~Real ground and foliage~~ — done: Nature Kit trees, bushes, stumps and
+  logs over a procedural grass shader with wandering blade direction.
+- ~~A "Max" quality setting~~ — done: LOW / NORMAL / MAX drives ground detail,
+  shadows, foliage density, bloom levels and MSAA.
 - Metal Slug touches: driveable vehicles with their own ammo, rescuable
-  survivors that hand over an item.
+  survivors that hand over an item. **Not started.**
+
+### 15.3 Still open
+
+- **Beasts.** The forest monsters landed as the Forest Hexer (a caster with a
+  2 s tell and a slow, dodgeable bolt). Wolves and snakes need an animated
+  animal model pack — none of the CC0 kits already downloaded has one, so this
+  needs an asset decision before it can be built honestly.
+- **Vehicles and rescued survivors.** Not started.
+- **A second chapter.** `ArenaBounds` already supports square / circle /
+  clover and every chapter carries its own trap, so a second map is data plus
+  a palette — but only chapter 1 exists today.

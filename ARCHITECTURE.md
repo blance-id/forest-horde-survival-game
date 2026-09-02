@@ -192,6 +192,10 @@ damage inside `EnemyManager._move`:
    `ProjectileManager.spawn_enemy_bolt()` instead — a slow tinted sphere that
    flies at *where the hero was*, so standing still is what gets you hit.
 
+Casters are the same machinery pointed the other way: `EnemyData.ranged` with
+a long `attack_windup` and a slow `bolt_speed` is the Forest Hexer's 2 s cast
+plus a bolt the player can walk out of.
+
 `Game` turns both signals into sound and sparks, and only for enemies within
 `TELL_RANGE`: two hundred simultaneous tells would be one wall of noise.
 

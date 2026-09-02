@@ -229,6 +229,17 @@ func dev_command(cmd: String) -> void:
 			player.take_damage(1e9)
 		"hurt":
 			player.take_damage(stats.max_hp() * 0.5)
+		"bag":
+			# Fill the bag so the relic buttons can be seen and tapped.
+			bag = RelicCatalog.all().slice(0, 3)
+			bag_spent.clear()
+			for i in bag.size():
+				bag_spent.append(false)
+			hud.set_bag_items(bag, bag_spent)
+		"hexer":
+			# A ring of casters, close enough that their bolts are in flight.
+			var hexer := load("res://resources/enemies/hexer.tres") as EnemyData
+			enemies.spawn_ring(hexer, 7, 5.0, 1.0)
 		"horde":
 			_run_event({"kind": "ring", "enemy": chapter.waves[0]["enemy"], "count": 40})
 		"boss":
