@@ -72,7 +72,6 @@ var survivors: Survivors
 var hills: Hills
 var treasure: Treasure
 var boss_brain := BossBrain.new()
-var grass: GrassField
 ## Relics carried into this run, and whether each has been spent.
 var bag: Array[RelicData] = []
 var bag_spent: Array[bool] = []
@@ -127,7 +126,6 @@ func _start_run() -> void:
 	arena.name = "Arena"
 	world.add_child(arena)
 	arena.build(chapter, _rng.randi())
-	grass = arena.grass
 
 	# Terrain first: it is the only solid thing in the map, and everything
 	# else scatters around it.
@@ -479,7 +477,6 @@ func _tick_world(delta: float) -> void:
 	projectiles.tick(delta)
 	pickups.tick(delta)
 	fx.tick(delta)
-	grass.follow(player.position)
 	camera_rig.follow(player.position, delta, player.move_input)
 	hud.place_hero_hp(camera_rig.camera, player.position)
 	hud.tick(camera_rig.camera, delta)

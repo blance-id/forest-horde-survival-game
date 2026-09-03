@@ -16,6 +16,7 @@ installed (soundfile/numpy only for the zombie WAV -> OGG conversion):
 """
 from __future__ import annotations
 
+import math
 import os
 import re
 import shutil
@@ -243,7 +244,71 @@ def build_ui() -> None:
         copy_png(DL / "3d" / pack / "Previews" / f"{preview}.png", OUT / "ui/items" / f"{name}.png")
     draw_heart(OUT / "ui/icons/heart.png")
     draw_log(OUT / "ui/icons/wood.png")
+    draw_grass_texture(OUT / "textures/grass.png")
     print("ui ok")
+
+
+def draw_grass_texture(dst: Path, size: int = 512) -> None:
+    """A seamless, stylised grass detail map for the ground shader.
+
+    Greyscale rather than green: the shader tints it with each chapter's
+    palette, so one texture serves a summer clearing and a cold night thicket.
+
+    It is built from three layers, coarse to fine, because that is what stops
+    a flat colour reading as plastic — broad clumps you notice from across the
+    map, mid tufts at walking distance, and fine blades underfoot. Everything
+    is drawn with wrapped coordinates so the tile has no seam.
+    """
+    import random
+    from PIL import ImageDraw, ImageFilter
+
+    rng = random.Random(20260903)
+    im = Image.new("L", (size, size), 128)
+    d = ImageDraw.Draw(im)
+
+    def wrapped(draw_one, x, y):
+        """Draw at (x, y) and at every wrap of it, so nothing is cut at a seam."""
+        for dx in (-size, 0, size):
+            for dy in (-size, 0, size):
+                draw_one(x + dx, y + dy)
+
+    # 1. Broad clumps: soft blobs of lighter and darker turf.
+    for _ in range(90):
+        x, y = rng.random() * size, rng.random() * size
+        r = rng.uniform(size * 0.05, size * 0.16)
+        tone = 128 + rng.randint(-26, 26)
+        wrapped(lambda px, py, r=r, tone=tone:
+                d.ellipse((px - r, py - r, px + r, py + r), fill=tone), x, y)
+    im = im.filter(ImageFilter.GaussianBlur(size / 26))
+    d = ImageDraw.Draw(im)
+
+    # 2. Mid tufts: short fans of strokes, the scale read while walking.
+    for _ in range(1400):
+        x, y = rng.random() * size, rng.random() * size
+        base = rng.uniform(-0.9, -0.3) * math.pi  # upward-ish
+        tone = 128 + rng.randint(-40, 46)
+        length = rng.uniform(size * 0.012, size * 0.03)
+        for k in range(rng.randint(2, 4)):
+            a = base + rng.uniform(-0.5, 0.5)
+            dx, dy = math.cos(a) * length, math.sin(a) * length
+            wrapped(lambda px, py, dx=dx, dy=dy, tone=tone:
+                    d.line((px, py, px + dx, py + dy), fill=tone, width=2), x, y)
+
+    # 3. Fine blades: single thin strokes, the texture underfoot.
+    for _ in range(5200):
+        x, y = rng.random() * size, rng.random() * size
+        a = rng.uniform(-0.95, -0.25) * math.pi
+        length = rng.uniform(size * 0.006, size * 0.014)
+        tone = 128 + rng.randint(-52, 58)
+        dx, dy = math.cos(a) * length, math.sin(a) * length
+        wrapped(lambda px, py, dx=dx, dy=dy, tone=tone:
+                d.line((px, py, px + dx, py + dy), fill=tone, width=1), x, y)
+
+    # A whisker of blur takes the aliasing off the strokes without turning the
+    # whole thing back into mush.
+    im = im.filter(ImageFilter.GaussianBlur(0.6))
+    ensure(dst.parent)
+    im.save(dst, optimize=True)
 
 
 def draw_log(dst: Path, size: int = 64) -> None:

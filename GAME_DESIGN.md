@@ -263,12 +263,11 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
 - **Low-poly 3D** — Kenney "mini" characters for the cast, the Nature Kit for
   the forest itself (detailed trees, bushes, stumps, logs, flowers, mushrooms,
   and the rock and cliff sets used for hills and the mountain rim).
-- **Grass is real geometry.** It is the surface on screen the most, so it is
-  not a texture: thousands of blades in a field that follows the hero, with
-  wind running through it in waves, colour and height varying by position, and
-  dry patches matching the worn trails painted on the ground beneath. The
-  painted ground still carries the broad colour and the trails; the blades are
-  what the eye reads.
+- **The floor is plain grass, done properly.** It is the surface on screen the
+  most, so it is a real tiling grass texture rather than noise — sampled twice
+  at different scales and cross-faded, so it never visibly repeats across a
+  90-unit map. Clean and flat, with broad colour drift and worn dirt trails
+  over the top. Not 3D blades: those were tried, and they read as clutter.
 - **The edge of the map is a wall of mist** standing on the boundary, and the
   ground washes out to fog behind it, so there is never a question about where
   the world stops.

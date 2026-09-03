@@ -93,25 +93,23 @@ each tick.
 
 ### Grass
 
-`GrassField` (scripts/world/grass_field.gd) is real geometry, not a texture:
-grass is the surface the player looks at most, and a shader painted on a flat
-plane only ever looks like a painted plane.
+The floor is the surface on screen the most, so it gets a real texture rather
+than a pile of noise — but a *texture*, not geometry. A first pass built the
+grass out of thousands of 3D blades; it read as clutter and made the game look
+messy, so it was cut.
 
-A 90-unit map cannot afford dense grass everywhere and does not need to — the
-camera only sees a patch around the hero. So the MultiMesh is a fixed jittered
-grid covering `PATCH` units, and `shaders/grass.gdshader` **wraps** each
-instance around the hero: a tuft that falls off the back edge reappears at the
-front. The field is effectively infinite, always dense where you are looking,
-and costs a fixed instance count whatever the map size. `Quality.grass_tufts()`
-sets that count.
+`tools/build_assets.py` generates a seamless greyscale grass detail map
+(`draw_grass_texture`) from three layers, coarse to fine: broad clumps you
+notice across the map, mid tufts at walking distance, fine blades underfoot.
+Everything is drawn with wrapped coordinates so the tile has no seam, and it
+is greyscale so each chapter tints it with its own palette.
 
-Everything else follows from the wrap. Colour and height are hashed from the
-*wrapped world position*, not the instance index, so a tuft does not change
-identity when it moves. Blades shrink to nothing at the patch rim and past the
-arena edge so nothing pops in and none grows out of bounds. And the blades are
-given a straight-up normal in the vertex shader — thin double-sided verticals
-lit by their own normals go black the moment the sun is off to one side, which
-reads as dark spikes rather than turf.
+`shaders/ground.gdshader` samples it **twice** — at two scales, one rotated —
+and cross-fades by a very slow noise field, so the repeat never lines up with
+itself. That is the whole anti-tiling trick: one cheap texture reads as unique
+ground across a 90-unit map with no geometry and no atlas. The second sample
+is dropped on LOW. Mipmaps are on (`mipmaps/generate=true` in the `.import`)
+or the tile aliases into shimmering noise in the distance.
 
 ### Boundary
 

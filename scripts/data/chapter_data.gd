@@ -18,11 +18,8 @@ extends Resource
 @export var arena_half_size: float = 45.0
 @export var ground_color: Color = Color(0.27, 0.43, 0.2)
 @export var ground_color_alt: Color = Color(0.23, 0.38, 0.18)
-## The 3D grass field: blade colours, height and how hard the wind blows.
-@export var grass_color: Color = Color(0.33, 0.48, 0.2)
-@export var grass_color_alt: Color = Color(0.22, 0.36, 0.14)
-@export var grass_height: float = 1.0
-@export var grass_wind: float = 1.0
+## World units one tile of the grass texture covers. Smaller is finer grass.
+@export var grass_scale: float = 2.4
 ## Worn dirt patches painted over the grass.
 @export var dirt_color: Color = Color(0.5, 0.36, 0.22)
 @export var sky_color: Color = Color(0.08, 0.13, 0.09)

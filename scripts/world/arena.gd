@@ -9,7 +9,6 @@ const GROUND_MARGIN := 40.0
 
 var chapter: ChapterData
 var bounds: ArenaBounds
-var grass: GrassField
 
 var _rng := RandomNumberGenerator.new()
 
@@ -20,7 +19,6 @@ func build(data: ChapterData, seed_value: int = 1) -> void:
 	_rng.seed = seed_value
 	_build_environment()
 	_build_ground()
-	_build_grass()
 	_build_fog_wall()
 	_build_border()
 	_build_decor()
@@ -115,6 +113,8 @@ func _build_ground() -> void:
 	mat.set_shader_parameter("arena_half", chapter.arena_half_size)
 	mat.set_shader_parameter("arena_shape", int(chapter.arena_shape))
 	mat.set_shader_parameter("fog_tint", chapter.fog_color)
+	mat.set_shader_parameter("grass_tex", preload("res://assets/textures/grass.png"))
+	mat.set_shader_parameter("grass_scale", chapter.grass_scale)
 	mat.set_shader_parameter("detail", 1.0 if Quality.ground_detail() else 0.0)
 	var ground := MeshInstance3D.new()
 	ground.name = "Ground"
@@ -122,15 +122,6 @@ func _build_ground() -> void:
 	ground.material_override = mat
 	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(ground)
-
-
-## Real grass on top of the painted ground. The shader plane still carries the
-## broad colour and the worn trails; this is what the eye actually reads.
-func _build_grass() -> void:
-	grass = GrassField.new()
-	grass.name = "Grass"
-	add_child(grass)
-	grass.build(chapter)
 
 
 ## A curtain of mist standing on the boundary, so it is obvious where the map

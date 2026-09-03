@@ -42,13 +42,6 @@ static func shadow_size() -> int:
 	return 4096 if level() == Level.MAX else 2048
 
 
-## Grass tufts in the field that follows the hero. Grass is the surface the
-## player looks at most, so it is the last thing to be cut and the first thing
-## MAX spends on.
-static func grass_tufts() -> int:
-	return [3000, 12000, 24000][int(level())]
-
-
 ## Multiplier on decor / giant / bush counts.
 static func decor_scale() -> float:
 	return [0.45, 1.0, 1.45][int(level())]
