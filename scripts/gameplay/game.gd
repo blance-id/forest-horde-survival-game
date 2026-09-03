@@ -40,6 +40,7 @@ const LAUGH_BEAT := 1.1
 @onready var pickups: PickupManager = $Pickups
 @onready var fx: FxManager = $Fx
 @onready var towers: TowerManager = $Towers
+@onready var vehicles: VehicleManager = $Vehicles
 @onready var hud: HUD = $UI/HUD
 @onready var level_up_panel: LevelUpPanel = $UI/LevelUpPanel
 @onready var pause_panel: PausePanel = $UI/PausePanel
@@ -60,6 +61,7 @@ var run_ammo := 0
 var upgrade_levels: Dictionary = {}  # UpgradeData -> level
 var forest: Forest
 var traps: Traps
+var survivors: Survivors
 ## Relics carried into this run, and whether each has been spent.
 var bag: Array[RelicData] = []
 var bag_spent: Array[bool] = []
@@ -122,6 +124,13 @@ func _start_run() -> void:
 	traps.build(chapter, _rng.randi())
 	traps.triggered.connect(_on_trap_triggered)
 
+	survivors = Survivors.new()
+	survivors.name = "Survivors"
+	world.add_child(survivors)
+	survivors.build(chapter, _rng.randi())
+	survivors.progress.connect(_on_rescue_progress)
+	survivors.rescued.connect(_on_survivor_rescued)
+
 	player.bounds = ArenaBounds.from_chapter(chapter)
 	# Connect before setup: setup emits the starting HP, and the HUD has to see
 	# it or the bar keeps its scene default until the first hit.
@@ -137,6 +146,12 @@ func _start_run() -> void:
 	enemies.boss_killed.connect(_on_boss_killed)
 	enemies.enemy_winding_up.connect(_on_enemy_winding_up)
 	enemies.enemy_struck.connect(_on_enemy_struck)
+
+	vehicles.configure(chapter, enemies, projectiles, player, _rng.randi())
+	vehicles.mounted.connect(_on_vehicle_mounted)
+	vehicles.dismounted.connect(_on_vehicle_dismounted)
+	vehicles.fired.connect(_on_vehicle_fired)
+	vehicles.state_changed.connect(hud.set_vehicle)
 
 	towers.configure(chapter, enemies, projectiles)
 	towers.built.connect(_on_tower_built)
@@ -233,6 +248,23 @@ func dev_command(cmd: String) -> void:
 			for i in bag.size():
 				bag_spent.append(false)
 			hud.set_bag_items(bag, bag_spent)
+		"mech":
+			# Park a mech on the hero so the pilot state can be inspected.
+			if not vehicles.vehicles.is_empty():
+				var v: VehicleManager.Vehicle = vehicles.vehicles[0]
+				player.position = Vector3(v.pos.x, 0.0, v.pos.y)
+				camera_rig.snap_to(player.position)
+		"rescue":
+			if not survivors.survivors.is_empty():
+				var sv: Survivors.Survivor = survivors.survivors[0]
+				player.position = Vector3(sv.pos.x + 1.0, 0.0, sv.pos.y)
+				camera_rig.snap_to(player.position)
+		"chapter2":
+			SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": "chapter_02", "character": character})
+		"beasts":
+			# A pack of wolves and a pair of serpents, close enough to inspect.
+			enemies.spawn_ring(load("res://resources/enemies/wolf.tres") as EnemyData, 6, 4.5, 1.0)
+			enemies.spawn_ring(load("res://resources/enemies/serpent.tres") as EnemyData, 2, 7.0, 1.0)
 		"hexer":
 			# A ring of casters, close enough that their bolts are in flight.
 			var hexer := load("res://resources/enemies/hexer.tres") as EnemyData
@@ -345,10 +377,13 @@ func _process(delta: float) -> void:
 func _tick_world(delta: float) -> void:
 	player.tick(delta)
 	_tick_cover(delta)
+	weapon_system.enabled = not vehicles.is_piloting()
 	var hero := Vector2(player.position.x, player.position.z)
 	forest.tick(delta, hero)
 	traps.tick(delta, player, enemies)
 	towers.tick(delta, hero, run_ammo)
+	vehicles.tick(delta, hero)
+	survivors.tick(delta, hero)
 	hud.set_can_build(towers.can_build(hero, run_wood))
 	weapon_system.tick(delta)
 	enemies.tick(delta)
@@ -455,6 +490,45 @@ func _on_tower_destroyed(position: Vector3) -> void:
 func _on_tower_ammo_spent(amount: int) -> void:
 	run_ammo = maxi(0, run_ammo - amount)
 	hud.set_ammo(run_ammo)
+
+
+func _on_vehicle_mounted(position: Vector3) -> void:
+	SoundBank.sfx("metal_impact", -2.0, 0.0)
+	SoundBank.ui("confirm")
+	fx.level_up(position)
+	camera_rig.shake(0.35)
+	hud.show_announcement("MECH ONLINE!", 1.4)
+
+
+func _on_vehicle_dismounted(position: Vector3, wrecked: bool) -> void:
+	hud.set_vehicle(0, 0.0, 0.0)
+	camera_rig.shake(0.5 if wrecked else 0.2)
+	if wrecked:
+		SoundBank.sfx("explosion", -2.0, 0.0)
+		fx.boss_death(position + Vector3(0.0, 0.6, 0.0), Color(1.0, 0.6, 0.2))
+		hud.show_announcement("MECH DOWN!", 1.6)
+	else:
+		SoundBank.sfx("reload", -6.0, 0.0)
+		hud.show_announcement("OUT OF SHELLS", 1.4)
+
+
+func _on_vehicle_fired(from: Vector3, dir: Vector2) -> void:
+	fx.muzzle(from, dir, vehicles.data.weapon.tint)
+	camera_rig.shake(0.06)
+
+
+func _on_rescue_progress(ratio: float, position: Vector3) -> void:
+	hud.set_rescue(ratio, position, camera_rig.camera)
+
+
+## A freed survivor hands over what they were carrying, usable straight away.
+func _on_survivor_rescued(position: Vector3, relic: RelicData) -> void:
+	SoundBank.jingle("reward", -3.0)
+	fx.level_up(position)
+	hud.show_announcement("RESCUED! %s" % relic.display_name.to_upper(), 1.8)
+	bag.append(relic)
+	bag_spent.append(false)
+	hud.set_bag_items(bag, bag_spent)
 
 
 func _on_tree_chopped(position: Vector3, ratio: float) -> void:
@@ -624,6 +698,10 @@ func _on_boss_killed(e: EnemyManager.Enemy) -> void:
 
 
 func _on_player_damaged(amount: float) -> void:
+	if vehicles.absorb(amount):
+		SoundBank.sfx("metal_impact", -8.0, 0.1)
+		camera_rig.shake(0.15)
+		return
 	SoundBank.sfx("hit_player", -6.0, 0.1)
 	SoundBank.sfx("zombie_attack", -9.0, 0.2)
 	camera_rig.shake(0.25)
@@ -948,6 +1026,8 @@ func _end(won: bool) -> void:
 	if won:
 		reward += chapter.coins_win
 	run_coins = reward
+	if won and chapter.unlocks != "":
+		GameState.unlock_chapter(chapter.unlocks)
 	# Unused relics only survive a win: dying costs you what you were carrying.
 	if won:
 		var leftovers: Array = []

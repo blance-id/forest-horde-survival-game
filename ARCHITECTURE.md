@@ -124,6 +124,38 @@ bush, `EnemyManager.player_hidden` is set and the horde walks to `last_seen`
 instead of tracking. Killing from cover sets `_exposed`, which gives the
 position away for `COVER_BLOWN_TIME`.
 
+### Generated models
+
+The CC0 kits have no animals and no vehicles, so `tools/build_models.gd`
+builds the wolf, the forest serpent and the walker mech out of boxes and saves
+them as ordinary scenes in `assets/models/built/`. Two things make them fit
+rather than look bolted on:
+
+- **They use the real palette.** Faces point at the middle of a *verified
+  uniform* swatch in the Graveyard colormap. Godot's compressed vertex
+  attributes jitter a UV by a hair, so a coordinate near a swatch edge samples
+  the anti-aliased boundary and speckles the whole face — which is exactly
+  what happened first time round.
+- **They use the real rig.** Parts are named `torso`, `head`, `leg-*`,
+  `arm-*`, so `EnemyMeshBaker` bakes them and `enemy_parts.gdshader` animates
+  them with no special case anywhere. For four legs on a two-leg rig, the
+  front legs go in the *arm* slots: the shader swings arms opposite to legs,
+  so front-right moves with back-left and the wolf trots.
+
+### Vehicles and survivors
+
+`VehicleManager` parks walker mechs around the map. Walking into one mounts
+it: `WeaponSystem.enabled` goes false so the hero's guns fall silent, the
+mech's twin cannons fire instead, `Player.vehicle_scale` shrinks the hero into
+the cockpit, and `absorb()` diverts incoming damage into the hull. Finite ammo
+and finite hull are the design — either running out puts the player back on
+foot where the fight left them.
+
+`Survivors` scatters people to free. Standing inside `RESCUE_RANGE` for
+`RESCUE_TIME` frees one and hands over a relic straight into the run's bag;
+walking away resets the timer, so the cost is standing still in the open while
+the horde closes.
+
 ### Ending a run
 
 Both endings freeze the tree (`_freeze()`), so the last frame of the fight

@@ -24,6 +24,8 @@ var is_dead := false
 ## Ignores all damage (main-menu demo hero).
 var invulnerable := false
 var bounds := ArenaBounds.new()
+## Shrinks the hero into a mech cockpit while piloting; 1 on foot.
+var vehicle_scale := 1.0: set = _set_vehicle_scale
 
 var _model: Node3D
 var _anim_player: AnimationPlayer
@@ -149,6 +151,12 @@ func tick(delta: float) -> void:
 		var target_yaw := atan2(face.x, face.y)
 		_yaw = lerp_angle(_yaw, target_yaw, minf(1.0, TURN_SPEED * delta))
 		rotation.y = _yaw
+
+
+func _set_vehicle_scale(value: float) -> void:
+	vehicle_scale = value
+	if _model != null:
+		_model.scale = Vector3.ONE * value
 
 
 func take_damage(amount: float) -> bool:

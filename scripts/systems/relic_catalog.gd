@@ -13,6 +13,7 @@ extends RefCounted
 
 const RELICS: Array[RelicData] = [
 	preload("res://resources/relics/air_strike.tres"),
+	preload("res://resources/relics/alpha_fang.tres"),
 	preload("res://resources/relics/blood_rage.tres"),
 	preload("res://resources/relics/field_kit.tres"),
 	preload("res://resources/relics/lodestone.tres"),

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
@@ -12,8 +12,12 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/settings_panel.tscn" id="10_settings"]
 [ext_resource type="PackedScene" path="res://scenes/ui/store_panel.tscn" id="10b_store"]
 [ext_resource type="Texture2D" path="res://assets/ui/icons/shoppingCart.png" id="10c_cart"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/arrowLeft.png" id="10d_left"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/arrowRight.png" id="10e_right"]
 [ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
 [ext_resource type="Resource" path="res://resources/chapters/chapter_01.tres" id="11_chapter"]
+[ext_resource type="Resource" path="res://resources/chapters/chapter_02.tres" id="11b_chapter2"]
+[ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="s_chapter"]
 [ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
 [ext_resource type="Resource" path="res://resources/weapons/blaster.tres" id="13_blaster"]
 [ext_resource type="Resource" path="res://resources/weapons/shovel_storm.tres" id="14_shovel"]
@@ -31,6 +35,7 @@ fill_to = Vector2(0, 1)
 
 [node name="MainMenu" type="Node3D"]
 script = ExtResource("1_menu")
+chapters = Array[ExtResource("s_chapter")]([ExtResource("11_chapter"), ExtResource("11b_chapter2")])
 chapter = ExtResource("11_chapter")
 character = ExtResource("12_ranger")
 demo_weapons = Array[ExtResource("s_weapon")]([ExtResource("13_blaster"), ExtResource("14_shovel")])
@@ -211,11 +216,26 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 26
 theme_override_constants/margin_bottom = 18
 
-[node name="VBox" type="VBoxContainer" parent="UI/Root/Bottom/ChapterCard/Margin"]
+[node name="Row" type="HBoxContainer" parent="UI/Root/Bottom/ChapterCard/Margin"]
 layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PrevChapter" type="Button" parent="UI/Root/Bottom/ChapterCard/Margin/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"RoundButton"
+icon = ExtResource("10d_left")
+icon_alignment = 1
+expand_icon = true
+
+[node name="VBox" type="VBoxContainer" parent="UI/Root/Bottom/ChapterCard/Margin/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="ChapterLabel" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
+[node name="ChapterLabel" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"Small"
@@ -223,19 +243,29 @@ theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
 text = "CHAPTER 1"
 horizontal_alignment = 1
 
-[node name="ChapterName" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
+[node name="ChapterName" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"Heading"
 text = "Whispering Forest"
 horizontal_alignment = 1
 
-[node name="ChapterBest" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/VBox"]
+[node name="ChapterBest" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"Dim"
 text = "The forest is waiting..."
 horizontal_alignment = 1
+
+[node name="NextChapter" type="Button" parent="UI/Root/Bottom/ChapterCard/Margin/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"RoundButton"
+icon = ExtResource("10e_right")
+icon_alignment = 1
+expand_icon = true
 
 [node name="PlayButton" type="Button" parent="UI/Root/Bottom"]
 unique_name_in_owner = true

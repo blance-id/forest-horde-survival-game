@@ -397,6 +397,62 @@ offset_bottom = -60.0
 grow_vertical = 0
 theme_override_constants/separation = 10
 
+[node name="RescueBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_right = 90.0
+offset_bottom = 12.0
+mouse_filter = 2
+theme_type_variation = &"XpBar"
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="VehicleRow" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -180.0
+offset_top = -196.0
+offset_right = 180.0
+offset_bottom = -150.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="MechLabel" type="Label" parent="VehicleRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"Small"
+text = "MECH"
+
+[node name="HullBar" type="ProgressBar" parent="VehicleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(130, 26)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"HpBar"
+max_value = 1.0
+step = 0.001
+value = 1.0
+show_percentage = false
+
+[node name="ShellsLabel" type="Label" parent="VehicleRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"Number"
+text = "170"
+
 [node name="ChopBar" type="ProgressBar" parent="."]
 unique_name_in_owner = true
 visible = false

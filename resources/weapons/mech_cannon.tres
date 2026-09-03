@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/blaster.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "mech_cannon"
+display_name = "Mech Cannon"
+description = "The walker's twin autocannons."
+icon = ExtResource("2")
+kind = 0
+max_level = 1
+tint = Color(1, 0.72, 0.35, 1)
+fire_sound = "shot_scatter"
+hit_sound = "heavy_impact"
+damage_type = 0
+damage = 30.0
+cooldown = 0.18
+projectile_count = 1
+spread_degrees = 3.0
+projectile_speed = 26.0
+pierce = 2
+range = 11.0
+knockback = 3.5
+projectile_scale = 1.6

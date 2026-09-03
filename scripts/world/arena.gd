@@ -63,9 +63,12 @@ func _build_environment() -> void:
 	sun.shadow_enabled = Quality.shadows()
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	sun.directional_shadow_max_distance = Quality.shadow_distance()
+	sun.set_param(Light3D.PARAM_SHADOW_BLUR, 1.4)
 	sun.directional_shadow_fade_start = 0.85
-	sun.shadow_bias = 0.06
-	sun.shadow_normal_bias = 1.5
+	# The beasts are big flat slabs rather than small chunky limbs, and at the
+	# old bias they self-shadowed into stripes down their backs.
+	sun.shadow_bias = 0.13
+	sun.shadow_normal_bias = 3.0
 	add_child(sun)
 
 

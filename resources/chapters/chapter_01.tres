@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=50 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=54 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
@@ -8,6 +8,10 @@
 [ext_resource type="Resource" path="res://resources/enemies/keeper.tres" id="e_keeper"]
 [ext_resource type="Resource" path="res://resources/enemies/vampire.tres" id="e_vampire"]
 [ext_resource type="Resource" path="res://resources/enemies/hexer.tres" id="e_hexer"]
+[ext_resource type="Resource" path="res://resources/enemies/wolf.tres" id="e_wolf"]
+[ext_resource type="Resource" path="res://resources/enemies/serpent.tres" id="e_serpent"]
+[ext_resource type="PackedScene" path="res://assets/models/dungeon/character-human.glb" id="m_human"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/tent.glb" id="m_tent"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/pine-crooked.glb" id="m_pine"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/tree.glb" id="m_tree"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/tree-high.glb" id="m_tree_high"]
@@ -83,6 +87,10 @@ trap_count = 34
 trap_radius = 0.8
 trap_damage = 14.0
 trap_scale = 1.1
+survivor_model = ExtResource("m_human")
+survivor_camp_model = ExtResource("m_tent")
+survivor_count = 5
+vehicle_count = 2
 waves = Array[Dictionary]([{
 "enemy": ExtResource("e_walker"),
 "start": 0.0,
@@ -104,6 +112,16 @@ waves = Array[Dictionary]([{
 "end": 400.0,
 "weight": 2.0
 }, {
+"enemy": ExtResource("e_wolf"),
+"start": 55.0,
+"end": 400.0,
+"weight": 4.0
+}, {
+"enemy": ExtResource("e_serpent"),
+"start": 165.0,
+"end": 400.0,
+"weight": 1.2
+}, {
 "enemy": ExtResource("e_hexer"),
 "start": 100.0,
 "end": 400.0,
@@ -124,6 +142,11 @@ events = Array[Dictionary]([{
 "kind": "ring",
 "enemy": ExtResource("e_runner"),
 "count": 12
+}, {
+"time": 80.0,
+"kind": "ring",
+"enemy": ExtResource("e_wolf"),
+"count": 10
 }, {
 "time": 100.0,
 "kind": "ring",
@@ -155,6 +178,7 @@ events = Array[Dictionary]([{
 "enemy": ExtResource("e_runner"),
 "count": 30
 }])
+unlocks = "chapter_02"
 coins_win = 150
 coins_per_minute = 10
 music = ExtResource("a_run")

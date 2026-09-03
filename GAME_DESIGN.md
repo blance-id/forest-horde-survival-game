@@ -417,13 +417,26 @@ you die.
 - Metal Slug touches: driveable vehicles with their own ammo, rescuable
   survivors that hand over an item. **Not started.**
 
-### 15.3 Still open
+### 15.3 Everything shipped
 
-- **Beasts.** The forest monsters landed as the Forest Hexer (a caster with a
-  2 s tell and a slow, dodgeable bolt). Wolves and snakes need an animated
-  animal model pack — none of the CC0 kits already downloaded has one, so this
-  needs an asset decision before it can be built honestly.
-- **Vehicles and rescued survivors.** Not started.
-- **A second chapter.** `ArenaBounds` already supports square / circle /
-  clover and every chapter carries its own trap, so a second map is data plus
-  a palette — but only chapter 1 exists today.
+Wave 6 closed out with the three items that were left:
+
+- **Beasts.** Dire wolves hunt in fast packs from the first minute; great
+  serpents lunge with a long reach and shrug off a quarter of physical damage.
+  Neither exists in any CC0 kit, so both are generated from boxes in the same
+  palette and driven by the same rig as everything else.
+- **Metal Slug touches.** Abandoned walker mechs are parked around the map:
+  step in and its twin cannons do the shooting while its hull takes the hits,
+  until the shells or the armour run out. Survivors can be freed by standing
+  with them for a couple of seconds, and they hand over a relic you can use on
+  the spot.
+- **A second chapter.** Hollow Thicket: a clover-shaped map with chokepoints
+  between four lobes, lit cold and blue, ringed with braziers that burn
+  anything that walks through them, and stocked with wolves, hexers and
+  serpents under the Alpha.
+
+### 15.4 Still open
+
+Nothing from the playtest list is outstanding. The next pass is balance:
+five minutes on Hollow Thicket is currently a wall, and the mech is strong
+enough that finding one early decides the run.

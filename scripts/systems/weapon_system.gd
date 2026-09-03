@@ -37,6 +37,8 @@ var player: Player
 var enemies: EnemyManager
 var projectiles: ProjectileManager
 var run_stats: RunStats
+## Cleared while the hero is piloting a mech: the vehicle shoots instead.
+var enabled := true
 var slots: Array[Slot] = []
 
 var _query: Array = []
@@ -121,7 +123,7 @@ func level_of(data: WeaponData) -> int:
 
 
 func tick(delta: float) -> void:
-	if player.is_dead:
+	if player.is_dead or not enabled:
 		return
 	var origin := Vector2(player.position.x, player.position.z)
 	var aim_set := false

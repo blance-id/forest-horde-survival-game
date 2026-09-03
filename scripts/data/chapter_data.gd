@@ -50,6 +50,15 @@ extends Resource
 @export var trap_damage: float = 12.0
 @export var trap_scale: float = 1.0
 
+@export_group("Survivors and vehicles")
+## People to free; each hands over a one-shot relic for this run.
+@export var survivor_model: PackedScene
+## Optional tent behind them so a rescue reads as a place from a distance.
+@export var survivor_camp_model: PackedScene
+@export var survivor_count: int = 4
+## Abandoned walker mechs parked around the map.
+@export var vehicle_count: int = 2
+
 @export_group("Spawning")
 ## [{ "enemy": EnemyData, "start": sec, "end": sec, "weight": float }]
 @export var waves: Array[Dictionary] = []
@@ -64,6 +73,8 @@ extends Resource
 @export var events: Array[Dictionary] = []
 
 @export_group("Rewards")
+## Chapter id unlocked by winning this one; empty for the last chapter.
+@export var unlocks: String = ""
 @export var coins_win: int = 150
 @export var coins_per_minute: int = 10
 

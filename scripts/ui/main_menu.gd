@@ -15,6 +15,9 @@ const DEMO_WEAPON_LEVELS: PackedInt32Array = [2, 4]
 const STROLL_SPEED := 0.45
 const STROLL_TURN := 0.4
 
+## Every chapter in the game, in order. The menu only offers the unlocked
+## prefix of this list; `chapter` is whichever one is currently shown.
+@export var chapters: Array[ChapterData] = []
 @export var chapter: ChapterData
 @export var character: CharacterData
 @export var demo_weapons: Array[WeaponData] = []
@@ -31,6 +34,8 @@ const STROLL_TURN := 0.4
 @onready var chapter_label: Label = %ChapterLabel
 @onready var chapter_name: Label = %ChapterName
 @onready var chapter_best: Label = %ChapterBest
+@onready var prev_chapter: Button = %PrevChapter
+@onready var next_chapter: Button = %NextChapter
 @onready var settings_panel: SettingsPanel = %SettingsPanel
 @onready var store_button: Button = %StoreButton
 @onready var store_panel: StorePanel = %StorePanel
@@ -88,7 +93,39 @@ func _build_ui() -> void:
 	store_button.pressed.connect(_on_store_pressed)
 	store_panel.closed.connect(_start_pulse)
 
-	var index := GameState.get_unlocked_chapters().find(chapter.id)
+	prev_chapter.pressed.connect(_step_chapter.bind(-1))
+	next_chapter.pressed.connect(_step_chapter.bind(1))
+	# Open on the furthest chapter the player has reached — that is the one
+	# they came back for.
+	var unlocked := _unlocked_chapters()
+	if not unlocked.is_empty():
+		chapter = unlocked[unlocked.size() - 1]
+	_show_chapter()
+	_start_pulse.call_deferred()
+
+
+## The unlocked prefix of `chapters`, in order.
+func _unlocked_chapters() -> Array[ChapterData]:
+	var out: Array[ChapterData] = []
+	for c in chapters:
+		if GameState.is_chapter_unlocked(c.id):
+			out.append(c)
+	return out
+
+
+func _step_chapter(delta: int) -> void:
+	var unlocked := _unlocked_chapters()
+	if unlocked.size() < 2:
+		return
+	var index := maxi(0, unlocked.find(chapter))
+	chapter = unlocked[wrapi(index + delta, 0, unlocked.size())]
+	SoundBank.ui("click")
+	_show_chapter()
+
+
+func _show_chapter() -> void:
+	var unlocked := _unlocked_chapters()
+	var index := unlocked.find(chapter)
 	chapter_label.text = "CHAPTER %d" % (maxi(index, 0) + 1)
 	chapter_name.text = chapter.display_name
 	var rec := GameState.get_chapter_record(chapter.id)
@@ -97,7 +134,11 @@ func _build_ui() -> void:
 		chapter_best.text = "The forest is waiting..."
 	else:
 		chapter_best.text = "BEST  %02d:%02d   ·   %d KILLS" % [best / 60, best % 60, int(rec["best_kills"])]
-	_start_pulse.call_deferred()
+	GameState.selected_chapter_id = chapter.id
+	var many := unlocked.size() > 1
+	for b: Button in [prev_chapter, next_chapter]:
+		b.disabled = not many
+		b.modulate.a = 1.0 if many else 0.35
 
 
 func _process(delta: float) -> void:

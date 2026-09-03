@@ -44,6 +44,10 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 @onready var ammo_label: Label = %AmmoLabel
 @onready var minimap: Minimap = %Minimap
 @onready var chop_bar: ProgressBar = %ChopBar
+@onready var rescue_bar: ProgressBar = %RescueBar
+@onready var vehicle_row: HBoxContainer = %VehicleRow
+@onready var hull_bar: ProgressBar = %HullBar
+@onready var shells_label: Label = %ShellsLabel
 @onready var build_button: Button = %BuildButton
 @onready var build_icon: TextureRect = %BuildIcon
 @onready var build_cost: Label = %BuildCost
@@ -313,6 +317,26 @@ func set_chop(ratio: float) -> void:
 	chop_bar.visible = ratio >= 0.0
 	if ratio >= 0.0:
 		chop_bar.value = 1.0 - ratio
+
+
+## Rescue progress, floated over the survivor being freed. A negative ratio
+## hides it — the hero walked away and the timer reset.
+func set_rescue(ratio: float, world_position: Vector3, camera: Camera3D) -> void:
+	rescue_bar.visible = ratio >= 0.0
+	if ratio < 0.0:
+		return
+	rescue_bar.value = ratio
+	var screen := camera.unproject_position(world_position)
+	rescue_bar.position = screen - Vector2(rescue_bar.size.x * 0.5, 0.0)
+
+
+## Mech hull and shells. Zero max hull means the hero is back on foot.
+func set_vehicle(ammo: int, hull: float, max_hull: float) -> void:
+	vehicle_row.visible = max_hull > 0.0
+	if max_hull <= 0.0:
+		return
+	hull_bar.value = clampf(hull / max_hull, 0.0, 1.0)
+	shells_label.text = str(ammo)
 
 
 ## In a bush: the horde loses track of the hero until they attack from cover.

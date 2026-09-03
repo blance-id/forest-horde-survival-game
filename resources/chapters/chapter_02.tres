@@ -1,0 +1,145 @@
+[gd_resource type="Resource" script_class="ChapterData" load_steps=29 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://resources/enemies/runner.tres" id="e_runner"]
+[ext_resource type="Resource" path="res://resources/enemies/wolf.tres" id="e_wolf"]
+[ext_resource type="Resource" path="res://resources/enemies/ghost.tres" id="e_ghost"]
+[ext_resource type="Resource" path="res://resources/enemies/hexer.tres" id="e_hexer"]
+[ext_resource type="Resource" path="res://resources/enemies/serpent.tres" id="e_serpent"]
+[ext_resource type="Resource" path="res://resources/enemies/brute.tres" id="e_brute"]
+[ext_resource type="Resource" path="res://resources/enemies/keeper.tres" id="e_keeper"]
+[ext_resource type="Resource" path="res://resources/enemies/alpha_wolf.tres" id="e_alpha"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_pineTallC.glb" id="n_pine_a"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_pineRoundC.glb" id="n_pine_b"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_thin.glb" id="n_thin"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_detailed_dark.glb" id="n_dark"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_oak_dark.glb" id="n_oak_dark"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/tree_default_dark.glb" id="n_tree_dark"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/stump_square.glb" id="n_stump"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/plant_bushLargeTriangle.glb" id="n_bush"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/plant_bushSmall.glb" id="n_bush_s"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/mushroom_redGroup.glb" id="n_shroom"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/grass_large.glb" id="n_grass"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_smallA.glb" id="n_rock_s"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeA.glb" id="n_rock_l"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/statue_obelisk.glb" id="n_obelisk"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/log_stack.glb" id="n_logs"]
+[ext_resource type="PackedScene" path="res://assets/models/graveyard/fire-basket.glb" id="m_brazier"]
+[ext_resource type="PackedScene" path="res://assets/models/dungeon/character-human.glb" id="m_human"]
+[ext_resource type="PackedScene" path="res://assets/models/forest/tent.glb" id="m_tent"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/run.ogg" id="a_run"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/boss.ogg" id="a_boss"]
+
+[resource]
+script = ExtResource("1")
+id = "chapter_02"
+display_name = "Hollow Thicket"
+duration = 300.0
+arena_shape = 2
+arena_half_size = 52.0
+ground_color = Color(0.2, 0.29, 0.16, 1)
+ground_color_alt = Color(0.15, 0.23, 0.13, 1)
+dirt_color = Color(0.3, 0.25, 0.17, 1)
+sky_color = Color(0.05, 0.07, 0.08, 1)
+fog_color = Color(0.08, 0.12, 0.11, 1)
+sun_color = Color(0.78, 0.82, 1, 1)
+sun_energy = 0.8
+ambient_color = Color(0.36, 0.44, 0.52, 1)
+border_models = Array[PackedScene]([ExtResource("n_pine_a"), ExtResource("n_pine_b"), ExtResource("n_thin"), ExtResource("n_dark")])
+decor_models = Array[PackedScene]([ExtResource("n_grass"), ExtResource("n_grass"), ExtResource("n_shroom"), ExtResource("n_bush_s"), ExtResource("n_rock_s"), ExtResource("n_logs"), ExtResource("n_obelisk"), ExtResource("m_brazier")])
+decor_count = 620
+giant_models = Array[PackedScene]([ExtResource("n_oak_dark"), ExtResource("n_rock_l"), ExtResource("n_dark")])
+giant_count = 70
+tree_models = Array[PackedScene]([ExtResource("n_tree_dark"), ExtResource("n_oak_dark"), ExtResource("n_thin")])
+tree_count = 150
+tree_hp = 5.0
+wood_per_tree = 3
+stump_model = ExtResource("n_stump")
+bush_model = ExtResource("n_bush")
+bush_count = 46
+bush_radius = 2.6
+trap_model = ExtResource("m_brazier")
+trap_count = 44
+trap_radius = 1.0
+trap_damage = 20.0
+trap_scale = 1.0
+survivor_model = ExtResource("m_human")
+survivor_camp_model = ExtResource("m_tent")
+survivor_count = 6
+vehicle_count = 2
+waves = Array[Dictionary]([{
+"enemy": ExtResource("e_runner"),
+"start": 0.0,
+"end": 400.0,
+"weight": 7.0
+}, {
+"enemy": ExtResource("e_wolf"),
+"start": 20.0,
+"end": 400.0,
+"weight": 6.0
+}, {
+"enemy": ExtResource("e_ghost"),
+"start": 40.0,
+"end": 400.0,
+"weight": 4.0
+}, {
+"enemy": ExtResource("e_hexer"),
+"start": 70.0,
+"end": 400.0,
+"weight": 2.5
+}, {
+"enemy": ExtResource("e_serpent"),
+"start": 120.0,
+"end": 400.0,
+"weight": 2.0
+}, {
+"enemy": ExtResource("e_brute"),
+"start": 150.0,
+"end": 400.0,
+"weight": 2.0
+}, {
+"enemy": ExtResource("e_keeper"),
+"start": 200.0,
+"end": 400.0,
+"weight": 1.0
+}])
+cap_start = 42
+cap_end = 300
+spawn_interval_start = 0.68
+spawn_interval_end = 0.07
+hp_scale_end = 3.6
+events = Array[Dictionary]([{
+"time": 45.0,
+"kind": "ring",
+"enemy": ExtResource("e_wolf"),
+"count": 14
+}, {
+"time": 95.0,
+"kind": "ring",
+"enemy": ExtResource("e_hexer"),
+"count": 8
+}, {
+"time": 145.0,
+"kind": "ring",
+"enemy": ExtResource("e_serpent"),
+"count": 6
+}, {
+"time": 195.0,
+"kind": "ring",
+"enemy": ExtResource("e_brute"),
+"count": 12
+}, {
+"time": 250.0,
+"kind": "boss",
+"enemy": ExtResource("e_alpha"),
+"count": 1
+}, {
+"time": 275.0,
+"kind": "ring",
+"enemy": ExtResource("e_wolf"),
+"count": 26
+}])
+coins_win = 260
+coins_per_minute = 16
+music = ExtResource("a_run")
+boss_music = ExtResource("a_boss")

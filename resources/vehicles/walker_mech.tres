@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="VehicleData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/vehicle_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/built/mech.tscn" id="2"]
+[ext_resource type="Resource" path="res://resources/weapons/mech_cannon.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = "walker_mech"
+display_name = "Walker Mech"
+model = ExtResource("2")
+scale = 1.4
+hero_scale = 0.5
+muzzle_height = 0.85
+spawn_clearance = 14.0
+weapon = ExtResource("3")
+damage = 30.0
+cooldown = 0.18
+range = 11.0
+ammo = 170
+max_hull = 420.0
