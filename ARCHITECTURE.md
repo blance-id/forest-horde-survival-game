@@ -91,6 +91,36 @@ pickups → fx → camera_rig.follow → hud.place_hero_hp → hud.tick`. Everyt
 simulates in XZ as `Vector2` and is written to 3D transforms at the end of
 each tick.
 
+### Grass
+
+`GrassField` (scripts/world/grass_field.gd) is real geometry, not a texture:
+grass is the surface the player looks at most, and a shader painted on a flat
+plane only ever looks like a painted plane.
+
+A 90-unit map cannot afford dense grass everywhere and does not need to — the
+camera only sees a patch around the hero. So the MultiMesh is a fixed jittered
+grid covering `PATCH` units, and `shaders/grass.gdshader` **wraps** each
+instance around the hero: a tuft that falls off the back edge reappears at the
+front. The field is effectively infinite, always dense where you are looking,
+and costs a fixed instance count whatever the map size. `Quality.grass_tufts()`
+sets that count.
+
+Everything else follows from the wrap. Colour and height are hashed from the
+*wrapped world position*, not the instance index, so a tuft does not change
+identity when it moves. Blades shrink to nothing at the patch rim and past the
+arena edge so nothing pops in and none grows out of bounds. And the blades are
+given a straight-up normal in the vertex shader — thin double-sided verticals
+lit by their own normals go black the moment the sun is off to one side, which
+reads as dark spikes rather than turf.
+
+### Boundary
+
+Two things mark where the map stops. The ground shader washes the grass
+towards the fog colour past the edge, and `Arena._build_fog_wall()` stands an
+actual curtain of mist on the boundary — a strip mesh built from
+`ArenaBounds.radius_at()`, so a clover map gets a clover-shaped wall. It is
+clear at ankle height so props at the rim still read, and thick above.
+
 ### Terrain
 
 `Hills` (scripts/world/hills.gd) owns the only solid ground in the game. Rock

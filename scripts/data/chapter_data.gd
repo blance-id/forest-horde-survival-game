@@ -18,6 +18,11 @@ extends Resource
 @export var arena_half_size: float = 45.0
 @export var ground_color: Color = Color(0.27, 0.43, 0.2)
 @export var ground_color_alt: Color = Color(0.23, 0.38, 0.18)
+## The 3D grass field: blade colours, height and how hard the wind blows.
+@export var grass_color: Color = Color(0.33, 0.48, 0.2)
+@export var grass_color_alt: Color = Color(0.22, 0.36, 0.14)
+@export var grass_height: float = 1.0
+@export var grass_wind: float = 1.0
 ## Worn dirt patches painted over the grass.
 @export var dirt_color: Color = Color(0.5, 0.36, 0.22)
 @export var sky_color: Color = Color(0.08, 0.13, 0.09)
@@ -31,6 +36,12 @@ extends Resource
 ## Oversized plants / rocks (2-3x) that give the ground scale and depth.
 @export var giant_models: Array[PackedScene] = []
 @export var giant_count: int = 0
+
+## Wall of mist standing on the boundary. Height 0 turns it off.
+@export var boundary_fog_height: float = 9.0
+## How far past the playable edge the curtain stands.
+@export var boundary_fog_offset: float = 2.0
+@export var boundary_fog_density: float = 0.92
 
 @export_group("Terrain")
 ## Rock outcrops standing in the arena. Solid: the hero and the horde both

@@ -261,12 +261,17 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   screen. Portrait instead of landscape, but that is the density and polish to
   hit.
 - **Low-poly 3D** — Kenney "mini" characters for the cast, the Nature Kit for
-  the forest itself (detailed trees, bushes, stumps, logs, flowers,
-  mushrooms). The ground is a shader with no texture at all: broad colour
-  drift, a mid mottle, and fine blades that lie in a direction which itself
-  wanders, so grass reads as grass and never visibly tiles across a 90-unit
-  map. Dirt is rare worn trails, not blobs. A wall of pines follows the arena
-  shape; hundreds of props and ~60 oversized trees and rocks fill the inside.
+  the forest itself (detailed trees, bushes, stumps, logs, flowers, mushrooms,
+  and the rock and cliff sets used for hills and the mountain rim).
+- **Grass is real geometry.** It is the surface on screen the most, so it is
+  not a texture: thousands of blades in a field that follows the hero, with
+  wind running through it in waves, colour and height varying by position, and
+  dry patches matching the worn trails painted on the ground beneath. The
+  painted ground still carries the broad colour and the trails; the blades are
+  what the eye reads.
+- **The edge of the map is a wall of mist** standing on the boundary, and the
+  ground washes out to fog behind it, so there is never a question about where
+  the world stops.
 - **Camera** — perspective, pitched 55° down, 9.5 units from the hero, fov 40
   so props lean away at the frame edges; `KEEP_WIDTH` keeps the visible width
   (~7 units, the hero is ~1/8 of the screen width) identical on every phone

@@ -16,6 +16,7 @@ uniform float patch_size = 6.0;
 uniform float arena_half = 22.0;
 // Matches ArenaBounds.Shape: 0 square, 1 circle, 2 clover.
 uniform int arena_shape = 1;
+uniform vec4 fog_tint : source_color = vec4(0.55, 0.67, 0.68, 1.0);
 // 0 = flat colour, 1 = full blade detail. Dropped by the low quality setting.
 uniform float detail = 1.0;
 
@@ -76,10 +77,12 @@ void fragment() {
 	col = mix(col, col * 0.86, rim);
 	col = mix(col, dirt_col, dirt);
 
-	// Past the arena edge the ground darkens, so the boundary reads without a
-	// wall. Follows the chapter's shape.
+	// Past the arena edge the ground both darkens and washes out towards the
+	// fog, so the boundary reads even from directly above where the curtain
+	// standing on it is edge-on and nearly invisible.
 	float edge = length(p) - arena_radius(p);
-	col = mix(col, col * 0.5, smoothstep(0.0, 2.0, edge));
+	float outside = smoothstep(0.0, 3.0, edge);
+	col = mix(col, mix(col * 0.42, fog_tint.rgb, 0.45), outside);
 
 	ALBEDO = col;
 	ROUGHNESS = 1.0;

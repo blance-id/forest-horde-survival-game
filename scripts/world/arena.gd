@@ -9,6 +9,7 @@ const GROUND_MARGIN := 40.0
 
 var chapter: ChapterData
 var bounds: ArenaBounds
+var grass: GrassField
 
 var _rng := RandomNumberGenerator.new()
 
@@ -19,6 +20,8 @@ func build(data: ChapterData, seed_value: int = 1) -> void:
 	_rng.seed = seed_value
 	_build_environment()
 	_build_ground()
+	_build_grass()
+	_build_fog_wall()
 	_build_border()
 	_build_decor()
 	_build_giants()
@@ -111,6 +114,7 @@ func _build_ground() -> void:
 	mat.set_shader_parameter("patch_size", 11.0)
 	mat.set_shader_parameter("arena_half", chapter.arena_half_size)
 	mat.set_shader_parameter("arena_shape", int(chapter.arena_shape))
+	mat.set_shader_parameter("fog_tint", chapter.fog_color)
 	mat.set_shader_parameter("detail", 1.0 if Quality.ground_detail() else 0.0)
 	var ground := MeshInstance3D.new()
 	ground.name = "Ground"
@@ -118,6 +122,59 @@ func _build_ground() -> void:
 	ground.material_override = mat
 	ground.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(ground)
+
+
+## Real grass on top of the painted ground. The shader plane still carries the
+## broad colour and the worn trails; this is what the eye actually reads.
+func _build_grass() -> void:
+	grass = GrassField.new()
+	grass.name = "Grass"
+	add_child(grass)
+	grass.build(chapter)
+
+
+## A curtain of mist standing on the boundary, so it is obvious where the map
+## stops. Built from the arena shape rather than a cylinder, so a clover map
+## gets a clover-shaped wall.
+func _build_fog_wall() -> void:
+	var segments := 96
+	var height := chapter.boundary_fog_height
+	if height <= 0.0:
+		return
+	var verts := PackedVector3Array()
+	var uvs := PackedVector2Array()
+	var indices := PackedInt32Array()
+	for i in segments + 1:
+		var a := TAU * float(i) / float(segments)
+		var r := bounds.radius_at(a) + chapter.boundary_fog_offset
+		var p := Vector2(cos(a), sin(a)) * r
+		verts.append(Vector3(p.x, 0.0, p.y))
+		verts.append(Vector3(p.x, height, p.y))
+		uvs.append(Vector2(float(i) / float(segments), 0.0))
+		uvs.append(Vector2(float(i) / float(segments), 1.0))
+		if i == segments:
+			continue
+		var b0 := i * 2
+		indices.append_array([b0, b0 + 1, b0 + 3, b0, b0 + 3, b0 + 2])
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/boundary_fog.gdshader")
+	mat.set_shader_parameter("color", chapter.fog_color)
+	mat.set_shader_parameter("density", chapter.boundary_fog_density)
+	var mi := MeshInstance3D.new()
+	mi.name = "BoundaryFog"
+	mi.mesh = mesh
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var extent := chapter.arena_half_size + 20.0
+	mi.custom_aabb = AABB(Vector3(-extent, -1, -extent), Vector3(extent * 2.0, height + 2.0, extent * 2.0))
+	add_child(mi)
 
 
 func _build_border() -> void:
