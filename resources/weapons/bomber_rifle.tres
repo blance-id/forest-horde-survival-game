@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/grenade_rifle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "bomber_rifle"
+display_name = "Grenade Rifle"
+description = "Lobs grenades in a spread."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+weight = 5.0
+tint = Color(1, 0.55, 0.2, 1)
+fire_sound = "shot_scatter"
+hit_sound = "heavy_impact"
+damage_type = 0
+damage = 20.0
+cooldown = 0.95
+projectile_count = 2
+spread_degrees = 18.0
+projectile_speed = 14.0
+pierce = 0
+range = 9.0
+knockback = 1.8
+projectile_scale = 1.4
+level_ups = Array[Dictionary]([{
+"text": "+2 rounds per burst.",
+"projectile_count": 3
+}, {
+"text": "+50% damage.",
+"damage": 30.0
+}, {
+"text": "Faster action.",
+"cooldown": 0.55
+}, {
+"text": "Rounds punch through two bodies.",
+"pierce": 2
+}, {
+"text": "Heavy loads: +100% damage.",
+"damage": 40.0
+}])

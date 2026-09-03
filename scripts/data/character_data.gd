@@ -20,7 +20,13 @@ extends Resource
 @export var move_speed: float = 3.6
 @export var pickup_radius: float = 1.6
 @export var armor: float = 0.0
+## Total weapon weight this class can carry at once. One heavy weapon fills
+## it; two or three light ones also fit.
+@export var carry_capacity: float = 10.0
 @export var starting_weapon: WeaponData
+## The five weapons this class can be offered. Empty falls back to the set on
+## the Game scene.
+@export var weapons: Array[WeaponData] = []
 
 @export_group("Animation")
 @export var anim_idle: String = "holding-both"

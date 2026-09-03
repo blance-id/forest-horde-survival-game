@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/bow.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "angel_rifle"
+display_name = "Arrow Rifle"
+description = "A repeating bow that stitches the horde together."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+weight = 5.0
+tint = Color(0.8, 0.6, 1, 1)
+fire_sound = "shot_retro"
+hit_sound = "hit_zombie"
+damage_type = 1
+damage = 18.0
+cooldown = 0.8
+projectile_count = 2
+spread_degrees = 6.0
+projectile_speed = 22.0
+pierce = 1
+range = 12.0
+knockback = 1.8
+projectile_scale = 1.1
+level_ups = Array[Dictionary]([{
+"text": "+2 rounds per burst.",
+"projectile_count": 3
+}, {
+"text": "+50% damage.",
+"damage": 27.0
+}, {
+"text": "Faster action.",
+"cooldown": 0.55
+}, {
+"text": "Rounds punch through two bodies.",
+"pierce": 2
+}, {
+"text": "Heavy loads: +100% damage.",
+"damage": 36.0
+}])

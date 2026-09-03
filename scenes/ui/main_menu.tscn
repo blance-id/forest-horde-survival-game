@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="2_camera"]
@@ -19,6 +19,10 @@
 [ext_resource type="Resource" path="res://resources/chapters/chapter_02.tres" id="11b_chapter2"]
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="s_chapter"]
 [ext_resource type="Resource" path="res://resources/characters/ranger.tres" id="12_ranger"]
+[ext_resource type="Resource" path="res://resources/characters/bomber.tres" id="12b_bomber"]
+[ext_resource type="Resource" path="res://resources/characters/angel.tres" id="12c_angel"]
+[ext_resource type="Resource" path="res://resources/characters/cyborg.tres" id="12d_cyborg"]
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="s_character"]
 [ext_resource type="Resource" path="res://resources/weapons/blaster.tres" id="13_blaster"]
 [ext_resource type="Resource" path="res://resources/weapons/shovel_storm.tres" id="14_shovel"]
 
@@ -37,6 +41,7 @@ fill_to = Vector2(0, 1)
 script = ExtResource("1_menu")
 chapters = Array[ExtResource("s_chapter")]([ExtResource("11_chapter"), ExtResource("11b_chapter2")])
 chapter = ExtResource("11_chapter")
+characters = Array[ExtResource("s_character")]([ExtResource("12_ranger"), ExtResource("12b_bomber"), ExtResource("12c_angel"), ExtResource("12d_cyborg")])
 character = ExtResource("12_ranger")
 demo_weapons = Array[ExtResource("s_weapon")]([ExtResource("13_blaster"), ExtResource("14_shovel")])
 
@@ -238,7 +243,7 @@ theme_override_constants/separation = 2
 [node name="ChapterLabel" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Small"
+theme_type_variation = &"SmallDark"
 theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
 text = "CHAPTER 1"
 horizontal_alignment = 1
@@ -246,14 +251,49 @@ horizontal_alignment = 1
 [node name="ChapterName" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Heading"
+theme_type_variation = &"HeadingDark"
 text = "Whispering Forest"
 horizontal_alignment = 1
+
+[node name="ClassRow" type="HBoxContainer" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="PrevClass" type="Button" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox/ClassRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"RoundButton"
+icon = ExtResource("10d_left")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ClassName" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox/ClassRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"BigDark"
+theme_override_colors/font_color = Color(0.13, 0.34, 0.5, 1)
+text = "Army Ranger"
+horizontal_alignment = 1
+
+[node name="NextClass" type="Button" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox/ClassRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"RoundButton"
+icon = ExtResource("10e_right")
+icon_alignment = 1
+expand_icon = true
 
 [node name="ChapterBest" type="Label" parent="UI/Root/Bottom/ChapterCard/Margin/Row/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Dim"
+theme_type_variation = &"DimDark"
 text = "The forest is waiting..."
 horizontal_alignment = 1
 

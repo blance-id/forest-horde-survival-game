@@ -4,7 +4,13 @@
 class_name WeaponData
 extends Resource
 
-enum Kind { PROJECTILE, ORBIT, AURA }
+enum Kind {
+	PROJECTILE,
+	ORBIT,
+	## A dome that shoves whatever touches it and armours the hero while up.
+	AURA,
+	SHIELD,
+}
 
 @export var id: String = "blaster"
 @export var display_name: String = "Blaster"
@@ -12,6 +18,11 @@ enum Kind { PROJECTILE, ORBIT, AURA }
 @export var icon: Texture2D
 @export var kind: Kind = Kind.PROJECTILE
 @export var max_level: int = 6
+## What carrying this costs against the hero's capacity. A heavy weapon fills
+## the whole budget on its own; light ones can be combined.
+@export var weight: float = 4.0
+## SHIELD only: flat damage soaked while the dome is up.
+@export var armor_bonus: float = 0.0
 ## ORBIT: model spun around the hero (first MeshInstance3D is used).
 @export var projectile_model: PackedScene
 ## AURA: disc colour. PROJECTILE: bullet colour.
@@ -71,11 +82,20 @@ func stat_line(level: int, s: Dictionary) -> String:
 	var shots := maxi(1, int(s["projectile_count"]))
 	var dmg := float(s["damage"])
 	var parts := ["%d %s" % [roundi(dmg), Damage.type_name(damage_type).to_lower()], "%.1f/sec" % (1.0 / cd)]
+	if armor_bonus > 0.0:
+		parts.append("blocks %d" % roundi(armor_bonus))
 	if shots > 1:
 		parts.append("burst %d" % roundi(dmg * float(shots)))
 	if int(s["pierce"]) > 0:
 		parts.append("pierce %d" % int(s["pierce"]))
 	return "  ·  ".join(parts)
+
+
+## "Heavy · 8 kg" style line for the card, so the carry cost is never a
+## surprise after the pick.
+func weight_text() -> String:
+	var band := "Light" if weight <= 3.5 else ("Heavy" if weight >= 7.0 else "Medium")
+	return "%s  ·  %.0f kg" % [band, weight]
 
 
 func level_text(level: int) -> String:

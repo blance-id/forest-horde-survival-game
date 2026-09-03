@@ -167,6 +167,26 @@ ITEM_ICONS = {
     "keeper": ("graveyard-kit", "character-keeper"),
     "vampire": ("graveyard-kit", "character-vampire"),
     "orc": ("mini-dungeon", "character-orc"),
+    # Weapon icons for the four classes: every class needs its own sidearm,
+    # rifle, spinner, shield and lantern, so the packs are mined for anything
+    # that reads as one of those at 64 px.
+    "pistol": ("blaster-kit", "blaster-a"),
+    "rifle": ("blaster-kit", "blaster-l"),
+    "bazooka": ("blaster-kit", "blaster-r"),
+    "grenade_rifle": ("blaster-kit", "blaster-n"),
+    "laser": ("blaster-kit", "blaster-h"),
+    "laser_rifle": ("blaster-kit", "blaster-f"),
+    "grenade": ("blaster-kit", "grenade-a"),
+    "grenade_b": ("blaster-kit", "grenade-b"),
+    "bow": ("mini-forest", "weapon-bow"),
+    "arrow": ("mini-forest", "weapon-arrow"),
+    "shield_square": ("mini-dungeon", "shield-rectangle"),
+    "spear": ("mini-dungeon", "weapon-spear"),
+    "key": ("mini-dungeon", "key"),
+    "pot": ("mini-dungeon", "pot"),
+    "candle": ("graveyard-kit", "candle"),
+    "lantern_candle": ("graveyard-kit", "lantern-candle"),
+    "cross": ("graveyard-kit", "cross"),
 }
 
 

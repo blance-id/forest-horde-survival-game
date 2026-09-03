@@ -18,6 +18,7 @@ var profile: Dictionary = {}
 
 ## Chapter the player will start when pressing Play.
 var selected_chapter_id: String = "chapter_01"
+var selected_character_id: String = "ranger"
 ## Filled by the gameplay scene when a run ends, read by the result screen.
 var last_run_result: Dictionary = {}
 

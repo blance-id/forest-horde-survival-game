@@ -23,10 +23,10 @@
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/round_brown.png" id="14_hq1c6"]
 [ext_resource type="Texture2D" path="res://assets/ui/adventure/round_brown_dark.png" id="15_2s7kd"]
 
-[sub_resource type="FontVariation" id="FontVariation_ks5j5"]
+[sub_resource type="FontVariation" id="FontVariation_qxgsb"]
 base_font = ExtResource("1_wtnup")
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g7lpc"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ks5j5"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -37,7 +37,7 @@ texture_margin_top = 22.0
 texture_margin_right = 22.0
 texture_margin_bottom = 22.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_yjowj"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_g7lpc"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -48,9 +48,9 @@ texture_margin_top = 14.0
 texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p6fpi"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yjowj"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8qu7"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_p6fpi"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -61,7 +61,7 @@ texture_margin_top = 14.0
 texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sldma"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8qu7"]
 content_margin_left = 18.0
 content_margin_top = 22.0
 content_margin_right = 18.0
@@ -73,7 +73,7 @@ texture_margin_right = 14.0
 texture_margin_bottom = 14.0
 modulate_color = Color(0.82, 0.82, 0.82, 1)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6ub5n"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sldma"]
 content_margin_left = 18.0
 content_margin_top = 14.4
 content_margin_right = 18.0
@@ -84,7 +84,18 @@ texture_margin_top = 18.0
 texture_margin_right = 18.0
 texture_margin_bottom = 18.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_viair"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6ub5n"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_viair"]
+content_margin_left = 18.0
+content_margin_top = 14.4
+content_margin_right = 18.0
+content_margin_bottom = 14.4
+texture = ExtResource("5_hq1c6")
+texture_margin_left = 26.0
+texture_margin_top = 26.0
+texture_margin_right = 26.0
+texture_margin_bottom = 26.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1hgmt"]
 content_margin_left = 18.0
@@ -107,20 +118,9 @@ texture_margin_left = 26.0
 texture_margin_top = 26.0
 texture_margin_right = 26.0
 texture_margin_bottom = 26.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4m3c3"]
-content_margin_left = 18.0
-content_margin_top = 14.4
-content_margin_right = 18.0
-content_margin_bottom = 14.4
-texture = ExtResource("5_hq1c6")
-texture_margin_left = 26.0
-texture_margin_top = 26.0
-texture_margin_right = 26.0
-texture_margin_bottom = 26.0
 modulate_color = Color(0.8, 0.8, 0.8, 1)
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_xljcr"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_4m3c3"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -130,6 +130,8 @@ texture_margin_left = 26.0
 texture_margin_top = 26.0
 texture_margin_right = 26.0
 texture_margin_bottom = 26.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xljcr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qo4wl"]
 
@@ -141,9 +143,7 @@ texture_margin_bottom = 26.0
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_raw4f"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ev6yg"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wfsxj"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_ev6yg"]
 content_margin_left = 22.0
 content_margin_top = 17.6
 content_margin_right = 22.0
@@ -153,6 +153,12 @@ texture_margin_left = 18.0
 texture_margin_top = 18.0
 texture_margin_right = 18.0
 texture_margin_bottom = 18.0
+
+[sub_resource type="FontVariation" id="FontVariation_wfsxj"]
+base_font = ExtResource("13_p6fpi")
+variation_opentype = {
+2003265652: 700
+}
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_rw7m2"]
 texture = ExtResource("8_0olty")
@@ -327,20 +333,14 @@ content_margin_right = 14.0
 content_margin_bottom = 11.2
 texture = ExtResource("15_2s7kd")
 
-[sub_resource type="FontVariation" id="FontVariation_op3wu"]
-base_font = ExtResource("13_p6fpi")
-variation_opentype = {
-2003265652: 700
-}
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7y7q7"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_op3wu"]
 texture = ExtResource("8_0olty")
 texture_margin_left = 12.0
 texture_margin_top = 14.0
 texture_margin_right = 12.0
 texture_margin_bottom = 14.0
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f1fsw"]
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_7y7q7"]
 texture = ExtResource("14_h8qu7")
 texture_margin_left = 12.0
 texture_margin_top = 14.0
@@ -348,70 +348,99 @@ texture_margin_right = 12.0
 texture_margin_bottom = 14.0
 
 [resource]
-default_font = SubResource("FontVariation_op3wu")
+default_font = SubResource("FontVariation_wfsxj")
 default_font_size = 28
 Big/base_type = &"Label"
 Big/constants/outline_size = 8
 Big/font_sizes/font_size = 34
-Big/fonts/font = SubResource("FontVariation_ks5j5")
+Big/fonts/font = SubResource("FontVariation_qxgsb")
+BigDark/base_type = &"Label"
+BigDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+BigDark/constants/outline_size = 0
+BigDark/font_sizes/font_size = 34
+BigDark/fonts/font = SubResource("FontVariation_qxgsb")
 BorderPanel/base_type = &"PanelContainer"
-BorderPanel/styles/panel = SubResource("StyleBoxTexture_g7lpc")
-Button/colors/font_color = Color(1, 0.97, 0.9, 1)
-Button/colors/font_disabled_color = Color(0.85, 0.78, 0.66, 1)
-Button/colors/font_focus_color = Color(1, 0.97, 0.9, 1)
-Button/colors/font_hover_color = Color(1, 0.97, 0.9, 1)
-Button/colors/font_hover_pressed_color = Color(1, 0.97, 0.9, 1)
+BorderPanel/styles/panel = SubResource("StyleBoxTexture_ks5j5")
+Button/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/font_disabled_color = Color(0.46, 0.32, 0.21, 1)
+Button/colors/font_focus_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/font_hover_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/font_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
 Button/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
-Button/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
-Button/constants/outline_size = 7
+Button/colors/font_pressed_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/icon_disabled_color = Color(0.46, 0.32, 0.21, 1)
+Button/colors/icon_focus_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/icon_hover_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/icon_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/icon_normal_color = Color(0.29, 0.16, 0.07, 1)
+Button/colors/icon_pressed_color = Color(0.29, 0.16, 0.07, 1)
+Button/constants/outline_size = 0
 Button/font_sizes/font_size = 34
-Button/fonts/font = SubResource("FontVariation_ks5j5")
-Button/styles/disabled = SubResource("StyleBoxTexture_yjowj")
-Button/styles/focus = SubResource("StyleBoxEmpty_p6fpi")
-Button/styles/hover = SubResource("StyleBoxTexture_h8qu7")
-Button/styles/normal = SubResource("StyleBoxTexture_h8qu7")
-Button/styles/pressed = SubResource("StyleBoxTexture_sldma")
+Button/fonts/font = SubResource("FontVariation_qxgsb")
+Button/styles/disabled = SubResource("StyleBoxTexture_g7lpc")
+Button/styles/focus = SubResource("StyleBoxEmpty_yjowj")
+Button/styles/hover = SubResource("StyleBoxTexture_p6fpi")
+Button/styles/normal = SubResource("StyleBoxTexture_p6fpi")
+Button/styles/pressed = SubResource("StyleBoxTexture_h8qu7")
 CardButton/base_type = &"Button"
-CardButton/styles/disabled = SubResource("StyleBoxTexture_6ub5n")
-CardButton/styles/focus = SubResource("StyleBoxEmpty_viair")
-CardButton/styles/hover = SubResource("StyleBoxTexture_1hgmt")
-CardButton/styles/normal = SubResource("StyleBoxTexture_vi31y")
-CardButton/styles/pressed = SubResource("StyleBoxTexture_4m3c3")
+CardButton/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/font_disabled_color = Color(0.46, 0.32, 0.21, 1)
+CardButton/colors/font_focus_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/font_hover_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/font_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/font_pressed_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/icon_disabled_color = Color(0.46, 0.32, 0.21, 1)
+CardButton/colors/icon_focus_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/icon_hover_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/icon_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/icon_normal_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/colors/icon_pressed_color = Color(0.29, 0.16, 0.07, 1)
+CardButton/constants/outline_size = 0
+CardButton/fonts/font = SubResource("FontVariation_qxgsb")
+CardButton/styles/disabled = SubResource("StyleBoxTexture_sldma")
+CardButton/styles/focus = SubResource("StyleBoxEmpty_6ub5n")
+CardButton/styles/hover = SubResource("StyleBoxTexture_viair")
+CardButton/styles/normal = SubResource("StyleBoxTexture_1hgmt")
+CardButton/styles/pressed = SubResource("StyleBoxTexture_vi31y")
 CardPanel/base_type = &"PanelContainer"
-CardPanel/styles/panel = SubResource("StyleBoxTexture_xljcr")
-CheckBox/colors/font_color = Color(1, 0.97, 0.9, 1)
-CheckBox/colors/font_disabled_color = Color(0.85, 0.78, 0.66, 1)
-CheckBox/colors/font_focus_color = Color(1, 0.97, 0.9, 1)
-CheckBox/colors/font_hover_color = Color(1, 0.97, 0.9, 1)
-CheckBox/colors/font_hover_pressed_color = Color(1, 0.97, 0.9, 1)
-CheckBox/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
-CheckBox/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
+CardPanel/styles/panel = SubResource("StyleBoxTexture_4m3c3")
+CheckBox/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+CheckBox/colors/font_disabled_color = Color(0.46, 0.32, 0.21, 1)
+CheckBox/colors/font_focus_color = Color(0.29, 0.16, 0.07, 1)
+CheckBox/colors/font_hover_color = Color(0.29, 0.16, 0.07, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+CheckBox/colors/font_pressed_color = Color(0.29, 0.16, 0.07, 1)
 CheckBox/constants/h_separation = 16
-CheckBox/constants/outline_size = 7
+CheckBox/constants/outline_size = 0
 CheckBox/font_sizes/font_size = 30
-CheckBox/fonts/font = SubResource("FontVariation_ks5j5")
+CheckBox/fonts/font = SubResource("FontVariation_qxgsb")
 CheckBox/icons/checked = ExtResource("7_0olty")
 CheckBox/icons/checked_disabled = ExtResource("8_qxgsb")
 CheckBox/icons/unchecked = ExtResource("9_ks5j5")
 CheckBox/icons/unchecked_disabled = ExtResource("10_g7lpc")
-CheckBox/styles/disabled = SubResource("StyleBoxEmpty_qo4wl")
-CheckBox/styles/focus = SubResource("StyleBoxEmpty_1huge")
-CheckBox/styles/hover = SubResource("StyleBoxEmpty_nkmhk")
-CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_f3prj")
-CheckBox/styles/normal = SubResource("StyleBoxEmpty_raw4f")
-CheckBox/styles/pressed = SubResource("StyleBoxEmpty_ev6yg")
+CheckBox/styles/disabled = SubResource("StyleBoxEmpty_xljcr")
+CheckBox/styles/focus = SubResource("StyleBoxEmpty_qo4wl")
+CheckBox/styles/hover = SubResource("StyleBoxEmpty_1huge")
+CheckBox/styles/hover_pressed = SubResource("StyleBoxEmpty_nkmhk")
+CheckBox/styles/normal = SubResource("StyleBoxEmpty_f3prj")
+CheckBox/styles/pressed = SubResource("StyleBoxEmpty_raw4f")
 DarkPanel/base_type = &"PanelContainer"
-DarkPanel/styles/panel = SubResource("StyleBoxTexture_wfsxj")
+DarkPanel/styles/panel = SubResource("StyleBoxTexture_ev6yg")
 Dim/base_type = &"Label"
 Dim/colors/font_color = Color(0.85, 0.78, 0.66, 1)
 Dim/constants/outline_size = 4
 Dim/font_sizes/font_size = 24
+DimDark/base_type = &"Label"
+DimDark/colors/font_color = Color(0.46, 0.32, 0.21, 1)
+DimDark/constants/outline_size = 0
+DimDark/font_sizes/font_size = 24
+DimDark/fonts/font = SubResource("FontVariation_wfsxj")
 GaugeBar/base_type = &"ProgressBar"
 GaugeBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 GaugeBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 GaugeBar/constants/outline_size = 5
 GaugeBar/font_sizes/font_size = 22
-GaugeBar/fonts/font = SubResource("FontVariation_ks5j5")
+GaugeBar/fonts/font = SubResource("FontVariation_qxgsb")
 GaugeBar/styles/background = SubResource("StyleBoxTexture_rw7m2")
 GaugeBar/styles/fill = SubResource("StyleBoxTexture_idnp6")
 GreyPanel/base_type = &"PanelContainer"
@@ -419,17 +448,27 @@ GreyPanel/styles/panel = SubResource("StyleBoxTexture_sufws")
 Heading/base_type = &"Label"
 Heading/constants/outline_size = 9
 Heading/font_sizes/font_size = 42
-Heading/fonts/font = SubResource("FontVariation_ks5j5")
+Heading/fonts/font = SubResource("FontVariation_qxgsb")
+HeadingDark/base_type = &"Label"
+HeadingDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+HeadingDark/constants/outline_size = 0
+HeadingDark/font_sizes/font_size = 42
+HeadingDark/fonts/font = SubResource("FontVariation_qxgsb")
 Hero/base_type = &"Label"
 Hero/constants/outline_size = 16
 Hero/font_sizes/font_size = 80
-Hero/fonts/font = SubResource("FontVariation_ks5j5")
+Hero/fonts/font = SubResource("FontVariation_qxgsb")
+HeroDark/base_type = &"Label"
+HeroDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+HeroDark/constants/outline_size = 0
+HeroDark/font_sizes/font_size = 80
+HeroDark/fonts/font = SubResource("FontVariation_qxgsb")
 HpBar/base_type = &"ProgressBar"
 HpBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 HpBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 HpBar/constants/outline_size = 5
 HpBar/font_sizes/font_size = 22
-HpBar/fonts/font = SubResource("FontVariation_ks5j5")
+HpBar/fonts/font = SubResource("FontVariation_qxgsb")
 HpBar/styles/background = SubResource("StyleBoxTexture_s8sgg")
 HpBar/styles/fill = SubResource("StyleBoxTexture_tewrb")
 IconButton/base_type = &"Button"
@@ -447,7 +486,12 @@ MiniHpBar/styles/fill = SubResource("StyleBoxFlat_t157x")
 Number/base_type = &"Label"
 Number/constants/outline_size = 7
 Number/font_sizes/font_size = 30
-Number/fonts/font = SubResource("FontVariation_ks5j5")
+Number/fonts/font = SubResource("FontVariation_qxgsb")
+NumberDark/base_type = &"Label"
+NumberDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+NumberDark/constants/outline_size = 0
+NumberDark/font_sizes/font_size = 30
+NumberDark/fonts/font = SubResource("FontVariation_qxgsb")
 Panel/styles/panel = SubResource("StyleBoxTexture_rngba")
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_cs5r8")
 PrimaryButton/base_type = &"Button"
@@ -458,9 +502,15 @@ PrimaryButton/colors/font_hover_color = Color(1, 0.97, 0.9, 1)
 PrimaryButton/colors/font_hover_pressed_color = Color(1, 0.97, 0.9, 1)
 PrimaryButton/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 PrimaryButton/colors/font_pressed_color = Color(1, 0.97, 0.9, 1)
+PrimaryButton/colors/icon_disabled_color = Color(0.85, 0.78, 0.66, 1)
+PrimaryButton/colors/icon_focus_color = Color(1, 0.97, 0.9, 1)
+PrimaryButton/colors/icon_hover_color = Color(1, 0.97, 0.9, 1)
+PrimaryButton/colors/icon_hover_pressed_color = Color(1, 0.97, 0.9, 1)
+PrimaryButton/colors/icon_normal_color = Color(1, 0.97, 0.9, 1)
+PrimaryButton/colors/icon_pressed_color = Color(1, 0.97, 0.9, 1)
 PrimaryButton/constants/outline_size = 7
 PrimaryButton/font_sizes/font_size = 40
-PrimaryButton/fonts/font = SubResource("FontVariation_ks5j5")
+PrimaryButton/fonts/font = SubResource("FontVariation_qxgsb")
 PrimaryButton/styles/disabled = SubResource("StyleBoxTexture_aeyg7")
 PrimaryButton/styles/focus = SubResource("StyleBoxEmpty_arcpu")
 PrimaryButton/styles/hover = SubResource("StyleBoxTexture_2x8ci")
@@ -470,10 +520,24 @@ ProgressBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 ProgressBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 ProgressBar/constants/outline_size = 5
 ProgressBar/font_sizes/font_size = 22
-ProgressBar/fonts/font = SubResource("FontVariation_ks5j5")
+ProgressBar/fonts/font = SubResource("FontVariation_qxgsb")
 ProgressBar/styles/background = SubResource("StyleBoxTexture_misuo")
 ProgressBar/styles/fill = SubResource("StyleBoxTexture_76jfw")
 RoundButton/base_type = &"Button"
+RoundButton/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/font_disabled_color = Color(0.46, 0.32, 0.21, 1)
+RoundButton/colors/font_focus_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/font_hover_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/font_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/font_pressed_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/icon_disabled_color = Color(0.46, 0.32, 0.21, 1)
+RoundButton/colors/icon_focus_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/icon_hover_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/icon_hover_pressed_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/icon_normal_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/colors/icon_pressed_color = Color(0.29, 0.16, 0.07, 1)
+RoundButton/constants/outline_size = 0
+RoundButton/fonts/font = SubResource("FontVariation_qxgsb")
 RoundButton/styles/disabled = SubResource("StyleBoxTexture_yeyh5")
 RoundButton/styles/focus = SubResource("StyleBoxEmpty_mq70w")
 RoundButton/styles/hover = SubResource("StyleBoxTexture_sagu4")
@@ -482,16 +546,26 @@ RoundButton/styles/pressed = SubResource("StyleBoxTexture_ja058")
 Small/base_type = &"Label"
 Small/constants/outline_size = 5
 Small/font_sizes/font_size = 22
-Small/fonts/font = SubResource("FontVariation_op3wu")
+Small/fonts/font = SubResource("FontVariation_wfsxj")
+SmallDark/base_type = &"Label"
+SmallDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+SmallDark/constants/outline_size = 0
+SmallDark/font_sizes/font_size = 22
+SmallDark/fonts/font = SubResource("FontVariation_wfsxj")
 Title/base_type = &"Label"
 Title/constants/outline_size = 12
 Title/font_sizes/font_size = 60
-Title/fonts/font = SubResource("FontVariation_ks5j5")
+Title/fonts/font = SubResource("FontVariation_qxgsb")
+TitleDark/base_type = &"Label"
+TitleDark/colors/font_color = Color(0.29, 0.16, 0.07, 1)
+TitleDark/constants/outline_size = 0
+TitleDark/font_sizes/font_size = 60
+TitleDark/fonts/font = SubResource("FontVariation_qxgsb")
 XpBar/base_type = &"ProgressBar"
 XpBar/colors/font_color = Color(1, 0.97, 0.9, 1)
 XpBar/colors/font_outline_color = Color(0.24, 0.13, 0.06, 1)
 XpBar/constants/outline_size = 5
 XpBar/font_sizes/font_size = 22
-XpBar/fonts/font = SubResource("FontVariation_ks5j5")
-XpBar/styles/background = SubResource("StyleBoxTexture_7y7q7")
-XpBar/styles/fill = SubResource("StyleBoxTexture_f1fsw")
+XpBar/fonts/font = SubResource("FontVariation_qxgsb")
+XpBar/styles/background = SubResource("StyleBoxTexture_op3wu")
+XpBar/styles/fill = SubResource("StyleBoxTexture_7y7q7")

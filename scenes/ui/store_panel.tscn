@@ -58,7 +58,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_type_variation = &"Title"
+theme_type_variation = &"TitleDark"
 text = "STORE"
 
 [node name="CoinIcon" type="TextureRect" parent="Center/Panel/Margin/VBox/HeaderRow"]
@@ -73,18 +73,18 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-theme_type_variation = &"Number"
+theme_type_variation = &"NumberDark"
 text = "0"
 
 [node name="BagLabel" type="Label" parent="Center/Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Small"
+theme_type_variation = &"SmallDark"
 text = "TRAVEL BAG  0 / 3"
 
 [node name="Hint" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"Dim"
+theme_type_variation = &"DimDark"
 text = "Packed items can be used mid-run. Anything left in the bag is lost if you die."
 autowrap_mode = 3
 

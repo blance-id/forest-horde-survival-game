@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/shield.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "angel_shield"
+display_name = "Angelic Shield"
+description = "A barrier of wings; nothing unclean gets close."
+icon = ExtResource("2")
+kind = 3
+max_level = 6
+weight = 4.0
+armor_bonus = 4.0
+tint = Color(0.8, 0.6, 1, 1)
+fire_sound = "force_field"
+hit_sound = "hit_zombie"
+damage_type = 1
+damage = 10.0
+cooldown = 0.75
+area = 2.4
+knockback = 5.0
+level_ups = Array[Dictionary]([{
+"text": "Wider dome.",
+"area": 2.6
+}, {
+"text": "+60% damage.",
+"damage": 16.0
+}, {
+"text": "Shoves harder and recharges faster.",
+"cooldown": 0.55,
+"knockback": 7.0
+}, {
+"text": "Wider dome again.",
+"area": 3.2
+}, {
+"text": "+120% damage.",
+"damage": 22.0
+}])

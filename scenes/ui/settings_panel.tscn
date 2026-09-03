@@ -52,7 +52,7 @@ theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"Title"
+theme_type_variation = &"TitleDark"
 text = "SETTINGS"
 horizontal_alignment = 1
 
@@ -63,7 +63,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_type_variation = &"Big"
+theme_type_variation = &"BigDark"
 text = "MUSIC"
 
 [node name="MusicSwitch" type="Button" parent="Center/Panel/Margin/VBox/MusicRow"]
@@ -81,7 +81,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_type_variation = &"Big"
+theme_type_variation = &"BigDark"
 text = "SOUND EFFECTS"
 
 [node name="SfxSwitch" type="Button" parent="Center/Panel/Margin/VBox/SfxRow"]
@@ -99,7 +99,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_type_variation = &"Big"
+theme_type_variation = &"BigDark"
 text = "VIBRATION"
 
 [node name="HapticsSwitch" type="Button" parent="Center/Panel/Margin/VBox/HapticsRow"]
@@ -118,7 +118,7 @@ theme_override_constants/separation = 6
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
-theme_type_variation = &"Big"
+theme_type_variation = &"BigDark"
 text = "QUALITY"
 
 [node name="QualityLow" type="Button" parent="Center/Panel/Margin/VBox/QualityRow"]
@@ -154,13 +154,13 @@ layout_mode = 2
 
 [node name="CreditsTitle" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"Big"
+theme_type_variation = &"BigDark"
 text = "CREDITS"
 horizontal_alignment = 1
 
 [node name="Credits" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"Dim"
+theme_type_variation = &"DimDark"
 text = "Art, models & sounds: Kenney (CC0)
 Music: Juhani Junkala (CC0)
 Zombie voices: artisticdude (CC0)
@@ -171,7 +171,7 @@ horizontal_alignment = 1
 [node name="Version" type="Label" parent="Center/Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Small"
+theme_type_variation = &"SmallDark"
 text = "v0.1.0"
 horizontal_alignment = 1
 

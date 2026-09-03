@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/bazooka.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "bomber_bazooka"
+display_name = "Bazooka"
+description = "One heavy shell that tears through a line."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+weight = 8.0
+tint = Color(1, 0.55, 0.2, 1)
+fire_sound = "explosion"
+hit_sound = "heavy_impact"
+damage_type = 0
+damage = 48.0
+cooldown = 1.5
+projectile_count = 1
+spread_degrees = 2.0
+projectile_speed = 13.0
+pierce = 3
+range = 12.0
+knockback = 6.0
+projectile_scale = 2.0
+level_ups = Array[Dictionary]([{
+"text": "Shells punch through five bodies.",
+"pierce": 5
+}, {
+"text": "+50% damage.",
+"damage": 72.0
+}, {
+"text": "Faster reload.",
+"cooldown": 1.1
+}, {
+"text": "Twin tubes.",
+"projectile_count": 2,
+"spread_degrees": 9.0
+}, {
+"text": "+110% damage.",
+"damage": 100.0
+}])

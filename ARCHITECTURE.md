@@ -156,6 +156,20 @@ foot where the fight left them.
 walking away resets the timer, so the cost is standing still in the open while
 the horde closes.
 
+### UI colour
+
+The Kenney kit is mostly cream: panels, cards, round buttons. Near-white text
+and Kenney's white icon sheets vanish into it, so the theme carries two
+ladders — `Hero`/`Title`/`Heading`/`Big`/`Small`/`Number`/`Dim` in near-white
+with a dark outline for text over the world, and the same names suffixed
+`Dark` in chocolate with no outline for text on cream. Buttons with a cream
+face (`Button`, `RoundButton`, `CardButton`) tint both their label and their
+icon chocolate; `PrimaryButton` is red and stays white.
+
+One catch: `icon_*_color` multiplies, so a button carrying a full-colour icon
+rather than a white sheet — the relic slots on the HUD — has to override those
+back to white.
+
 ### Waves
 
 A chapter is a list of waves, not a stopwatch. `ChapterData.waves` holds one
@@ -239,6 +253,26 @@ its own. Each tick:
    and untouchable.
 
 `ammo_spent` bills the run so the HUD counter and the towers never disagree.
+
+### Classes, weight and weapon kinds
+
+A class is a `CharacterData` with its own five-weapon set (`weapons`) and its
+own `carry_capacity`; `Game._weapon_pool()` offers that set, falling back to
+the scene's list. Each set covers the same five shapes — sidearm, rifle,
+spinner, shield, lantern — so a class is a flavour and a stat line rather than
+a different game.
+
+**Weight is the constraint that makes a build a choice.** Every weapon has a
+`weight`; `WeaponSystem.can_carry()` refuses one that would not fit, and the
+level-up roll never offers a card that cannot be taken. `RunStats.move_speed()`
+loses up to `WEIGHT_SLOW` at full load, so filling the bar costs mobility. One
+heavy weapon rules out a second; two or three light ones combine.
+
+`WeaponData.Kind.SHIELD` is an aura that shoves instead of burning: the same
+disc query, but each hit throws the body out and `armor_bonus` is folded into
+`RunStats.shield_armor` while it is carried. It is drawn on a *hemisphere*
+rather than a ground quad — a flat disc disappears the moment the horde stands
+on it — with a `cull_back` additive shell so it does not bleach what is inside.
 
 ### Damage types
 

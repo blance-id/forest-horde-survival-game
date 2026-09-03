@@ -22,8 +22,6 @@ const TELL_RANGE := 6.0
 const COVER_BLOWN_TIME := 4.0
 ## Tower ammo dropped by every ×5-and-up enemy.
 const AMMO_PER_ELITE := 2
-## How many weapons the hero can carry at once.
-const WEAPON_SLOTS := 4
 ## Seconds of grace after a revive, and how far the horde is blown back.
 const REVIVE_GRACE := 2.0
 const REVIVE_CLEAR := 6.0
@@ -31,6 +29,7 @@ const REVIVE_CLEAR := 6.0
 const BOSS_INTRO_TIME := 3.0
 const LAUGH_BEAT := 1.1
 
+## Fallback weapon pool for a character that declares none of its own.
 @export var weapons: Array[WeaponData] = []
 @export var upgrades: Array[UpgradeData] = []
 @export var default_character: CharacterData
@@ -228,6 +227,12 @@ func _start_run() -> void:
 	AudioManager.play_music(chapter.music, 1.5)
 
 
+## The weapons this run can offer: the hero's class set, or the scene's list
+## when a character does not carry one.
+func _weapon_pool() -> Array[WeaponData]:
+	return character.weapons if not character.weapons.is_empty() else weapons
+
+
 func _apply_meta_upgrades() -> void:
 	# Permanent shop upgrades are additive on the same RunStats keys.
 	for u in upgrades:
@@ -267,6 +272,19 @@ func dev_command(cmd: String) -> void:
 				var sv: Survivors.Survivor = survivors.survivors[0]
 				player.position = Vector3(sv.pos.x + 1.0, 0.0, sv.pos.y)
 				camera_rig.snap_to(player.position)
+		"bomber", "angel", "cyborg", "ranger":
+			# Restart this chapter as another class, to look at its weapons.
+			SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": _chapter_id,
+				"character": load("res://resources/characters/%s.tres" % cmd)})
+		"shield":
+			# Drop everything and hold only the class's dome, so it is visible.
+			for slot in weapon_system.slots.duplicate():
+				weapon_system.drop(slot.data)
+			for w in _weapon_pool():
+				if w.kind == WeaponData.Kind.SHIELD:
+					for i in 3:
+						weapon_system.add_or_upgrade(w)
+			hud.set_build(weapon_system.slots, upgrade_levels)
 		"chapter2":
 			SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": "chapter_02", "character": character})
 		"beasts":
@@ -289,11 +307,17 @@ func dev_command(cmd: String) -> void:
 			_wave_break = 0.0
 			_start_wave()
 		"weapons":
-			for w in weapons:
+			for w in _weapon_pool():
 				for i in 3:
 					weapon_system.add_or_upgrade(w)
 			for u in upgrades.slice(0, 3):
-				upgrade_levels[u] = 2
+				# Apply the stat too, or the build sheet reports levels the
+				# hero does not actually have.
+				for i in 2:
+					upgrade_levels[u] = int(upgrade_levels.get(u, 0)) + 1
+					stats.add(u.stat, u.value_per_level)
+				if u.stat == "max_hp_mult":
+					player.refresh_max_hp(stats.max_hp() / (1.0 + float(stats.mods["max_hp_mult"])))
 			hud.set_build(weapon_system.slots, upgrade_levels)
 		"fx":
 			# Fires every burst preset around the hero (pair with --lead=2).
@@ -944,11 +968,13 @@ func _roll_options(count: int) -> Array[Dictionary]:
 	var candidates: Array[Dictionary] = []
 	var weights: Array[float] = []
 	var held := weapon_system.slots.size()
-	for w in weapons:
+	for w in _weapon_pool():
 		var lv := weapon_system.level_of(w)
 		if lv >= w.max_level:
 			continue
-		if lv == 0 and held >= WEAPON_SLOTS:
+		# A weapon that will not fit in what the hero can carry is never
+		# offered: the card would be a dead end.
+		if lv == 0 and not weapon_system.can_carry(w):
 			continue
 		candidates.append({"weapon": w, "level": lv + 1})
 		weights.append(1.4 if lv > 0 else 1.0)
@@ -961,10 +987,10 @@ func _roll_options(count: int) -> Array[Dictionary]:
 	# With every slot full and something already maxed, offer to trade the
 	# maxed weapon for one the player does not have — at the level it reached,
 	# never back to 1. A finished build should be able to change shape.
-	if held >= WEAPON_SLOTS:
+	if held > 0:
 		for old in weapon_system.maxed():
-			for w in weapons:
-				if weapon_system.level_of(w) > 0:
+			for w in _weapon_pool():
+				if weapon_system.level_of(w) > 0 or not weapon_system.can_swap(old, w):
 					continue
 				candidates.append({"weapon": w, "swap_from": old, "level": weapon_system.level_of(old)})
 				weights.append(0.5)

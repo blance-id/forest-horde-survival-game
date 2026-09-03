@@ -17,6 +17,8 @@ const STROLL_TURN := 0.4
 ## prefix of this list; `chapter` is whichever one is currently shown.
 @export var chapters: Array[ChapterData] = []
 @export var chapter: ChapterData
+## Every playable class, in order.
+@export var characters: Array[CharacterData] = []
 @export var character: CharacterData
 @export var demo_weapons: Array[WeaponData] = []
 
@@ -34,6 +36,9 @@ const STROLL_TURN := 0.4
 @onready var chapter_best: Label = %ChapterBest
 @onready var prev_chapter: Button = %PrevChapter
 @onready var next_chapter: Button = %NextChapter
+@onready var prev_class: Button = %PrevClass
+@onready var next_class: Button = %NextClass
+@onready var class_name_label: Label = %ClassName
 @onready var settings_panel: SettingsPanel = %SettingsPanel
 @onready var store_button: Button = %StoreButton
 @onready var store_panel: StorePanel = %StorePanel
@@ -93,6 +98,9 @@ func _build_ui() -> void:
 
 	prev_chapter.pressed.connect(_step_chapter.bind(-1))
 	next_chapter.pressed.connect(_step_chapter.bind(1))
+	prev_class.pressed.connect(_step_class.bind(-1))
+	next_class.pressed.connect(_step_class.bind(1))
+	_show_class()
 	# Open on the furthest chapter the player has reached — that is the one
 	# they came back for.
 	var unlocked := _unlocked_chapters()
@@ -109,6 +117,37 @@ func _unlocked_chapters() -> Array[ChapterData]:
 		if GameState.is_chapter_unlocked(c.id):
 			out.append(c)
 	return out
+
+
+## Switching class swaps the hero strolling through the demo behind the menu,
+## so the pick is something you look at rather than a line of text.
+func _step_class(delta: int) -> void:
+	if characters.size() < 2:
+		return
+	var index := maxi(0, characters.find(character))
+	character = characters[wrapi(index + delta, 0, characters.size())]
+	SoundBank.ui("click")
+	_show_class()
+	var stats := RunStats.from_character(character)
+	player.setup(character, stats)
+	weapon_system.run_stats = stats
+	for slot in weapon_system.slots.duplicate():
+		weapon_system.slots.erase(slot)
+	for w in demo_weapons.size():
+		var level := DEMO_WEAPON_LEVELS[mini(w, DEMO_WEAPON_LEVELS.size() - 1)]
+		for i in level:
+			weapon_system.add_or_upgrade(demo_weapons[w])
+
+
+func _show_class() -> void:
+	if character == null:
+		return
+	class_name_label.text = character.display_name
+	GameState.selected_character_id = character.id
+	var many := characters.size() > 1
+	for b: Button in [prev_class, next_class]:
+		b.disabled = not many
+		b.modulate.a = 1.0 if many else 0.35
 
 
 func _step_chapter(delta: int) -> void:
@@ -187,7 +226,7 @@ func _on_play_pressed() -> void:
 	play_button.disabled = true
 	var tw := create_tween().set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_BACK)
 	tw.tween_property(play_button, "scale", Vector2(1.15, 1.15), 0.12)
-	SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": GameState.selected_chapter_id})
+	SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": GameState.selected_chapter_id, "character": character})
 
 
 func _on_settings_pressed() -> void:
@@ -211,6 +250,8 @@ func dev_command(cmd: String) -> void:
 			_on_settings_pressed()
 		"store":
 			_on_store_pressed()
+		"class":
+			_step_class(1)
 		"rich":
 			# Enough coins to exercise every store row.
 			GameState.add_coins(2000)

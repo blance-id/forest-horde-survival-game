@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/character-male-f.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/blasters/blaster-h.glb" id="3"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/cyborg_laser.tres" id="w0"]
+[ext_resource type="Resource" path="res://resources/weapons/cyborg_sword.tres" id="w1"]
+[ext_resource type="Resource" path="res://resources/weapons/cyborg_spin.tres" id="w2"]
+[ext_resource type="Resource" path="res://resources/weapons/cyborg_shield.tres" id="w3"]
+[ext_resource type="Resource" path="res://resources/weapons/cyborg_lantern.tres" id="w4"]
+
+[resource]
+script = ExtResource("1")
+id = "cyborg"
+display_name = "Cyborg"
+model = ExtResource("2")
+weapon_model = ExtResource("3")
+weapon_bone = "torso"
+weapon_offset = Vector3(0, 0.1, 0.24)
+weapon_rotation_degrees = Vector3(0, 0, 0)
+weapon_scale = 0.65
+muzzle_offset = Vector3(0, 0.28, 0.5)
+max_hp = 110.0
+move_speed = 3.8
+pickup_radius = 1.6
+armor = 1.0
+carry_capacity = 11.0
+starting_weapon = ExtResource("w0")
+weapons = Array[ExtResource("s_weapon")]([ExtResource("w0"), ExtResource("w1"), ExtResource("w2"), ExtResource("w3"), ExtResource("w4")])
+anim_idle = "holding-both"
+anim_move = "sprint"
+anim_die = "die"

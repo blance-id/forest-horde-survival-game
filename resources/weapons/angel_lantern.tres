@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/lantern_candle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "angel_lantern"
+display_name = "Holy Angelic Lantern"
+description = "Judgement, in a circle around you."
+icon = ExtResource("2")
+kind = 2
+max_level = 6
+weight = 6.0
+tint = Color(0.8, 0.6, 1, 1)
+fire_sound = "force_field"
+hit_sound = "hit_zombie"
+damage_type = 1
+damage = 11.0
+cooldown = 0.45
+area = 2.3
+knockback = 0.6
+level_ups = Array[Dictionary]([{
+"text": "+25% radius.",
+"area": 2.6
+}, {
+"text": "+50% damage.",
+"damage": 16.5
+}, {
+"text": "Burns faster.",
+"cooldown": 0.34
+}, {
+"text": "+25% radius.",
+"area": 3.2
+}, {
+"text": "Scorching: +120% damage.",
+"damage": 24.200000000000003
+}])

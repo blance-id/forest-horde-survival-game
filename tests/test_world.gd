@@ -82,3 +82,36 @@ func test_demo_enemy_is_never_a_boss() -> void:
 	for i in 20:
 		var e := c.demo_enemy(rng)
 		assert_true(e != null and not e.is_boss, "the menu demo never shows a boss")
+
+
+func test_every_class_can_carry_its_starting_weapon() -> void:
+	for path in ["ranger", "bomber", "angel", "cyborg"]:
+		var c: CharacterData = load("res://resources/characters/%s.tres" % path)
+		assert_true(c.starting_weapon != null, "%s has a starting weapon" % c.id)
+		assert_true(c.starting_weapon.weight <= c.carry_capacity,
+			"%s can actually carry what it starts with" % c.id)
+		assert_eq(c.weapons.size(), 5, "%s has a full weapon set" % c.id)
+		assert_true(c.weapons.has(c.starting_weapon), "%s starts with one of its own" % c.id)
+
+
+func test_a_class_cannot_carry_its_whole_set() -> void:
+	# The point of weight is that the hero picks: if every weapon fitted at
+	# once there would be no decision to make.
+	for path in ["ranger", "bomber", "angel", "cyborg"]:
+		var c: CharacterData = load("res://resources/characters/%s.tres" % path)
+		var total := 0.0
+		for w in c.weapons:
+			total += w.weight
+		assert_true(total > c.carry_capacity, "%s must choose between its weapons" % c.id)
+
+
+func test_each_class_covers_every_weapon_kind() -> void:
+	for path in ["ranger", "bomber", "angel", "cyborg"]:
+		var c: CharacterData = load("res://resources/characters/%s.tres" % path)
+		var kinds: Array[int] = []
+		for w in c.weapons:
+			if not kinds.has(int(w.kind)):
+				kinds.append(int(w.kind))
+		for kind in [WeaponData.Kind.PROJECTILE, WeaponData.Kind.ORBIT,
+				WeaponData.Kind.AURA, WeaponData.Kind.SHIELD]:
+			assert_true(kinds.has(int(kind)), "%s offers a %d weapon" % [c.id, int(kind)])

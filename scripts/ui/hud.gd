@@ -291,6 +291,10 @@ func set_bag_items(relics: Array[RelicData], spent: Array[bool]) -> void:
 		button.custom_minimum_size = Vector2(88, 88)
 		button.theme_type_variation = &"RoundButton"
 		button.icon = relics[i].icon
+		# RoundButton tints its icon chocolate for Kenney's white icon sheets;
+		# a relic icon is a full-colour render and must stay untinted.
+		for state in ["icon_normal_color", "icon_hover_color", "icon_pressed_color", "icon_disabled_color"]:
+			button.add_theme_color_override(state, Color.WHITE)
 		button.expand_icon = true
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.disabled = spent[i]

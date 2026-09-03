@@ -428,7 +428,28 @@ That changes what a run *is*: something you finish rather than something you
 outlast, with a visible "WAVE 5 / 8" and a count of what is left instead of a
 countdown. Chapter records became fastest clear, and dying no longer sets one.
 
-### 15.4 Everything shipped
+### 15.4 Classes and weight
+
+Four classes, each with the same five weapon shapes in its own flavour:
+
+| Class | Sidearm | Rifle | Spinner | Shield | Lantern |
+|---|---|---|---|---|---|
+| Army Ranger | Service Pistol | Assault Rifle | Shovel Storm | Onion Shield | Holy Onion Lantern |
+| Army Bomber | Bazooka | Grenade Rifle | Knife Bomb Spin | Smoke Gas Shield | Holy Bomb Lantern |
+| Army Angel | Angelic Arrow | Arrow Rifle | Magic Angel Orb | Angelic Shield | Holy Angelic Lantern |
+| Cyborg | Laser Beam | Sword Laser | Cyborg Shuriken | Electric Shield | Holy Electric Lantern |
+
+The hero does not carry all five. Every weapon has a **weight** and every class
+a **carry capacity**: the Bomber's bazooka is 8 kg against a capacity of 12,
+so it goes almost alone, while a pistol and a spinner together are 7 and leave
+room. Weight also slows you down — a full load costs about a third of your
+move speed — so the question is never "what is strongest" but "what can I
+afford to carry, and how slow am I willing to be".
+
+Shields are new: a dome that shoves the horde back off you and soaks a flat
+amount of every hit while you hold it.
+
+### 15.5 Everything shipped
 
 Wave 6 closed out with the three items that were left:
 
@@ -446,7 +467,7 @@ Wave 6 closed out with the three items that were left:
   anything that walks through them, and stocked with wolves, hexers and
   serpents under the Alpha.
 
-### 15.5 Still open
+### 15.6 Still open
 
 Nothing from the playtest list is outstanding. The next pass is balance:
 Hollow Thicket's later waves are currently a wall, and the mech is strong

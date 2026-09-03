@@ -60,7 +60,10 @@ func _fill(card: Button, option: Dictionary) -> void:
 		name_label.text = "%s  ·  Lv %d" % [w.display_name, level]
 		# Always show what the weapon will actually do at this level, not just
 		# what changed, so a card can be judged on its own.
-		desc.text = "%s\n%s" % [w.description if level == 1 else w.level_text(level), w.stat_line(level, stats)]
+		var lines := [w.description if level == 1 else w.level_text(level), w.stat_line(level, stats)]
+		if level == 1:
+			lines.append(w.weight_text())
+		desc.text = "\n".join(lines)
 	else:
 		var u: UpgradeData = option["upgrade"]
 		icon.texture = u.icon

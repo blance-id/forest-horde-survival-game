@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/pistol.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ranger_pistol"
+display_name = "Service Pistol"
+description = "Snaps at the nearest zombie."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+weight = 3.0
+tint = Color(1, 0.85, 0.35, 1)
+fire_sound = "shot_blaster"
+hit_sound = "hit_zombie"
+damage_type = 0
+damage = 11.0
+cooldown = 0.4
+projectile_count = 1
+spread_degrees = 8.0
+projectile_speed = 17.0
+pierce = 0
+range = 8.5
+knockback = 1.0
+projectile_scale = 0.9
+level_ups = Array[Dictionary]([{
+"text": "Fires two rounds at once.",
+"projectile_count": 2
+}, {
+"text": "+50% damage.",
+"damage": 16.5
+}, {
+"text": "Rounds punch through one body.",
+"pierce": 1
+}, {
+"text": "Fires three rounds at once.",
+"projectile_count": 3
+}, {
+"text": "Rapid fire and +80% damage.",
+"cooldown": 0.24,
+"damage": 19.8
+}])

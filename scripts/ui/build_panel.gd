@@ -8,6 +8,8 @@ class_name BuildPanel
 extends VBoxContainer
 
 const ROW_SEPARATION := 2
+## The sheet lives on the cream pause card, so its rows are chocolate.
+const NEUTRAL := Color(1, 1, 1)
 
 
 func show_build(slots: Array[WeaponSystem.Slot], passives: Dictionary, stats: RunStats) -> void:
@@ -15,7 +17,7 @@ func show_build(slots: Array[WeaponSystem.Slot], passives: Dictionary, stats: Ru
 		c.queue_free()
 	_heading("WEAPONS")
 	if slots.is_empty():
-		_row("None yet", "", Color(0.8, 0.76, 0.68))
+		_row("None yet", "", NEUTRAL)
 	for s in slots:
 		var st := s.stats
 		var dps := float(st["damage"]) * stats.damage_mult()
@@ -23,28 +25,30 @@ func show_build(slots: Array[WeaponSystem.Slot], passives: Dictionary, stats: Ru
 		var right := "%d dmg" % roundi(dps)
 		if shots > 1:
 			right += "  ·  burst %d" % roundi(dps * float(shots))
-		_row("%s  ·  Lv %d" % [s.data.display_name, s.level], right, Damage.color(s.data.damage_type))
+		_row("%s  ·  Lv %d" % [s.data.display_name, s.level], right, Damage.color(s.data.damage_type).darkened(0.45))
 	_heading("SKILLS")
 	if passives.is_empty():
-		_row("None yet", "", Color(0.8, 0.76, 0.68))
+		_row("None yet", "", NEUTRAL)
 	for u: UpgradeData in passives:
 		var level := int(passives[u])
-		_row("%s  ·  Lv %d" % [u.display_name, level], u.total_text(level), Color(1.0, 0.96, 0.86))
+		_row("%s  ·  Lv %d" % [u.display_name, level], u.total_text(level), NEUTRAL)
 	_heading("TOTALS")
-	_row("Damage", "%+d%%" % roundi((stats.damage_mult() - 1.0) * 100.0), Color(1.0, 0.96, 0.86))
-	_row("Attack Speed", "%+d%%" % roundi((stats.attack_speed_mult() - 1.0) * 100.0), Color(1.0, 0.96, 0.86))
-	_row("Move Speed", "%.1f m/s" % stats.move_speed(), Color(1.0, 0.96, 0.86))
-	_row("Max Health", "%d" % roundi(stats.max_hp()), Color(1.0, 0.96, 0.86))
-	_row("Armor", "%d blocked" % roundi(stats.armor()), Color(1.0, 0.96, 0.86))
+	_row("Damage", "%+d%%" % roundi((stats.damage_mult() - 1.0) * 100.0), NEUTRAL)
+	_row("Attack Speed", "%+d%%" % roundi((stats.attack_speed_mult() - 1.0) * 100.0), NEUTRAL)
+	_row("Move Speed", "%.1f m/s" % stats.move_speed(), NEUTRAL)
+	_row("Carrying", "%.0f / %.0f kg" % [stats.carried_weight, stats.carry_capacity],
+		Color(0.72, 0.32, 0.05) if stats.carried_weight >= stats.carry_capacity else NEUTRAL)
+	_row("Max Health", "%d" % roundi(stats.max_hp()), NEUTRAL)
+	_row("Armor", "%d blocked" % roundi(stats.armor()), NEUTRAL)
 	if stats.regen_per_second() > 0.0:
-		_row("Health Regen", "%.1f HP/sec" % stats.regen_per_second(), Color(1.0, 0.96, 0.86))
+		_row("Health Regen", "%.1f HP/sec" % stats.regen_per_second(), NEUTRAL)
 
 
 func _heading(text: String) -> void:
 	var label := Label.new()
 	label.text = text
-	label.theme_type_variation = &"Small"
-	label.modulate = Color(1.0, 0.85, 0.4)
+	label.theme_type_variation = &"SmallDark"
+	label.modulate = Color(0.62, 0.36, 0.06)
 	add_child(label)
 
 
@@ -55,13 +59,13 @@ func _row(left: String, right: String, tint: Color) -> void:
 	row.add_theme_constant_override("separation", 12)
 	var name_label := Label.new()
 	name_label.text = left
-	name_label.theme_type_variation = &"Small"
+	name_label.theme_type_variation = &"SmallDark"
 	name_label.modulate = tint
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(name_label)
 	var value := Label.new()
 	value.text = right
-	value.theme_type_variation = &"Small"
+	value.theme_type_variation = &"SmallDark"
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(value)
 	add_child(row)

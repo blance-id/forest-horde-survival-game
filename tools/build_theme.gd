@@ -9,6 +9,11 @@ const UI := "res://assets/ui/adventure/"
 const OUTLINE := Color(0.24, 0.13, 0.06)
 const TEXT := Color(1.0, 0.97, 0.9)
 const TEXT_DIM := Color(0.85, 0.78, 0.66)
+## Cream is most of this UI kit — the panels, the round buttons, the cards.
+## Near-white text and white icons vanish into it, so anything sitting on a
+## light surface uses these instead and drops the outline it no longer needs.
+const TEXT_DARK := Color(0.29, 0.16, 0.07)
+const TEXT_DARK_DIM := Color(0.46, 0.32, 0.21)
 
 
 func _init() -> void:
@@ -35,9 +40,26 @@ func _init() -> void:
 	theme.set_color("font_color", "Dim", TEXT_DIM)
 	theme.set_font_size("font_size", "Dim", 24)
 	theme.set_constant("outline_size", "Dim", 4)
+	# The same ladder again in chocolate, for text that sits on cream. Dark
+	# text needs no outline — an outline in OUTLINE would only muddy it.
+	for v in [["Hero", title, 80], ["Title", title, 60], ["Heading", title, 42],
+			["Big", title, 34], ["Small", body, 22], ["Number", title, 30]]:
+		var dark: String = String(v[0]) + "Dark"
+		theme.add_type(dark)
+		theme.set_type_variation(dark, "Label")
+		theme.set_font("font", dark, v[1])
+		theme.set_font_size("font_size", dark, v[2])
+		theme.set_color("font_color", dark, TEXT_DARK)
+		theme.set_constant("outline_size", dark, 0)
+	theme.add_type("DimDark")
+	theme.set_type_variation("DimDark", "Label")
+	theme.set_font("font", "DimDark", body)
+	theme.set_font_size("font_size", "DimDark", 24)
+	theme.set_color("font_color", "DimDark", TEXT_DARK_DIM)
+	theme.set_constant("outline_size", "DimDark", 0)
 
 	# --- Buttons ------------------------------------------------------------
-	_button(theme, "Button", title, 34, "button_brown", "button_grey")
+	_button(theme, "Button", title, 34, "button_brown", "button_grey", true)
 	theme.add_type("PrimaryButton")
 	theme.set_type_variation("PrimaryButton", "Button")
 	_button(theme, "PrimaryButton", title, 40, "button_red", "button_grey")
@@ -53,6 +75,12 @@ func _init() -> void:
 	theme.set_stylebox("pressed", "RoundButton", _nine(UI + "round_brown_dark.png", 0, 0, 14))
 	theme.set_stylebox("disabled", "RoundButton", _nine(UI + "round_grey.png", 0, 0, 14))
 	theme.set_stylebox("focus", "RoundButton", StyleBoxEmpty.new())
+	theme.set_font("font", "RoundButton", title)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		theme.set_color(state, "RoundButton", TEXT_DARK)
+	theme.set_color("font_disabled_color", "RoundButton", TEXT_DARK_DIM)
+	theme.set_constant("outline_size", "RoundButton", 0)
+	_button_icons(theme, "RoundButton", true)
 	# Upgrade cards: a big tappable panel.
 	theme.add_type("CardButton")
 	theme.set_type_variation("CardButton", "Button")
@@ -63,6 +91,12 @@ func _init() -> void:
 	theme.set_stylebox("pressed", "CardButton", card_pressed)
 	theme.set_stylebox("disabled", "CardButton", _nine(UI + "panel_grey.png", 18, 18, 18))
 	theme.set_stylebox("focus", "CardButton", StyleBoxEmpty.new())
+	theme.set_font("font", "CardButton", title)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		theme.set_color(state, "CardButton", TEXT_DARK)
+	theme.set_color("font_disabled_color", "CardButton", TEXT_DARK_DIM)
+	theme.set_constant("outline_size", "CardButton", 0)
+	_button_icons(theme, "CardButton", true)
 
 	# --- Checkboxes (settings toggles) ---------------------------------------
 	for state in ["normal", "hover", "pressed", "disabled", "focus", "hover_pressed"]:
@@ -74,10 +108,9 @@ func _init() -> void:
 	theme.set_font_size("font_size", "CheckBox", 30)
 	theme.set_constant("h_separation", "CheckBox", 16)
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_hover_pressed_color", "font_focus_color"]:
-		theme.set_color(state, "CheckBox", TEXT)
-	theme.set_color("font_disabled_color", "CheckBox", TEXT_DIM)
-	theme.set_color("font_outline_color", "CheckBox", OUTLINE)
-	theme.set_constant("outline_size", "CheckBox", 7)
+		theme.set_color(state, "CheckBox", TEXT_DARK)
+	theme.set_color("font_disabled_color", "CheckBox", TEXT_DARK_DIM)
+	theme.set_constant("outline_size", "CheckBox", 0)
 
 	# --- Panels -------------------------------------------------------------
 	theme.set_stylebox("panel", "Panel", _nine(UI + "panel_brown.png", 18, 18))
@@ -134,7 +167,9 @@ func _font(path: String, weight: int) -> FontVariation:
 	return f
 
 
-func _button(theme: Theme, type: String, font: Font, size: int, tex: String, disabled_tex: String) -> void:
+## `light` marks a button whose face is cream, so its label and icon go
+## chocolate instead of white.
+func _button(theme: Theme, type: String, font: Font, size: int, tex: String, disabled_tex: String, light: bool = false) -> void:
 	var normal := _nine(UI + tex + ".png", 14, 14, 18)
 	var pressed := _nine(UI + tex + ".png", 14, 14, 18)
 	pressed.content_margin_top = 22
@@ -148,10 +183,20 @@ func _button(theme: Theme, type: String, font: Font, size: int, tex: String, dis
 	theme.set_font("font", type, font)
 	theme.set_font_size("font_size", type, size)
 	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
-		theme.set_color(state, type, TEXT)
-	theme.set_color("font_disabled_color", type, TEXT_DIM)
+		theme.set_color(state, type, TEXT_DARK if light else TEXT)
+	theme.set_color("font_disabled_color", type, TEXT_DARK_DIM if light else TEXT_DIM)
 	theme.set_color("font_outline_color", type, OUTLINE)
-	theme.set_constant("outline_size", type, 7)
+	theme.set_constant("outline_size", type, 0 if light else 7)
+	_button_icons(theme, type, light)
+
+
+## Kenney's icons are white sheets, so on a cream face they disappear unless
+## they are tinted down to match the label.
+func _button_icons(theme: Theme, type: String, light: bool) -> void:
+	for state in ["icon_normal_color", "icon_hover_color", "icon_pressed_color",
+			"icon_focus_color", "icon_hover_pressed_color"]:
+		theme.set_color(state, type, TEXT_DARK if light else TEXT)
+	theme.set_color("icon_disabled_color", type, TEXT_DARK_DIM if light else TEXT_DIM)
 
 
 func _flat(color: Color, radius: int, margin: int = 0) -> StyleBoxFlat:

@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/items/laser_rifle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "cyborg_sword"
+display_name = "Sword Laser"
+description = "A blade of light thrown down a lane."
+icon = ExtResource("2")
+kind = 0
+max_level = 6
+weight = 5.0
+tint = Color(0.45, 0.9, 1, 1)
+fire_sound = "shot_blaster"
+hit_sound = "metal_impact"
+damage_type = 2
+damage = 22.0
+cooldown = 0.85
+projectile_count = 1
+spread_degrees = 4.0
+projectile_speed = 24.0
+pierce = 2
+range = 9.5
+knockback = 1.8
+projectile_scale = 1.5
+level_ups = Array[Dictionary]([{
+"text": "+2 rounds per burst.",
+"projectile_count": 3
+}, {
+"text": "+50% damage.",
+"damage": 33.0
+}, {
+"text": "Faster action.",
+"cooldown": 0.55
+}, {
+"text": "Rounds punch through two bodies.",
+"pierce": 2
+}, {
+"text": "Heavy loads: +100% damage.",
+"damage": 44.0
+}])

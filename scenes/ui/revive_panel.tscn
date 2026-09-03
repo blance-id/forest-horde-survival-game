@@ -52,14 +52,14 @@ theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="Center/Panel/Margin/VBox"]
 layout_mode = 2
-theme_type_variation = &"Title"
+theme_type_variation = &"TitleDark"
 text = "GET UP?"
 horizontal_alignment = 1
 
 [node name="TimerLabel" type="Label" parent="Center/Panel/Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"Hero"
+theme_type_variation = &"HeroDark"
 text = "6"
 horizontal_alignment = 1
 
@@ -80,7 +80,7 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-theme_type_variation = &"Heading"
+theme_type_variation = &"HeadingDark"
 text = "100 COINS"
 
 [node name="ReviveButton" type="Button" parent="Center/Panel/Margin/VBox"]

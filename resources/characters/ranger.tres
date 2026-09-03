@@ -1,14 +1,19 @@
-[gd_resource type="Resource" script_class="CharacterData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="CharacterData" load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/models/characters/character-male-a.glb" id="2"]
 [ext_resource type="PackedScene" path="res://assets/models/blasters/blaster-k.glb" id="3"]
-[ext_resource type="Resource" path="res://resources/weapons/blaster.tres" id="4"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/ranger_pistol.tres" id="w0"]
+[ext_resource type="Resource" path="res://resources/weapons/ranger_rifle.tres" id="w1"]
+[ext_resource type="Resource" path="res://resources/weapons/ranger_spin.tres" id="w2"]
+[ext_resource type="Resource" path="res://resources/weapons/ranger_shield.tres" id="w3"]
+[ext_resource type="Resource" path="res://resources/weapons/ranger_lantern.tres" id="w4"]
 
 [resource]
 script = ExtResource("1")
 id = "ranger"
-display_name = "Ranger"
+display_name = "Army Ranger"
 model = ExtResource("2")
 weapon_model = ExtResource("3")
 weapon_bone = "torso"
@@ -20,7 +25,9 @@ max_hp = 100.0
 move_speed = 3.6
 pickup_radius = 1.6
 armor = 0.0
-starting_weapon = ExtResource("4")
+carry_capacity = 10.0
+starting_weapon = ExtResource("w0")
+weapons = Array[ExtResource("s_weapon")]([ExtResource("w0"), ExtResource("w1"), ExtResource("w2"), ExtResource("w3"), ExtResource("w4")])
 anim_idle = "holding-both"
 anim_move = "sprint"
 anim_die = "die"

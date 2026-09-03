@@ -48,6 +48,13 @@ func setup(character: CharacterData, run_stats: RunStats) -> void:
 
 
 func _build_model() -> void:
+	# setup() can be called again when the menu switches class, so the old rig
+	# has to go or the two heroes stack on top of each other.
+	if _model != null:
+		_model.queue_free()
+	if _anim_tree != null:
+		_anim_tree.queue_free()
+		_anim_tree = null
 	_model = data.model.instantiate()
 	add_child(_model)
 	# One shared material per hero so the hit flash can drive emission.

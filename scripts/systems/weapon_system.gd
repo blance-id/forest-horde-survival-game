@@ -1,5 +1,9 @@
 ## Owns the hero's weapons for a run: auto-aims and fires projectile weapons,
-## spins orbit weapons and pulses auras. Weapons are WeaponData + a level.
+## spins orbit weapons, pulses auras and holds shield domes. Weapons are
+## WeaponData + a level.
+##
+## Weapons cost weight: `run_stats.carry_capacity` is what the hero can hold at
+## once, so one heavy weapon rules out a second and light ones combine.
 ##
 ## Ranged weapons alternate shoulders — the first mounts on the right, the
 ## second on the left — so a two-gun build reads as two guns.
@@ -14,6 +18,8 @@ signal aura_pulsed(weapon: WeaponData, position: Vector3, radius: float)
 const ORBIT_HEIGHT := 0.55
 const ORBIT_HIT_RADIUS := 0.4
 const ORBIT_HIT_INTERVAL := 0.45
+## A shield can only shove the same body this often.
+const SHIELD_HIT_INTERVAL := 0.6
 const HIDDEN := Transform3D(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, -50, 0))
 
 
@@ -44,8 +50,26 @@ var slots: Array[Slot] = []
 var _query: Array = []
 
 
+## Weight already carried.
+func total_weight() -> float:
+	var w := 0.0
+	for s in slots:
+		w += s.data.weight
+	return w
+
+
+## True when this weapon would still fit. Levelling one already carried is
+## always allowed — it costs no extra weight.
+func can_carry(data: WeaponData) -> bool:
+	if get_slot(data) != null:
+		return true
+	return total_weight() + data.weight <= run_stats.carry_capacity + 0.001
+
+
 func add_or_upgrade(data: WeaponData) -> Slot:
 	var slot := get_slot(data)
+	if slot == null and not can_carry(data):
+		return null
 	if slot == null:
 		slot = Slot.new()
 		slot.data = data
@@ -53,14 +77,28 @@ func add_or_upgrade(data: WeaponData) -> Slot:
 		if data.kind == WeaponData.Kind.ORBIT:
 			slot.mmi = _make_orbit_visual(data)
 		elif data.kind == WeaponData.Kind.AURA:
-			slot.aura = _make_aura_visual(data)
+			slot.aura = _make_aura_visual(data, false)
+		elif data.kind == WeaponData.Kind.SHIELD:
+			slot.aura = _make_aura_visual(data, true)
 		else:
 			slot.side = _next_side()
 	else:
 		slot.level = mini(slot.level + 1, data.max_level)
 	slot.refresh()
 	_refresh_visual(slot)
+	_refresh_load()
 	return slot
+
+
+## Keeps the run stats in step with what is actually carried: the weight that
+## slows the hero down, and the armour any shield dome is soaking.
+func _refresh_load() -> void:
+	run_stats.carried_weight = total_weight()
+	var armor := 0.0
+	for s in slots:
+		if s.data.kind == WeaponData.Kind.SHIELD:
+			armor += s.data.armor_bonus * float(s.level)
+	run_stats.shield_armor = armor
 
 
 ## Right shoulder first, then left, then back to the middle for a third gun.
@@ -72,6 +110,12 @@ func _next_side() -> float:
 	return [1.0, -1.0, 0.0][mini(taken, 2)]
 
 
+## True when `from` could be traded for `to` without overloading the hero.
+func can_swap(from: WeaponData, to: WeaponData) -> bool:
+	return get_slot(from) != null and get_slot(to) == null \
+		and total_weight() - from.weight + to.weight <= run_stats.carry_capacity + 0.001
+
+
 ## Replaces a maxed weapon with another one *at the same level*. A build that
 ## has topped out should be able to change shape without starting over, which
 ## is the whole point of offering the swap.
@@ -79,17 +123,34 @@ func swap(from: WeaponData, to: WeaponData) -> Slot:
 	var old := get_slot(from)
 	if old == null or get_slot(to) != null:
 		return null
+	# The replacement has to fit in the space the old one frees, or the hero
+	# ends up carrying nothing at all.
+	if total_weight() - from.weight + to.weight > run_stats.carry_capacity + 0.001:
+		return null
 	var level := old.level
 	var side := old.side
 	_free_visuals(old)
 	slots.erase(old)
 	var slot := add_or_upgrade(to)
+	if slot == null:
+		return null
 	slot.level = mini(level, to.max_level)
 	if slot.data.kind == WeaponData.Kind.PROJECTILE:
 		slot.side = side
 	slot.refresh()
 	_refresh_visual(slot)
+	_refresh_load()
 	return slot
+
+
+## Puts a weapon down, freeing its weight and its visuals.
+func drop(data: WeaponData) -> void:
+	var slot := get_slot(data)
+	if slot == null:
+		return
+	_free_visuals(slot)
+	slots.erase(slot)
+	_refresh_load()
 
 
 func _free_visuals(slot: Slot) -> void:
@@ -209,6 +270,40 @@ func _tick_aura(slot: Slot, delta: float, origin: Vector2) -> void:
 		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.4, 0), (e.pos - origin).normalized(), enemies.last_dealt, killed, slot.data)
 
 
+## A shield is an aura that shoves rather than burns: the same disc query,
+## but every hit throws the body out of the dome and the hero is armoured
+## while it holds. Bodies can only be shoved on their own cooldown, so a
+## crowd is pushed steadily instead of juggled.
+func _tick_shield(slot: Slot, delta: float, origin: Vector2) -> void:
+	var s := slot.stats
+	var radius := float(s["area"]) * run_stats.area_mult()
+	slot.aura.position = Vector3(player.position.x, 0.05, player.position.z)
+	# Flattened, so a wide dome does not become a tower in front of the camera.
+	slot.aura.scale = Vector3(radius, radius * 0.62, radius)
+	slot.pulse = maxf(0.0, slot.pulse - delta * 2.2)
+	(slot.aura.material_override as ShaderMaterial).set_shader_parameter("pulse", slot.pulse)
+	slot.cooldown -= delta * run_stats.attack_speed_mult()
+	if slot.cooldown > 0.0:
+		return
+	slot.cooldown += float(s["cooldown"])
+	var damage := float(s["damage"]) * run_stats.damage_mult()
+	var key := slot.data.id
+	var now := enemies.time
+	var shoved := false
+	_query.clear()
+	enemies.query_circle(origin, radius, _query)
+	for e: EnemyManager.Enemy in _query:
+		if float(e.hit_cooldowns.get(key, -1.0)) > now:
+			continue
+		e.hit_cooldowns[key] = now + SHIELD_HIT_INTERVAL
+		var killed := enemies.hit(e, damage, origin, float(s["knockback"]), slot.data.damage_type)
+		enemy_hit.emit(e, e.position3d() + Vector3(0, 0.5, 0), (e.pos - origin).normalized(), enemies.last_dealt, killed, slot.data)
+		shoved = true
+	if shoved:
+		slot.pulse = 1.0
+		aura_pulsed.emit(slot.data, slot.aura.position, radius)
+
+
 func _make_orbit_visual(data: WeaponData) -> MultiMeshInstance3D:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
@@ -224,15 +319,26 @@ func _make_orbit_visual(data: WeaponData) -> MultiMeshInstance3D:
 	return mmi
 
 
-func _make_aura_visual(data: WeaponData) -> MeshInstance3D:
-	var quad := QuadMesh.new()
-	quad.size = Vector2(2.0, 2.0)
-	quad.orientation = PlaneMesh.FACE_Y
+## AURA is a disc painted on the ground; SHIELD is a hemisphere standing over
+## the hero, because a flat disc disappears under the bodies walking on it.
+func _make_aura_visual(data: WeaponData, dome: bool) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
-	mi.name = "Aura_" + data.id
-	mi.mesh = quad
+	mi.name = ("Shield_" if dome else "Aura_") + data.id
+	if dome:
+		var half := SphereMesh.new()
+		half.radius = 1.0
+		half.height = 2.0
+		half.is_hemisphere = true
+		half.radial_segments = 24
+		half.rings = 10
+		mi.mesh = half
+	else:
+		var quad := QuadMesh.new()
+		quad.size = Vector2(2.0, 2.0)
+		quad.orientation = PlaneMesh.FACE_Y
+		mi.mesh = quad
 	var mat := ShaderMaterial.new()
-	mat.shader = preload("res://shaders/aura_disc.gdshader")
+	mat.shader = preload("res://shaders/shield_dome.gdshader") if dome else preload("res://shaders/aura_disc.gdshader")
 	mat.set_shader_parameter("color", data.tint)
 	mi.material_override = mat
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

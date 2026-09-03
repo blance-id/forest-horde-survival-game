@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CharacterData" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/character_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/characters/character-male-d.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/blasters/blaster-r.glb" id="3"]
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="s_weapon"]
+[ext_resource type="Resource" path="res://resources/weapons/bomber_bazooka.tres" id="w0"]
+[ext_resource type="Resource" path="res://resources/weapons/bomber_rifle.tres" id="w1"]
+[ext_resource type="Resource" path="res://resources/weapons/bomber_spin.tres" id="w2"]
+[ext_resource type="Resource" path="res://resources/weapons/bomber_shield.tres" id="w3"]
+[ext_resource type="Resource" path="res://resources/weapons/bomber_lantern.tres" id="w4"]
+
+[resource]
+script = ExtResource("1")
+id = "bomber"
+display_name = "Army Bomber"
+model = ExtResource("2")
+weapon_model = ExtResource("3")
+weapon_bone = "torso"
+weapon_offset = Vector3(0, 0.1, 0.24)
+weapon_rotation_degrees = Vector3(0, 0, 0)
+weapon_scale = 0.7
+muzzle_offset = Vector3(0, 0.28, 0.5)
+max_hp = 130.0
+move_speed = 3.2
+pickup_radius = 1.6
+armor = 2.0
+carry_capacity = 12.0
+starting_weapon = ExtResource("w0")
+weapons = Array[ExtResource("s_weapon")]([ExtResource("w0"), ExtResource("w1"), ExtResource("w2"), ExtResource("w3"), ExtResource("w4")])
+anim_idle = "holding-both"
+anim_move = "sprint"
+anim_die = "die"
