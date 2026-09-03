@@ -293,6 +293,11 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   damage: red hero burst, red "50" number, camera shake, haptic tap and a
   screen-edge red vignette that pulses continuously under 30 % HP. Death is a
   0.9 s slow-motion. Level-ups fire a gold star ring around the hero.
+- **Traps look like they have already worked.** A tidy machine is not
+  frightening; the evidence is. The spike pit is a hole of black disturbed
+  earth in a broken iron frame, with bone spikes leaning at every angle, a
+  skull driven onto the tallest one, and ribs half-sunk in the dark. You do
+  not need to be told what it does.
 - **Effects** — three heavier languages on top of the hit sparks. Explosions
   are chaotic: a white core, a fireball, embers skittering out flat, and a
   burn mark left on the grass. Magic is the opposite, ordered and cool —

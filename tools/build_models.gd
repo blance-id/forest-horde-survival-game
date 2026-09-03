@@ -149,27 +149,77 @@ func _build_mech() -> Node3D:
 
 # --- Spike trap ---------------------------------------------------------------
 
-## The dungeon kit's trap is a plate with four holes in it, which from a
-## pitched camera reads as four circles on the grass and not as a hazard. This
-## is unmistakable: a sunken frame with a ring of blood-tipped spikes standing
-## out of it.
+## The pit. It has to read as *dangerous* from a pitched camera at a glance,
+## which means it cannot be a tidy machine: what makes a trap frightening is
+## the evidence that it has already worked.
+##
+## So the frame is broken and rusted at uneven heights, the spikes are bone
+## rather than steel and lean at every angle, the pit below them is black with
+## old blood, and there is a skull on the tallest one with ribs and shards
+## scattered around it. A ragged stain soaks into the grass outside the frame.
 func _build_spike_trap() -> Node3D:
 	var root := Node3D.new()
 	root.name = "SpikeTrap"
 	var t := _Part.new()
-	# Sunken frame: a dark pit ringed by a rusted lip.
-	t.box(Vector3(-0.46, 0.0, -0.46), Vector3(0.46, 0.05, 0.46), BROWN)
-	t.box(Vector3(-0.40, 0.05, -0.40), Vector3(0.40, 0.09, 0.40), NEAR_BLACK)
-	# Corner bolts, so the frame reads as iron rather than a painted square.
-	for sx in [-1.0, 1.0]:
-		for sz in [-1.0, 1.0]:
-			t.box(Vector3(sx * 0.40 - 0.06, 0.05, sz * 0.40 - 0.06),
-				Vector3(sx * 0.40 + 0.06, 0.11, sz * 0.40 + 0.06), GREY_MID)
-	# Spikes: one in the middle and a ring of four, all blood-tipped.
-	t.spike(Vector2.ZERO, 0.11, 0.42, GREY_PALE, RED)
-	for i in 4:
-		var a := TAU * float(i) / 4.0 + PI * 0.25
-		t.spike(Vector2(cos(a), sin(a)) * 0.24, 0.085, 0.32, GREY_PALE, RED)
+
+	# Dark, disturbed earth around the frame. This was two slabs of the brown
+	# swatch first, meaning to be soaked ground — but lit by the sun that
+	# brown is bright orange, and it read as a wooden deck. Near-black in two
+	# offset slabs reads as a hole somebody dug, which is what it is.
+	t.box(Vector3(-0.62, 0.004, -0.54), Vector3(0.58, 0.012, 0.60), NEAR_BLACK)
+	t.box(Vector3(-0.52, 0.006, -0.64), Vector3(0.64, 0.014, 0.50), NEAR_BLACK)
+
+	# The pit: black all the way down. A large pool of bright blood reads as
+	# pink plastic from this camera, so the gore is kept to small wet patches
+	# and the tips of the spikes; the hole itself just has to look bottomless.
+	t.box(Vector3(-0.44, 0.0, -0.44), Vector3(0.44, 0.07, 0.44), NEAR_BLACK)
+
+	# Dark iron frame, broken: four rails at different heights, one collapsed.
+	t.box(Vector3(-0.52, 0.02, -0.52), Vector3(0.52, 0.15, -0.42), SLATE)
+	t.box(Vector3(-0.52, 0.02, 0.42), Vector3(0.22, 0.11, 0.52), SLATE)
+	t.box(Vector3(-0.52, 0.02, -0.52), Vector3(-0.42, 0.18, 0.30), SLATE)
+	t.box(Vector3(0.42, 0.02, -0.30), Vector3(0.52, 0.10, 0.52), SLATE)
+	# Rust bleeding down two corners, where the bolts are tearing out.
+	t.box(Vector3(-0.53, 0.15, -0.53), Vector3(-0.45, 0.20, -0.45), BROWN)
+	t.box(Vector3(0.45, 0.10, 0.45), Vector3(0.53, 0.15, 0.53), BROWN)
+
+	# Spikes: bone, uneven, leaning every which way, red from the tips down.
+	var spikes := [
+		[Vector2(0.0, -0.06), 0.10, 0.62, Vector2(0.03, 0.04)],
+		[Vector2(-0.24, 0.20), 0.085, 0.44, Vector2(-0.06, 0.03)],
+		[Vector2(0.26, 0.16), 0.080, 0.50, Vector2(0.05, -0.04)],
+		[Vector2(0.20, -0.26), 0.075, 0.38, Vector2(0.04, -0.05)],
+		[Vector2(-0.27, -0.22), 0.090, 0.55, Vector2(-0.05, -0.03)],
+		[Vector2(-0.05, 0.30), 0.070, 0.33, Vector2(0.02, 0.06)],
+		[Vector2(0.32, -0.02), 0.065, 0.28, Vector2(0.07, 0.01)],
+	]
+	for sp in spikes:
+		t.spike(sp[0], sp[1], sp[2], CREAM, RED, sp[3])
+	# Wet patches where three of them come out of the floor of the pit.
+	for base in [Vector2(0.0, -0.06), Vector2(-0.27, -0.22), Vector2(0.26, 0.16)]:
+		t.box(Vector3(base.x - 0.07, 0.071, base.y - 0.07), Vector3(base.x + 0.07, 0.078, base.y + 0.07), RED)
+
+	# The skull, driven onto the tallest spike and hanging off it. This is the
+	# bit that does the work: a shape the eye reads instantly as somebody who
+	# did not get out.
+	var skull := Vector3(0.05, 0.46, -0.01)
+	t.box(skull + Vector3(-0.13, 0.0, -0.12), skull + Vector3(0.13, 0.20, 0.12), CREAM)
+	t.box(skull + Vector3(-0.10, -0.08, -0.09), skull + Vector3(0.10, 0.0, 0.09), CREAM)
+	# Sockets and a hanging jaw, cut deep so they read at a distance.
+	t.box(skull + Vector3(-0.11, 0.06, 0.09), skull + Vector3(-0.02, 0.15, 0.14), NEAR_BLACK)
+	t.box(skull + Vector3(0.02, 0.06, 0.09), skull + Vector3(0.11, 0.15, 0.14), NEAR_BLACK)
+	t.box(skull + Vector3(-0.08, -0.06, 0.08), skull + Vector3(0.08, 0.01, 0.13), NEAR_BLACK)
+	# Blood running from the spike out through the top of the skull.
+	t.box(skull + Vector3(-0.04, 0.18, -0.04), skull + Vector3(0.04, 0.26, 0.04), RED)
+
+	# Ribs and shards in the pit, half sunk in the dark.
+	for i in 3:
+		var a := TAU * float(i) / 3.0 + 0.7
+		var c := Vector2(cos(a), sin(a)) * 0.28
+		t.box(Vector3(c.x - 0.12, 0.075, c.y - 0.025), Vector3(c.x + 0.12, 0.105, c.y + 0.025), CREAM)
+	t.box(Vector3(-0.31, 0.075, 0.06), Vector3(-0.14, 0.115, 0.12), CREAM)
+	t.box(Vector3(0.12, 0.075, -0.33), Vector3(0.18, 0.105, -0.16), CREAM)
+
 	_attach(root, t, "torso", Vector3.ZERO)
 	return root
 
@@ -226,8 +276,9 @@ class _Part:
 
 	## A four-sided pyramid standing at `centre`, with the top fifth in
 	## `tip_uv` so a spike looks like it has been used.
-	func spike(centre: Vector2, half: float, height: float, uv: Vector2, tip_uv: Vector2) -> void:
-		var apex := Vector3(centre.x, height, centre.y)
+	func spike(centre: Vector2, half: float, height: float, uv: Vector2, tip_uv: Vector2,
+			tilt: Vector2 = Vector2.ZERO) -> void:
+		var apex := Vector3(centre.x + tilt.x, height, centre.y + tilt.y)
 		var neck := height * 0.8
 		var shrink := 0.2
 		for i in 4:
@@ -235,8 +286,9 @@ class _Part:
 			var a1 := TAU * float(i + 1) / 4.0 + PI * 0.25
 			var p0 := Vector3(centre.x + cos(a0) * half, 0.0, centre.y + sin(a0) * half)
 			var p1 := Vector3(centre.x + cos(a1) * half, 0.0, centre.y + sin(a1) * half)
-			var q0 := Vector3(centre.x + cos(a0) * half * shrink, neck, centre.y + sin(a0) * half * shrink)
-			var q1 := Vector3(centre.x + cos(a1) * half * shrink, neck, centre.y + sin(a1) * half * shrink)
+			var lean := tilt * 0.8
+			var q0 := Vector3(centre.x + lean.x + cos(a0) * half * shrink, neck, centre.y + lean.y + sin(a0) * half * shrink)
+			var q1 := Vector3(centre.x + lean.x + cos(a1) * half * shrink, neck, centre.y + lean.y + sin(a1) * half * shrink)
 			var n := (p1 - p0).cross(q0 - p0).normalized()
 			_quad(p0, p1, q1, q0, n, uv)
 			_tri(q0, q1, apex, n, tip_uv)

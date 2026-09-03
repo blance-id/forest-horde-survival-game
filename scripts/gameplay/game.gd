@@ -411,9 +411,10 @@ func dev_command(cmd: String) -> void:
 				player.position = Vector3(b.pos.x, 0.0, b.pos.y)
 				camera_rig.snap_to(player.position)
 		"trap":
+			# Beside it, not on it: standing in a trap springs it.
 			if not traps.traps.is_empty():
 				var t: Traps.Trap = traps.traps[0]
-				player.position = Vector3(t.pos.x, 0.0, t.pos.y)
+				player.position = Vector3(t.pos.x + 0.8, 0.0, t.pos.y - 2.8)
 				camera_rig.snap_to(player.position)
 		"move":
 			_dev_move = Vector2(0.6, -0.8)

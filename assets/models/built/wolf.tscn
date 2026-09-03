@@ -110,28 +110,28 @@ _surfaces = [{
 "vertex_data": PackedByteArray("zcxMPSlcj77NzEw9zcxMvSlcj77NzEw9zcxMvQrXozzNzEw9zcxMPQrXozzNzEw9zcxMvSlcj77NzEy9zcxMPSlcj77NzEy9zcxMPQrXozzNzEy9zcxMvQrXozzNzEy9zcxMvSlcj77NzEw9zcxMvSlcj77NzEy9zcxMvQrXozzNzEy9zcxMvQrXozzNzEw9zcxMPSlcj77NzEy9zcxMPSlcj77NzEw9zcxMPQrXozzNzEw9zcxMPQrXozzNzEy9zcxMvQrXozzNzEy9zcxMPQrXozzNzEy9zcxMPQrXozzNzEw9zcxMvQrXozzNzEw9zcxMvSlcj77NzEw9zcxMPSlcj77NzEw9zcxMPSlcj77NzEy9zcxMvSlcj77NzEy9j8J1PXsUrr6PwnU9j8J1vXsUrr6PwnU9j8J1vbgehb6PwnU9j8J1Pbgehb6PwnU9j8J1vXsUrr4pXI+9j8J1PXsUrr4pXI+9j8J1Pbgehb4pXI+9j8J1vbgehb4pXI+9j8J1vXsUrr6PwnU9j8J1vXsUrr4pXI+9j8J1vbgehb4pXI+9j8J1vbgehb6PwnU9j8J1PXsUrr4pXI+9j8J1PXsUrr6PwnU9j8J1Pbgehb6PwnU9j8J1Pbgehb4pXI+9j8J1vbgehb4pXI+9j8J1Pbgehb4pXI+9j8J1Pbgehb6PwnU9j8J1vbgehb6PwnU9j8J1vXsUrr6PwnU9j8J1PXsUrr6PwnU9j8J1PXsUrr4pXI+9j8J1vXsUrr4pXI+9/3//f/9/AID/f/9//38AgP9//3//fwCA/3//f/9/AID//////38AgP//////fwCA//////9/AID//////38AgAAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/9//7////9//3//v////3//f/+/////f/9//7//f///AAD/v/9///8AAP+//3///wAA/7//f///AAD/v/9/AAAAAP+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+//3//f/9/AID/f/9//38AgP9//3//fwCA/3//f/9/AID//////38AgP//////fwCA//////9/AID//////38AgAAA/3//f/+/AAD/f/9//78AAP9//3//vwAA/3//f/+/////f/9//7////9//3//v////3//f/+/////f/9//7//f///AAD/v/9///8AAP+//3///wAA/7//f///AAD/v/9/AAAAAP+//38AAAAA/7//fwAAAAD/v/9/AAAAAP+/")
 }]
 
-[node name="Wolf" type="Node3D" unique_id=135129656]
+[node name="Wolf" type="Node3D" unique_id=636018221]
 
-[node name="torso" type="MeshInstance3D" parent="." unique_id=908570081]
+[node name="torso" type="MeshInstance3D" parent="." unique_id=1845527281]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
 mesh = SubResource("ArrayMesh_g4gk6")
 
-[node name="head" type="MeshInstance3D" parent="." unique_id=53837784]
+[node name="head" type="MeshInstance3D" parent="." unique_id=171829219]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.48, 0.26)
 mesh = SubResource("ArrayMesh_ywc1t")
 
-[node name="leg-left" type="MeshInstance3D" parent="." unique_id=1334347639]
+[node name="leg-left" type="MeshInstance3D" parent="." unique_id=376210920]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.34, -0.26)
 mesh = SubResource("ArrayMesh_ad0a0")
 
-[node name="leg-right" type="MeshInstance3D" parent="." unique_id=924284241]
+[node name="leg-right" type="MeshInstance3D" parent="." unique_id=723955787]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.34, -0.26)
 mesh = SubResource("ArrayMesh_014ju")
 
-[node name="arm-left" type="MeshInstance3D" parent="." unique_id=572593956]
+[node name="arm-left" type="MeshInstance3D" parent="." unique_id=1596970898]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.36, 0.2)
 mesh = SubResource("ArrayMesh_6uweb")
 
-[node name="arm-right" type="MeshInstance3D" parent="." unique_id=1178665149]
+[node name="arm-right" type="MeshInstance3D" parent="." unique_id=2119746925]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.36, 0.2)
 mesh = SubResource("ArrayMesh_kx6d1")
