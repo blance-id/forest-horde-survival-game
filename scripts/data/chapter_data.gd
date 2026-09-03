@@ -32,6 +32,30 @@ extends Resource
 @export var giant_models: Array[PackedScene] = []
 @export var giant_count: int = 0
 
+@export_group("Terrain")
+## Rock outcrops standing in the arena. Solid: the hero and the horde both
+## walk around them, so the map has corners to fight in.
+@export var hill_models: Array[PackedScene] = []
+@export var hill_count: int = 12
+@export var hill_radius: float = 2.2
+@export var hill_scale_min: float = 2.2
+@export var hill_scale_max: float = 3.6
+## Hills stay this far from the hero's start and this far from each other.
+@export var hill_clearance: float = 12.0
+@export var hill_spacing: float = 12.0
+## Rock bluffs ringing the clearing, mixed in among the border trees.
+##
+## A true distant range is invisible here: the camera is pitched 55 degrees
+## down, so the horizon never enters the frame and anything far enough away to
+## read as "distance" is simply off the top of the screen. The range is
+## therefore part of the rim — tall enough to loom over the tree wall when you
+## reach the edge, gone when you are back in the middle.
+@export var mountain_models: Array[PackedScene] = []
+@export var mountain_count: int = 26
+@export var mountain_distance: float = 28.0
+@export var mountain_scale_min: float = 9.0
+@export var mountain_scale_max: float = 16.0
+
 @export_group("Forest")
 ## Choppable trees: stand next to one and the hero swings at it for wood.
 @export var tree_models: Array[PackedScene] = []

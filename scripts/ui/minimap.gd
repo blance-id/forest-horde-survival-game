@@ -14,6 +14,7 @@ const GROUND := Color(0.09, 0.14, 0.08, 0.62)
 const TREE := Color(0.25, 0.55, 0.22, 0.9)
 const BUSH := Color(0.4, 0.75, 0.3, 0.85)
 const TRAP := Color(0.95, 0.5, 0.15, 0.9)
+const HILL := Color(0.42, 0.38, 0.34, 0.95)
 const ENEMY := Color(0.92, 0.26, 0.22)
 const ELITE := Color(1.0, 0.6, 0.15)
 const BOSS := Color(1.0, 0.2, 0.5)
@@ -22,6 +23,7 @@ const HERO := Color(1.0, 1.0, 1.0)
 var enemies: EnemyManager
 var forest: Forest
 var traps: Traps
+var hills: Hills
 
 var _bounds := ArenaBounds.new()
 var _hero := Vector2.ZERO
@@ -61,6 +63,9 @@ func _draw() -> void:
 		shape.append(_to_map(p))
 	draw_colored_polygon(shape, GROUND)
 	draw_polyline(shape, EDGE, 2.0)
+	if hills != null:
+		for h in hills.hills:
+			draw_circle(_to_map(h.pos), maxf(3.0, h.radius * size.x * 0.5 / _bounds.half), HILL)
 	if forest != null:
 		for b in forest.bushes:
 			draw_circle(_to_map(b.pos), maxf(2.0, b.radius * size.x * 0.5 / _bounds.half), BUSH)

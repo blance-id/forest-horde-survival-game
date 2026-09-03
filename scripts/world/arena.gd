@@ -34,9 +34,12 @@ func _build_environment() -> void:
 	env.fog_enabled = true
 	env.fog_mode = Environment.FOG_MODE_DEPTH
 	env.fog_light_color = chapter.fog_color
-	env.fog_depth_begin = 10.0
-	env.fog_depth_end = 26.0
-	env.fog_density = 1.0
+	# Deep enough for the mountain range to read as distance rather than be
+	# swallowed: near ground stays clear, the tree wall hazes, and the range
+	# beyond it is a silhouette.
+	env.fog_depth_begin = 14.0
+	env.fog_depth_end = 95.0
+	env.fog_density = 0.85
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	# Bloom carries the VFX: emissive bullets, auras and gems glow over the horde.
 	env.glow_enabled = true

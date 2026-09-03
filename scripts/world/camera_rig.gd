@@ -38,7 +38,8 @@ func _ready() -> void:
 	camera.keep_aspect = Camera3D.KEEP_WIDTH
 	camera.fov = fov
 	camera.near = 1.0
-	camera.far = 80.0
+	# Far enough to keep the mountain range on the horizon inside the frustum.
+	camera.far = 260.0
 	add_child(camera)
 	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	_noise.frequency = 1.0

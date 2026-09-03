@@ -66,6 +66,7 @@ var upgrade_levels: Dictionary = {}  # UpgradeData -> level
 var forest: Forest
 var traps: Traps
 var survivors: Survivors
+var hills: Hills
 ## Relics carried into this run, and whether each has been spent.
 var bag: Array[RelicData] = []
 var bag_spent: Array[bool] = []
@@ -121,6 +122,13 @@ func _start_run() -> void:
 	world.add_child(arena)
 	arena.build(chapter, _rng.randi())
 
+	# Terrain first: it is the only solid thing in the map, and everything
+	# else scatters around it.
+	hills = Hills.new()
+	hills.name = "Hills"
+	world.add_child(hills)
+	hills.build(chapter, _rng.randi())
+
 	forest = Forest.new()
 	forest.name = "Forest"
 	world.add_child(forest)
@@ -151,6 +159,7 @@ func _start_run() -> void:
 
 	enemies.player = player
 	enemies.configure(chapter, ENEMY_CAPACITY)
+	enemies.obstacles = hills.hills
 	enemies.enemy_killed.connect(_on_enemy_killed)
 	enemies.boss_spawned.connect(_on_boss_spawned)
 	enemies.boss_killed.connect(_on_boss_killed)
@@ -199,6 +208,7 @@ func _start_run() -> void:
 	hud.minimap.enemies = enemies
 	hud.minimap.forest = forest
 	hud.minimap.traps = traps
+	hud.minimap.hills = hills
 	hud.setup(chapter)
 	hud.set_time(0.0)
 	hud.set_xp(0.0, xp_needed(level), level)
@@ -285,6 +295,12 @@ func dev_command(cmd: String) -> void:
 					for i in 3:
 						weapon_system.add_or_upgrade(w)
 			hud.set_build(weapon_system.slots, upgrade_levels)
+		"edge":
+			# Walk to the rim so the mountain range is in frame.
+			var b := ArenaBounds.from_chapter(chapter)
+			var edge := Vector2(0.0, -1.0) * (b.radius_at(-PI * 0.5) - 4.0)
+			player.position = Vector3(edge.x, 0.0, edge.y)
+			camera_rig.snap_to(player.position)
 		"chapter2":
 			SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": "chapter_02", "character": character})
 		"beasts":
@@ -421,7 +437,8 @@ func _tick_world(delta: float) -> void:
 	weapon_system.enabled = not vehicles.is_piloting()
 	# A nest is solid: shove the hero back out before anything reads their
 	# position, or the two models merge into one another.
-	var pushed := towers.push_out(Vector2(player.position.x, player.position.z), Player.RADIUS)
+	var pushed := hills.push_out(Vector2(player.position.x, player.position.z), Player.RADIUS)
+	pushed = towers.push_out(pushed, Player.RADIUS)
 	player.position = Vector3(pushed.x, player.position.y, pushed.y)
 	var hero := pushed
 	forest.tick(delta, hero)

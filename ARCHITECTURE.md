@@ -91,6 +91,23 @@ pickups → fx → camera_rig.follow → hud.place_hero_hp → hud.tick`. Everyt
 simulates in XZ as `Vector2` and is written to 3D transforms at the end of
 each tick.
 
+### Terrain
+
+`Hills` (scripts/world/hills.gd) owns the only solid ground in the game. Rock
+outcrops stand inside the arena as `Obstacle` circles that both the hero
+(`Game` pushes them out each frame) and the horde (`EnemyManager.obstacles`,
+checked in `_separation`) have to walk around — an open field with corners in
+it. `Obstacle` is its own class rather than an inner one so terrain, the hero
+and the horde can all name it without depending on each other.
+
+The mountain range is part of the arena *rim*, not a distant horizon. With the
+camera pitched 55 degrees down the horizon never enters frame, so anything far
+enough away to read as distance is simply off the top of the screen; the
+bluffs are mixed in among the border trees instead, tall enough to loom when
+you reach the edge. Fog runs to 95 units and the camera's far plane to 260 so
+they are not cut off, and the chapter palettes fog to a light haze — a range
+silhouetted against near-black sky is just a hole in the frame.
+
 ### The world
 
 `ArenaBounds` (scripts/world/arena_bounds.gd) is the single answer to "is this

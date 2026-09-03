@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=29 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=37 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/runner.tres" id="e_runner"]
@@ -24,6 +24,14 @@
 [ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeA.glb" id="n_rock_l"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/statue_obelisk.glb" id="n_obelisk"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/log_stack.glb" id="n_logs"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/stone_largeB.glb" id="h_rock_a"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/stone_tallC.glb" id="h_rock_b"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_tallH.glb" id="h_rock_c"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/stone_largeD.glb" id="h_rock_d"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_large_stone.glb" id="m_cliff_a"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_stone.glb" id="m_cliff_b"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_block_stone.glb" id="m_cliff_c"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_cornerLarge_stone.glb" id="m_cliff_d"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/fire-basket.glb" id="m_brazier"]
 [ext_resource type="PackedScene" path="res://assets/models/dungeon/character-human.glb" id="m_human"]
 [ext_resource type="PackedScene" path="res://assets/models/forest/tent.glb" id="m_tent"]
@@ -39,8 +47,8 @@ arena_half_size = 52.0
 ground_color = Color(0.2, 0.29, 0.16, 1)
 ground_color_alt = Color(0.15, 0.23, 0.13, 1)
 dirt_color = Color(0.3, 0.25, 0.17, 1)
-sky_color = Color(0.05, 0.07, 0.08, 1)
-fog_color = Color(0.08, 0.12, 0.11, 1)
+sky_color = Color(0.16, 0.21, 0.28, 1)
+fog_color = Color(0.26, 0.34, 0.42, 1)
 sun_color = Color(0.78, 0.82, 1, 1)
 sun_energy = 0.8
 ambient_color = Color(0.36, 0.44, 0.52, 1)
@@ -49,6 +57,18 @@ decor_models = Array[PackedScene]([ExtResource("n_grass"), ExtResource("n_grass"
 decor_count = 620
 giant_models = Array[PackedScene]([ExtResource("n_oak_dark"), ExtResource("n_rock_l"), ExtResource("n_dark")])
 giant_count = 70
+hill_models = Array[PackedScene]([ExtResource("h_rock_a"), ExtResource("h_rock_b"), ExtResource("h_rock_c"), ExtResource("h_rock_d")])
+hill_count = 26
+hill_radius = 2.4
+hill_scale_min = 2.4
+hill_scale_max = 4.0
+hill_clearance = 13.0
+hill_spacing = 10.0
+mountain_models = Array[PackedScene]([ExtResource("m_cliff_a"), ExtResource("m_cliff_b"), ExtResource("m_cliff_c"), ExtResource("m_cliff_d")])
+mountain_count = 34
+mountain_distance = 5.0
+mountain_scale_min = 5.5
+mountain_scale_max = 10.5
 tree_models = Array[PackedScene]([ExtResource("n_tree_dark"), ExtResource("n_oak_dark"), ExtResource("n_thin")])
 tree_count = 150
 tree_hp = 5.0

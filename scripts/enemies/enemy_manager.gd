@@ -33,6 +33,8 @@ const DEATH_DURATION := 1.6
 const RESPAWN_DISTANCE := 20.0
 const SPAWN_RING_MIN := 10.5
 const SPAWN_RING_MAX := 12.5
+## Separation is capped at this many body radii per frame.
+const MAX_SEPARATION := 1.5
 ## Strike lunge decay: how long the forward snap is visible.
 const STRIKE_TIME := 0.18
 const HIDDEN := Transform3D(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, -50, 0))
@@ -88,6 +90,8 @@ var bounds := ArenaBounds.new()
 var player_hidden := false
 var last_seen := Vector2.ZERO
 var lures: Array[Lure] = []
+## Solid terrain the horde walks around; set from the chapter's hills.
+var obstacles: Array[Obstacle] = []
 ## What the most recent `hit()` actually landed, after resistances.
 var last_dealt := 0.0
 var time := 0.0
@@ -325,16 +329,27 @@ func _pick_lure(p: Vector2) -> Lure:
 	return best
 
 
+## Neighbour push, from the spatial hash plus the things the hash cannot see.
+##
+## The grid only looks at a 2x2 block of cells, which assumes every body is
+## small next to `CELL`. Two things are not: static rock, and a boss at radius
+## 3+ that spans a dozen cells. Both are checked explicitly here — the boss
+## shoves without being shoved (`_move` skips this entirely for it), and rocks
+## push like a very large, very still enemy.
 func _separation(e: Enemy) -> Vector2:
 	var push := Vector2.ZERO
 	var checked := 0
+	var r := e.radius()
+	for o in obstacles:
+		push += _push_from(e, o.pos, r + o.radius)
+	if boss != null and not boss.dying and e != boss:
+		push += _push_from(e, boss.pos, r + boss.radius())
 	var cx := floori(e.pos.x / CELL)
 	var cz := floori(e.pos.y / CELL)
 	# The 2x2 block of cells on this enemy's side of its cell covers every
 	# neighbour within CELL / 2.
 	var sx := 1 if e.pos.x - float(cx) * CELL > CELL * 0.5 else -1
 	var sz := 1 if e.pos.y - float(cz) * CELL > CELL * 0.5 else -1
-	var r := e.radius()
 	for ox in [0, sx]:
 		for oz in [0, sz]:
 			var bucket: Variant = _grid.get((cx + ox) * 65536 + (cz + oz))
@@ -353,9 +368,23 @@ func _separation(e: Enemy) -> Vector2:
 					var dl := sqrt(d2)
 					push += diff / dl * (min_d - dl)
 					checked += 1
-					if checked >= 6:
-						return push
-	return push
+					if checked >= 8:
+						break
+	# One body-length of correction per frame is plenty. Without the clamp a
+	# body wedged between a rock and the boss is flung across the arena.
+	return push.limit_length(r * MAX_SEPARATION)
+
+
+## Outward push that would clear `e` from a circle at `at` of combined size
+## `clear`, or zero when it is already outside.
+func _push_from(e: Enemy, at: Vector2, clear: float) -> Vector2:
+	var away := e.pos - at
+	var d2 := away.length_squared()
+	if d2 >= clear * clear:
+		return Vector2.ZERO
+	if d2 < 0.0001:
+		return Vector2(cos(e.phase * TAU), sin(e.phase * TAU)) * clear
+	return away / sqrt(d2) * (clear - sqrt(d2))
 
 
 ## Pushes a record's current pose to the GPU. Used by the boss entrance, which

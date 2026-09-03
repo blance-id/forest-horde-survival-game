@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ChapterData" load_steps=54 format=3]
+[gd_resource type="Resource" script_class="ChapterData" load_steps=62 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/chapter_data.gd" id="1"]
 [ext_resource type="Resource" path="res://resources/enemies/walker.tres" id="e_walker"]
@@ -27,6 +27,14 @@
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/pine.glb" id="m_pine_straight"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/trunk.glb" id="m_trunk"]
 [ext_resource type="PackedScene" path="res://assets/models/dungeon/trap.glb" id="m_trap"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeA.glb" id="h_rock_a"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeC.glb" id="h_rock_b"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_tallB.glb" id="h_rock_c"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/rock_tallF.glb" id="h_rock_d"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_large_rock.glb" id="m_cliff_a"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_rock.glb" id="m_cliff_b"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_block_rock.glb" id="m_cliff_c"]
+[ext_resource type="PackedScene" path="res://assets/models/nature/cliff_cornerLarge_rock.glb" id="m_cliff_d"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/tree_pineTallA.glb" id="n_pine_a"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/tree_pineTallB.glb" id="n_pine_b"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/tree_pineTallC.glb" id="n_pine_c"]
@@ -63,16 +71,28 @@ arena_half_size = 46.0
 ground_color = Color(0.27, 0.41, 0.17, 1)
 ground_color_alt = Color(0.22, 0.35, 0.14, 1)
 dirt_color = Color(0.42, 0.33, 0.2, 1)
-sky_color = Color(0.08, 0.13, 0.09, 1)
-fog_color = Color(0.12, 0.2, 0.13, 1)
+sky_color = Color(0.46, 0.6, 0.66, 1)
+fog_color = Color(0.55, 0.67, 0.68, 1)
 sun_color = Color(1, 0.92, 0.76, 1)
 sun_energy = 1.15
-ambient_color = Color(0.5, 0.62, 0.58, 1)
+ambient_color = Color(0.58, 0.68, 0.72, 1)
 border_models = Array[PackedScene]([ExtResource("n_pine_a"), ExtResource("n_pine_b"), ExtResource("n_pine_c"), ExtResource("n_pine_r")])
 decor_models = Array[PackedScene]([ExtResource("n_grass"), ExtResource("n_grass_l"), ExtResource("n_grass"), ExtResource("n_flower_r"), ExtResource("n_flower_p"), ExtResource("n_flower_y"), ExtResource("n_shroom"), ExtResource("n_bush_s"), ExtResource("n_rock_s"), ExtResource("n_log"), ExtResource("n_stump_o"), ExtResource("m_grave_round"), ExtResource("m_grave_cross"), ExtResource("m_pumpkin")])
 decor_count = 650
 giant_models = Array[PackedScene]([ExtResource("n_oak"), ExtResource("n_blocks"), ExtResource("n_rock_l")])
 giant_count = 60
+hill_models = Array[PackedScene]([ExtResource("h_rock_a"), ExtResource("h_rock_b"), ExtResource("h_rock_c"), ExtResource("h_rock_d")])
+hill_count = 22
+hill_radius = 2.4
+hill_scale_min = 2.4
+hill_scale_max = 4.0
+hill_clearance = 13.0
+hill_spacing = 10.0
+mountain_models = Array[PackedScene]([ExtResource("m_cliff_a"), ExtResource("m_cliff_b"), ExtResource("m_cliff_c"), ExtResource("m_cliff_d")])
+mountain_count = 30
+mountain_distance = 5.5
+mountain_scale_min = 5.0
+mountain_scale_max = 9.5
 tree_models = Array[PackedScene]([ExtResource("n_oak"), ExtResource("n_tree"), ExtResource("n_detailed"), ExtResource("n_tall")])
 tree_count = 130
 tree_hp = 4.0
