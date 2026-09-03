@@ -44,6 +44,9 @@ var trees: Array[Trunk] = []
 var bushes: Array[Bush] = []
 
 var _pools: Array[MultiMesh] = []
+var _bush_mm: MultiMesh
+var _bush_count := 0
+var _bush_radius := 2.2
 var _stump: MultiMesh
 var _stump_free := 0
 var _chop_timer := 0.0
@@ -88,20 +91,44 @@ func _build_trees(chapter: ChapterData) -> void:
 func _build_bushes(chapter: ChapterData) -> void:
 	if chapter.bush_model == null or chapter.bush_count <= 0:
 		return
-	var placed: Array = []
-	for i in chapter.bush_count:
+	_bush_count = chapter.bush_count
+	_bush_radius = chapter.bush_radius
+	_bush_mm = _make_multimesh(chapter.bush_model, _bush_count * CLUMP, "Bushes")
+	_place_bushes()
+
+
+## Scatters a fresh set of bushes, overwriting whatever was there.
+func _place_bushes() -> void:
+	bushes.clear()
+	if _bush_mm == null:
+		return
+	var slot := 0
+	for i in _bush_count:
 		var b := Bush.new()
 		b.pos = bounds.random_point(_rng, 3.0)
-		b.radius = chapter.bush_radius
+		b.radius = _bush_radius
 		bushes.append(b)
 		for k in CLUMP:
 			var a := TAU * (float(k) + _rng.randf_range(-0.3, 0.3)) / float(CLUMP)
-			var t := Trunk.new()  # the record here only carries a transform
-			t.pos = b.pos + Vector2(cos(a), sin(a)) * b.radius * _rng.randf_range(0.55, 0.9)
-			t.scale = _rng.randf_range(1.1, 1.6)
-			t.yaw = _rng.randf() * TAU
-			placed.append(t)
-	_scatter(chapter.bush_model, placed, "Bushes")
+			var pos := b.pos + Vector2(cos(a), sin(a)) * b.radius * _rng.randf_range(0.55, 0.9)
+			var scale := _rng.randf_range(1.1, 1.6)
+			_bush_mm.set_instance_transform(slot, Transform3D(
+				Basis(Vector3.UP, _rng.randf() * TAU).scaled(Vector3.ONE * scale),
+				Vector3(pos.x, 0.0, pos.y)))
+			slot += 1
+
+
+## Every wave tramples the cover flat and new bushes come up somewhere else.
+##
+## Without this the player finds one bush near the spawn ring and never leaves
+## it: cover that never moves is a camping spot, not a tactic. Returns where
+## the old ones stood so the caller can throw the leaves about.
+func regrow_bushes() -> Array[Vector2]:
+	var old: Array[Vector2] = []
+	for b in bushes:
+		old.append(b.pos)
+	_place_bushes()
+	return old
 
 
 ## True while `p` is inside any bush: cover for the hero and the horde alike.

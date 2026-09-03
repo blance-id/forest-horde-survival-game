@@ -318,11 +318,11 @@ func dev_command(cmd: String) -> void:
 					enemies.hit(e, 1e9, e.pos + Vector2(0.0, 0.5), 0.0, Damage.Type.TRUE)
 		"tower":
 			# Beside the hero, not under them, so the nest is actually visible.
-			run_wood += 40
-			run_ammo += 400
+			run_wood += 300
+			run_ammo += 600
 			hud.set_wood(run_wood)
 			hud.set_ammo(run_ammo)
-			towers.build(Vector2(player.position.x + 2.5, player.position.z))
+			towers.build_or_upgrade(Vector2(player.position.x + 2.0, player.position.z - 1.0))
 		"chop":
 			# Park the hero next to a trunk so the chop loop can be watched.
 			var trunk := forest.nearest_trunk(Vector2.ZERO, 1e9)
@@ -395,14 +395,18 @@ func _tick_world(delta: float) -> void:
 	player.tick(delta)
 	_tick_cover(delta)
 	weapon_system.enabled = not vehicles.is_piloting()
-	var hero := Vector2(player.position.x, player.position.z)
+	# A nest is solid: shove the hero back out before anything reads their
+	# position, or the two models merge into one another.
+	var pushed := towers.push_out(Vector2(player.position.x, player.position.z), Player.RADIUS)
+	player.position = Vector3(pushed.x, player.position.y, pushed.y)
+	var hero := pushed
 	forest.tick(delta, hero)
 	_crush_forest()
 	traps.tick(delta, player, enemies)
 	towers.tick(delta, hero, run_ammo)
 	vehicles.tick(delta, hero)
 	survivors.tick(delta, hero)
-	hud.set_can_build(towers.can_build(hero, run_wood))
+	hud.set_build_action(towers.can_act(hero, run_wood), towers.action_cost(hero), towers.is_upgrade(hero))
 	weapon_system.tick(delta)
 	enemies.tick(delta)
 	projectiles.tick(delta)
@@ -445,6 +449,10 @@ func _start_wave() -> void:
 	_spawn_timer = 0.0
 	# The boss leads its wave rather than arriving somewhere in the shuffle:
 	# its entrance is the point of the wave, and the escorts are the garnish.
+	# Every wave burns the map's cover: what the player has been hiding in is
+	# trampled and the next lot comes up elsewhere.
+	for pos in forest.regrow_bushes():
+		fx.death(Vector3(pos.x, 0.4, pos.y), Color(0.45, 0.75, 0.35))
 	var boss_wave := false
 	for i in range(_wave_queue.size() - 1, -1, -1):
 		if _wave_queue[i].is_boss:
@@ -526,23 +534,32 @@ func _tick_cover(delta: float) -> void:
 		hud.set_hidden(hidden)
 
 
-## One tap, no placement mode: the nest goes up where the hero is standing.
+## One tap, no placement mode: the nest goes up where the hero is standing —
+## or levels up the one they are standing next to.
 func _build_tower() -> void:
 	var hero := Vector2(player.position.x, player.position.z)
-	if not towers.can_build(hero, run_wood):
+	var cost := towers.action_cost(hero)
+	if not towers.can_act(hero, run_wood):
 		SoundBank.ui("back")
-		hud.show_announcement("NEED %d WOOD" % towers.data.wood_cost, 1.2)
+		if run_wood < cost:
+			hud.show_announcement("NEED %d WOOD" % cost, 1.2)
+		elif towers.towers.size() >= towers.data.max_towers:
+			hud.show_announcement("%d NESTS IS THE LIMIT" % towers.data.max_towers, 1.4)
+		else:
+			hud.show_announcement("TOO CLOSE TO A NEST", 1.4)
 		return
-	run_wood -= towers.data.wood_cost
+	run_wood -= cost
 	hud.set_wood(run_wood)
-	towers.build(hero)
+	towers.build_or_upgrade(hero)
 
 
-func _on_tower_built(position: Vector2) -> void:
+func _on_tower_built(position: Vector2, level: int) -> void:
 	SoundBank.sfx("wood_impact", -4.0, 0.0)
 	SoundBank.ui("confirm")
 	fx.level_up(Vector3(position.x, 0.2, position.y))
 	camera_rig.shake(0.2)
+	if level > 1:
+		hud.show_announcement("NEST LV %d" % level, 1.2)
 
 
 func _on_tower_fired(position: Vector3, dir: Vector2) -> void:

@@ -9,7 +9,7 @@
 class_name TowerManager
 extends Node3D
 
-signal built(position: Vector2)
+signal built(position: Vector2, level: int)
 signal fired(tower_position: Vector3, dir: Vector2)
 signal destroyed(position: Vector3)
 ## Ammo actually consumed this frame, so the run can bill the player.
@@ -18,11 +18,16 @@ signal ammo_spent(amount: int)
 const CAPACITY := 8
 ## Two towers cannot be raised closer than this.
 const MIN_SPACING := 4.0
+## Standing this close to a nest is what upgrades it instead of building.
+const UPGRADE_RANGE := 3.0
 const HIDDEN := Transform3D(Vector3.ZERO, Vector3.ZERO, Vector3.ZERO, Vector3(0, -50, 0))
 
 
 class Tower:
 	var pos: Vector2
+	## Ground ring showing this nest's reach.
+	var ring: MeshInstance3D
+	var level := 1
 	var hp: float
 	var max_hp: float
 	var cooldown := 0.0
@@ -55,10 +60,34 @@ func configure(chapter: ChapterData, enemy_manager: EnemyManager, projectile_man
 		_free.append(CAPACITY - 1 - i)
 
 
-## True when a tower could go here right now — the HUD uses it to grey out the
-## build button before the player wastes a tap.
-func can_build(at: Vector2, wood: int) -> bool:
-	if wood < data.wood_cost or _free.is_empty() or not bounds.contains(at, 1.0):
+## The nest within upgrade range of `at`, or null. Standing next to one is
+## what turns the build button into an upgrade button.
+func upgradable_at(at: Vector2) -> Tower:
+	for t in towers:
+		if t.level < data.max_level() and t.pos.distance_squared_to(at) <= UPGRADE_RANGE * UPGRADE_RANGE:
+			return t
+	return null
+
+
+## Wood the next action at `at` would cost, and what that action is. The HUD
+## reads both so the button can say what the tap will actually do.
+func action_cost(at: Vector2) -> int:
+	var up := upgradable_at(at)
+	return data.upgrade_cost(up.level) if up != null else data.wood_cost
+
+
+func is_upgrade(at: Vector2) -> bool:
+	return upgradable_at(at) != null
+
+
+## True when the tap at `at` would do something the player can afford.
+func can_act(at: Vector2, wood: int) -> bool:
+	var up := upgradable_at(at)
+	if up != null:
+		return wood >= data.upgrade_cost(up.level)
+	if towers.size() >= data.max_towers or _free.is_empty():
+		return false
+	if wood < data.wood_cost or not bounds.contains(at, 1.5):
 		return false
 	for t in towers:
 		if t.pos.distance_squared_to(at) < MIN_SPACING * MIN_SPACING:
@@ -66,18 +95,61 @@ func can_build(at: Vector2, wood: int) -> bool:
 	return true
 
 
-func build(at: Vector2) -> Tower:
-	if _free.is_empty():
+## Raises a new nest, or levels up the one being stood next to.
+func build_or_upgrade(at: Vector2) -> Tower:
+	var up := upgradable_at(at)
+	if up != null:
+		up.level += 1
+		# Upgrading also patches it back up, so a battered nest is worth saving.
+		up.max_hp = data.hull_at(up.level)
+		up.hp = up.max_hp
+		_write(up)
+		built.emit(up.pos, up.level)
+		return up
+	if _free.is_empty() or towers.size() >= data.max_towers:
 		return null
 	var t := Tower.new()
 	t.pos = at
-	t.max_hp = data.max_hp
+	t.max_hp = data.hull_at(1)
 	t.hp = t.max_hp
 	t.slot = _free.pop_back()
+	t.ring = _make_ring()
 	towers.append(t)
 	_write(t)
-	built.emit(at)
+	built.emit(at, 1)
 	return t
+
+
+## One faint disc per nest, scaled to its reach. Kept as a real node rather
+## than a MultiMesh: there are at most three, and each needs its own `active`.
+func _make_ring() -> MeshInstance3D:
+	var quad := QuadMesh.new()
+	quad.size = Vector2(2.0, 2.0)
+	quad.orientation = PlaneMesh.FACE_Y
+	var mi := MeshInstance3D.new()
+	mi.mesh = quad
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/tower_range.gdshader")
+	mat.set_shader_parameter("color", data.weapon.tint)
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+	return mi
+
+
+## Keeps the hero out of a nest's footprint. A tower is a solid object, and
+## without this the player walks into one and the two models merge.
+func push_out(p: Vector2, radius: float) -> Vector2:
+	for t in towers:
+		var clear := data.solid_radius * data.scale * 0.5 + radius
+		var away := p - t.pos
+		var d := away.length()
+		if d < clear:
+			if d < 0.0001:
+				away = Vector2.RIGHT
+				d = 1.0
+			p = t.pos + away / d * clear
+	return p
 
 
 func tick(delta: float, hero: Vector2, ammo: int) -> void:
@@ -98,8 +170,9 @@ func tick(delta: float, hero: Vector2, ammo: int) -> void:
 
 func _tick_tower(t: Tower, delta: float, hero: Vector2, ammo: int) -> int:
 	t.cooldown = maxf(0.0, t.cooldown - delta)
+	var reach := data.range_at(t.level)
 	var supplied := hero.distance_squared_to(t.pos) <= data.supply_range * data.supply_range
-	var target := enemies.nearest(t.pos, data.range) if supplied and ammo > 0 else null
+	var target := enemies.nearest(t.pos, reach) if supplied and ammo > 0 else null
 	t.firing = target != null
 	_set_noise(t)
 	if not t.firing:
@@ -110,10 +183,10 @@ func _tick_tower(t: Tower, delta: float, hero: Vector2, ammo: int) -> int:
 	_write(t)
 	if t.cooldown > 0.0:
 		return 0
-	t.cooldown = data.cooldown
+	t.cooldown = data.cooldown_at(t.level)
 	var stats := data.weapon.stats_at(1)
-	stats["range"] = data.range
-	projectiles.fire(t.pos + dir * 0.5, dir, stats, data.damage, data.weapon)
+	stats["range"] = reach
+	projectiles.fire(t.pos + dir * 0.5, dir, stats, data.damage_at(t.level), data.weapon)
 	fired.emit(Vector3(t.pos.x, data.gun_height, t.pos.y), dir)
 	return data.ammo_per_shot
 
@@ -136,6 +209,9 @@ func _remove(t: Tower) -> void:
 	if t.lure != null:
 		enemies.lures.erase(t.lure)
 		t.lure = null
+	if t.ring != null:
+		t.ring.queue_free()
+		t.ring = null
 	_base_mm.set_instance_transform(t.slot, HIDDEN)
 	_gun_mm.set_instance_transform(t.slot, HIDDEN)
 	_free.append(t.slot)
@@ -145,6 +221,11 @@ func _remove(t: Tower) -> void:
 func _write(t: Tower) -> void:
 	var s := data.scale
 	var origin := Vector3(t.pos.x, 0.0, t.pos.y)
+	if t.ring != null:
+		var reach := data.range_at(t.level)
+		t.ring.position = Vector3(t.pos.x, 0.04, t.pos.y)
+		t.ring.scale = Vector3(reach, 1.0, reach)
+		(t.ring.material_override as ShaderMaterial).set_shader_parameter("active", 1.0 if t.firing else 0.0)
 	_base_mm.set_instance_transform(t.slot, Transform3D(Basis.IDENTITY.scaled(Vector3(s, s, s)), origin))
 	var g := data.gun_scale
 	_gun_mm.set_instance_transform(t.slot, Transform3D(

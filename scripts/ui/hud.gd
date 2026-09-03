@@ -302,17 +302,20 @@ func set_bag_items(relics: Array[RelicData], spent: Array[bool]) -> void:
 
 func setup_build_button(tower: TowerData) -> void:
 	build_icon.texture = tower.icon
-	build_cost.text = "%d WOOD" % tower.wood_cost
+	build_cost.text = "BUILD %d" % tower.wood_cost
 
 
-## Greyed out until the hero has the wood and a legal spot, so the button
+## The build button doubles as the upgrade button: it shows what the next tap
+## would cost and greys out when that tap is not possible, so the button
 ## itself teaches the rule.
-func set_can_build(can_build: bool) -> void:
-	if can_build == _can_build:
-		return
-	_can_build = can_build
-	build_button.disabled = not can_build
-	build_button.modulate.a = 1.0 if can_build else 0.55
+func set_build_action(can_act: bool, cost: int, upgrading: bool) -> void:
+	if can_act != _can_build:
+		_can_build = can_act
+		build_button.disabled = not can_act
+		build_button.modulate.a = 1.0 if can_act else 0.55
+	var text := "%s %d" % ["UP" if upgrading else "BUILD", cost]
+	if text != build_cost.text:
+		build_cost.text = text
 
 
 func set_wood(wood: int) -> void:
