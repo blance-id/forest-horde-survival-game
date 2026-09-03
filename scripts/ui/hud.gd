@@ -36,6 +36,8 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 @onready var level_label: Label = %LevelLabel
 @onready var kills_label: Label = %KillsLabel
 @onready var timer_label: Label = %TimerLabel
+@onready var wave_label: Label = %WaveLabel
+@onready var remaining_label: Label = %RemainingLabel
 @onready var coin_icon: TextureRect = %CoinIcon
 @onready var coins_label: Label = %CoinsLabel
 @onready var wood_icon: TextureRect = %WoodIcon
@@ -69,7 +71,6 @@ const HP_LOW := Color(0.9, 0.18, 0.16)
 var _announce_tween: Tween
 var _hint_tween: Tween
 var _last_timer := -1
-var _duration := 1.0
 var _vignette_flash := 0.0
 var _low_hp := false
 var _pulse := 0.0
@@ -123,7 +124,6 @@ static func hp_color(ratio: float) -> Color:
 
 
 func setup(chapter: ChapterData) -> void:
-	_duration = chapter.duration
 	timeline.setup(chapter)
 	minimap.setup(chapter)
 
@@ -207,13 +207,26 @@ func set_xp(current: float, needed: float, level: int) -> void:
 		tw.tween_property(xp_bar, "modulate", Color.WHITE, 0.5)
 
 
-func set_time(seconds_left: float) -> void:
-	timeline.set_time(_duration - seconds_left)
-	var s := maxi(0, int(ceilf(seconds_left)))
+## Elapsed run time. It no longer gates anything — waves do — but it is what
+## the chapter record is measured in, so it stays on screen.
+func set_time(seconds: float) -> void:
+	var s := maxi(0, int(seconds))
 	if s == _last_timer:
 		return
 	_last_timer = s
 	timer_label.text = "%02d:%02d" % [s / 60, s % 60]
+
+
+## `index` waves cleared out of `count`, with `remaining` bodies still to beat
+## in the current one.
+func set_wave(index: int, count: int, remaining: int, ratio: float) -> void:
+	timeline.set_wave(index, ratio)
+	var shown := mini(index + 1, count)
+	var text := "WAVE %d / %d" % [shown, count]
+	if text != wave_label.text:
+		wave_label.text = text
+		_punch(wave_label, 1.2)
+	remaining_label.text = "%d LEFT" % remaining if remaining > 0 else "CLEAR!"
 
 
 func set_kills(kills: int) -> void:

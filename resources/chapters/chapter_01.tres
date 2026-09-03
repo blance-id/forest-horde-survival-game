@@ -58,7 +58,6 @@
 script = ExtResource("1")
 id = "chapter_01"
 display_name = "Whispering Forest"
-duration = 300.0
 arena_shape = 1
 arena_half_size = 46.0
 ground_color = Color(0.27, 0.41, 0.17, 1)
@@ -92,94 +91,129 @@ survivor_camp_model = ExtResource("m_tent")
 survivor_count = 5
 vehicle_count = 2
 waves = Array[Dictionary]([{
+"name": "The First Few",
+"groups": [{
 "enemy": ExtResource("e_walker"),
-"start": 0.0,
-"end": 400.0,
-"weight": 10.0
+"count": 14
+}],
+"hp_scale": 1.0,
+"interval": 0.50,
+"cap": 16,
+"boss": false
 }, {
+"name": "Runners",
+"groups": [{
+"enemy": ExtResource("e_walker"),
+"count": 16
+},
+{
 "enemy": ExtResource("e_runner"),
-"start": 38.0,
-"end": 400.0,
-"weight": 5.0
+"count": 14
+}],
+"hp_scale": 1.1,
+"interval": 0.36,
+"cap": 22,
+"boss": false
 }, {
-"enemy": ExtResource("e_ghost"),
-"start": 75.0,
-"end": 400.0,
-"weight": 4.0
-}, {
-"enemy": ExtResource("e_brute"),
-"start": 125.0,
-"end": 400.0,
-"weight": 2.0
-}, {
+"name": "Wolf Pack",
+"groups": [{
 "enemy": ExtResource("e_wolf"),
-"start": 55.0,
-"end": 400.0,
-"weight": 4.0
-}, {
-"enemy": ExtResource("e_serpent"),
-"start": 165.0,
-"end": 400.0,
-"weight": 1.2
-}, {
-"enemy": ExtResource("e_hexer"),
-"start": 100.0,
-"end": 400.0,
-"weight": 1.5
-}, {
-"enemy": ExtResource("e_keeper"),
-"start": 200.0,
-"end": 400.0,
-"weight": 1.0
-}])
-cap_start = 45
-cap_end = 280
-spawn_interval_start = 0.7
-spawn_interval_end = 0.08
-hp_scale_end = 3.0
-events = Array[Dictionary]([{
-"time": 50.0,
-"kind": "ring",
+"count": 16
+},
+{
 "enemy": ExtResource("e_runner"),
 "count": 12
+}],
+"hp_scale": 1.2,
+"interval": 0.30,
+"cap": 26,
+"boss": false
 }, {
-"time": 80.0,
-"kind": "ring",
-"enemy": ExtResource("e_wolf"),
-"count": 10
-}, {
-"time": 100.0,
-"kind": "ring",
-"enemy": ExtResource("e_walker"),
-"count": 24
-}, {
-"time": 150.0,
-"kind": "ring",
+"name": "Wisps",
+"groups": [{
 "enemy": ExtResource("e_ghost"),
-"count": 16
+"count": 18
+},
+{
+"enemy": ExtResource("e_walker"),
+"count": 20
+}],
+"hp_scale": 1.35,
+"interval": 0.28,
+"cap": 30,
+"boss": false
 }, {
-"time": 170.0,
-"kind": "ring",
+"name": "Hexers",
+"groups": [{
 "enemy": ExtResource("e_hexer"),
-"count": 6
-}, {
-"time": 200.0,
-"kind": "ring",
-"enemy": ExtResource("e_brute"),
 "count": 8
+},
+{
+"enemy": ExtResource("e_ghost"),
+"count": 14
+},
+{
+"enemy": ExtResource("e_runner"),
+"count": 18
+}],
+"hp_scale": 1.5,
+"interval": 0.25,
+"cap": 34,
+"boss": false
 }, {
-"time": 250.0,
-"kind": "boss",
+"name": "Brutes",
+"groups": [{
+"enemy": ExtResource("e_brute"),
+"count": 12
+},
+{
+"enemy": ExtResource("e_walker"),
+"count": 26
+}],
+"hp_scale": 1.7,
+"interval": 0.22,
+"cap": 38,
+"boss": false
+}, {
+"name": "The Thicket Stirs",
+"groups": [{
+"enemy": ExtResource("e_serpent"),
+"count": 6
+},
+{
+"enemy": ExtResource("e_hexer"),
+"count": 10
+},
+{
+"enemy": ExtResource("e_wolf"),
+"count": 20
+}],
+"hp_scale": 1.9,
+"interval": 0.19,
+"cap": 42,
+"boss": false
+}, {
+"name": "Count Nosferatu",
+"groups": [{
 "enemy": ExtResource("e_vampire"),
 "count": 1
-}, {
-"time": 275.0,
-"kind": "ring",
-"enemy": ExtResource("e_runner"),
+},
+{
+"enemy": ExtResource("e_keeper"),
+"count": 4
+},
+{
+"enemy": ExtResource("e_walker"),
 "count": 30
+}],
+"hp_scale": 2.1,
+"interval": 0.28,
+"cap": 40,
+"boss": true
 }])
+wave_break = 3.0
 unlocks = "chapter_02"
-coins_win = 150
-coins_per_minute = 10
+coins_win = 200
+coins_per_wave = 25
 music = ExtResource("a_run")
 boss_music = ExtResource("a_boss")

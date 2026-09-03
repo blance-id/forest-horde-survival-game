@@ -56,17 +56,19 @@ func test_round_trip_and_coins() -> void:
 	assert_eq(int(loaded["coins"]), 50)
 
 
-func test_record_run_tracks_best() -> void:
+func test_record_run_tracks_fastest_clear() -> void:
 	GameState.profile = GameState._default_profile()
-	var first := GameState.record_run("chapter_01", 120.0, 30, false, 10)
-	var second := GameState.record_run("chapter_01", 90.0, 50, true, 10)
-	assert_true(first)
-	assert_false(second, "shorter run is not a new best time")
+	var died := GameState.record_run("chapter_01", 120.0, 30, false, 10)
+	assert_false(died, "dying never sets a best time")
+	assert_approx(GameState.get_chapter_record("chapter_01")["best_time"], 0.0)
+	assert_true(GameState.record_run("chapter_01", 200.0, 40, true, 10), "the first clear is a record")
+	assert_false(GameState.record_run("chapter_01", 260.0, 50, true, 10), "a slower clear is not")
+	assert_true(GameState.record_run("chapter_01", 150.0, 20, true, 10), "a faster clear is")
 	var rec := GameState.get_chapter_record("chapter_01")
-	assert_approx(rec["best_time"], 120.0)
-	assert_eq(rec["best_kills"], 50)
-	assert_eq(rec["wins"], 1)
-	assert_eq(GameState.profile["stats"]["runs"], 2)
+	assert_approx(rec["best_time"], 150.0)
+	assert_eq(rec["best_kills"], 50, "best kills is still the highest, whatever the time")
+	assert_eq(rec["wins"], 3)
+	assert_eq(GameState.profile["stats"]["runs"], 4)
 
 
 func test_record_run_banks_coins_once() -> void:

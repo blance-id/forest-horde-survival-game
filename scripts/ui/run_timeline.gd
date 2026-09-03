@@ -1,6 +1,7 @@
-## The run at a glance: a bar that fills over the chapter with a portrait at
-## every scripted event (hordes, the boss) so the player can see what is
-## coming and how long is left.
+## The run at a glance: one segment per wave, each with a portrait of what it
+## sends, filling as the wave is cleared. The last segment is the boss. There
+## is no clock in it — the bar answers "how much of this chapter is left",
+## which is now a count of waves rather than a countdown.
 class_name RunTimeline
 extends Control
 
@@ -12,25 +13,24 @@ const MARKER_SIZE := 30.0
 const BOSS_SIZE := 44.0
 const BOSS_HEX := preload("res://assets/ui/adventure/hexagon_grey_red.png")
 
-var _duration := 1.0
-var _events: Array[Dictionary] = []  # {time, icon, boss}
+var _markers: Array[Dictionary] = []  # {icon, boss}
+## Waves fully cleared, plus how far through the current one.
 var _progress := 0.0
 var _boss := false
 
 
 func setup(chapter: ChapterData) -> void:
-	_duration = maxf(1.0, chapter.duration)
-	_events.clear()
-	for ev in chapter.events:
-		var data: EnemyData = ev["enemy"]
-		_events.append({"time": float(ev["time"]), "icon": data.icon, "boss": ev.get("kind") == "boss"})
+	_markers.clear()
+	for i in chapter.wave_count():
+		_markers.append({"icon": chapter.wave_icon(i), "boss": chapter.is_boss_wave(i)})
 	_progress = 0.0
 	_boss = false
 	queue_redraw()
 
 
-func set_time(seconds: float) -> void:
-	var p := clampf(seconds / _duration, 0.0, 1.0)
+## `index` waves are done and the current one is `ratio` cleared.
+func set_wave(index: int, ratio: float) -> void:
+	var p := 0.0 if _markers.is_empty() else clampf((float(index) + ratio) / float(_markers.size()), 0.0, 1.0)
 	if not is_equal_approx(p, _progress):
 		_progress = p
 		queue_redraw()
@@ -43,6 +43,8 @@ func set_boss_alive(alive: bool) -> void:
 
 
 func _draw() -> void:
+	if _markers.is_empty():
+		return
 	var h := 14.0
 	var y := size.y - h - 4.0
 	var w := size.x
@@ -52,19 +54,24 @@ func _draw() -> void:
 	var fill_w := w * _progress
 	if fill_w > 0.0:
 		draw_rect(Rect2(0.0, y, fill_w, h), FILL_BOSS if _boss else FILL)
-	# Event portraits sit on the track; passed ones fade.
-	for ev in _events:
-		var x := w * clampf(float(ev["time"]) / _duration, 0.0, 1.0)
-		var s := BOSS_SIZE if bool(ev["boss"]) else MARKER_SIZE
-		var passed := float(ev["time"]) <= _progress * _duration
+	# One portrait per wave, sitting at the end of its own segment. Waves the
+	# player has already cleared fade out.
+	var count := _markers.size()
+	for i in count:
+		var marker := _markers[i]
+		var boss := bool(marker["boss"])
+		var x := w * float(i + 1) / float(count)
+		x = clampf(x, 16.0, w - 16.0)
+		var s := BOSS_SIZE if boss else MARKER_SIZE
+		var passed := _progress * float(count) >= float(i + 1)
 		var tint := Color(1, 1, 1, 0.45) if passed else Color.WHITE
 		var top := y + h * 0.5 - s * 0.5
-		if bool(ev["boss"]):
+		if boss:
 			draw_texture_rect(BOSS_HEX, Rect2(x - s * 0.5, top - s * 0.15, s, s * 1.3), false, tint)
 		else:
 			draw_circle(Vector2(x, y + h * 0.5), s * 0.5 + 2.0, OUTLINE)
 			draw_circle(Vector2(x, y + h * 0.5), s * 0.5, Color(0.93, 0.85, 0.7, tint.a))
-		var icon: Texture2D = ev["icon"]
+		var icon: Texture2D = marker["icon"]
 		if icon != null:
 			var inset := s * 0.12
 			draw_texture_rect(icon, Rect2(x - s * 0.5 + inset, top + inset, s - inset * 2.0, s - inset * 2.0), false, tint)

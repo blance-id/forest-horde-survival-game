@@ -14,10 +14,10 @@ A **horde survivor** set in a cursed pine forest, rendered in chunky low-poly
 survivor auto-aims and auto-fires. Zombies pour in from every direction in
 ever-growing numbers. Every kill drops XP; every level-up offers three loud,
 ad-style upgrade cards ("MORE DAKKA!", "PEW PEW PEW!", "NEVER DIE!").
-Survive the chapter timer, kill the boss, bank your coins, buy permanent
+Clear the chapter's waves, kill the boss, bank your coins, buy permanent
 upgrades, go again.
 
-**What the player does:** move, dodge, collect, choose upgrades, survive.
+**What the player does:** move, dodge, collect, choose upgrades, clear the wave.
 
 **Why it is fun:** the power curve. You start barely able to kill one walker
 and, four minutes later, you are a screen-clearing storm of bullets, orbiting
@@ -49,7 +49,7 @@ MID-RUN EVENTS — ring of runners, brute wave, elite, treasure chest
    ↓
 BOSS at chapter timer end
    ↓
-RESULT SCREEN — kills, time survived, coins earned (win or lose)
+RESULT SCREEN — kills, clear time, coins earned (win or lose)
    ↓
 META SHOP — spend coins on permanent stats, unlock next chapter
    ↓
@@ -85,11 +85,11 @@ The ad promise is *"you vs. the entire forest"*. The game delivers it.
 | Chapter 1 run length | 5:00 + boss (~30 s) |
 | Later chapters | 6:00 – 8:00 + boss |
 | Fail condition | Hero HP reaches 0 (one optional revive from meta upgrade) |
-| Success condition | Survive until the chapter timer expires; the boss arrives 60 s before the end |
+| Success condition | Clear every wave; the last wave is the boss, and killing it ends the run |
 | Retry loop | Result screen → *Retry* (same chapter, instant) or *Shop* → *Play* |
 | Pause | Pause button + automatic pause on app backgrounding |
 
-Coins are awarded on both win and loss (scaled by time survived and kills), so
+Coins are awarded on both win and loss (scaled by waves cleared and kills), so
 every run progresses the meta. A loss must never feel like wasted time.
 
 ---
@@ -318,7 +318,7 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
 
 1. Main menu → Play.
 2. Forest arena, hero with Blaster, drag-to-move.
-3. Five enemy types spawn on a rising curve for 6 minutes, boss at 5:00.
+3. Eight waves of rising difficulty; the last one is the boss.
 4. XP gems, level-ups with 3 cards (4 weapons + 8 passives).
 5. HP bar, timer, kill counter, level bar, boss bar.
 6. Death → result screen → retry / menu.
@@ -417,7 +417,18 @@ you die.
 - Metal Slug touches: driveable vehicles with their own ammo, rescuable
   survivors that hand over an item. **Not started.**
 
-### 15.3 Everything shipped
+### 15.3 Waves
+
+The run is no longer a five-minute stopwatch. A chapter is a fixed list of
+waves — eight in Whispering Forest, seven in Hollow Thicket — and each one
+only ends when every body it sent is down. The last wave is the boss, and
+killing it ends the run then and there.
+
+That changes what a run *is*: something you finish rather than something you
+outlast, with a visible "WAVE 5 / 8" and a count of what is left instead of a
+countdown. Chapter records became fastest clear, and dying no longer sets one.
+
+### 15.4 Everything shipped
 
 Wave 6 closed out with the three items that were left:
 
@@ -435,8 +446,8 @@ Wave 6 closed out with the three items that were left:
   anything that walks through them, and stocked with wolves, hexers and
   serpents under the Alpha.
 
-### 15.4 Still open
+### 15.5 Still open
 
 Nothing from the playtest list is outstanding. The next pass is balance:
-five minutes on Hollow Thicket is currently a wall, and the mech is strong
+Hollow Thicket's later waves are currently a wall, and the mech is strong
 enough that finding one early decides the run.

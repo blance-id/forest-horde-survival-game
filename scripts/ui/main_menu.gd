@@ -6,8 +6,6 @@ extends Node3D
 
 const DEMO_CAP := 26
 const DEMO_SPAWN_INTERVAL := 0.35
-## Director time the demo mix is sampled at (walkers, runners and wisps).
-const DEMO_MIX_TIME := 100.0
 ## Level for each entry of `demo_weapons`; the far-reaching blaster stays low
 ## so zombies actually make it on screen, the orbit weapon is high so they
 ## never pile onto the hero.
@@ -131,9 +129,9 @@ func _show_chapter() -> void:
 	var rec := GameState.get_chapter_record(chapter.id)
 	var best := int(rec["best_time"])
 	if best <= 0:
-		chapter_best.text = "The forest is waiting..."
+		chapter_best.text = "%d waves.  The forest is waiting..." % chapter.wave_count()
 	else:
-		chapter_best.text = "BEST  %02d:%02d   ·   %d KILLS" % [best / 60, best % 60, int(rec["best_kills"])]
+		chapter_best.text = "BEST CLEAR  %02d:%02d   ·   %d KILLS" % [best / 60, best % 60, int(rec["best_kills"])]
 	GameState.selected_chapter_id = chapter.id
 	var many := unlocked.size() > 1
 	for b: Button in [prev_chapter, next_chapter]:
@@ -157,7 +155,7 @@ func _process(delta: float) -> void:
 		_spawn_timer += DEMO_SPAWN_INTERVAL
 		if enemies.alive >= DEMO_CAP:
 			continue
-		var data := chapter.pick_enemy(DEMO_MIX_TIME, _rng)
+		var data := chapter.demo_enemy(_rng)
 		if data != null:
 			enemies.spawn(data, enemies.spawn_position())
 

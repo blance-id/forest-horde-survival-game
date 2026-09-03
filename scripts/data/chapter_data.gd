@@ -1,11 +1,14 @@
-## A run: which arena, which enemies, how the pressure ramps, and the payout.
+## A run: which arena, which waves come at you, and the payout.
+##
+## A chapter is a fixed list of waves rather than a stopwatch. Each wave sends
+## a known set of enemies; clearing every one of them brings on the next, and
+## the last wave is the boss — killing it ends the run. Nothing is on a timer,
+## so a run is a thing you finish rather than a thing you outlast.
 class_name ChapterData
 extends Resource
 
 @export var id: String = "forest"
 @export var display_name: String = "Whispering Forest"
-## Seconds the player has to survive to win.
-@export var duration: float = 300.0
 
 @export_group("Arena")
 ## Shape of the playable area; see ArenaBounds. Each chapter gets its own so
@@ -59,24 +62,23 @@ extends Resource
 ## Abandoned walker mechs parked around the map.
 @export var vehicle_count: int = 2
 
-@export_group("Spawning")
-## [{ "enemy": EnemyData, "start": sec, "end": sec, "weight": float }]
+@export_group("Waves")
+## The run, in order. Each entry:
+##   "name":    String shown when the wave starts
+##   "groups":  [{ "enemy": EnemyData, "count": int }, ...]
+##   "hp_scale": float multiplier on enemy HP for this wave (default 1.0)
+##   "interval": float seconds between spawns (default 0.4)
+##   "cap":      int most that may be alive at once (default 40)
+##   "boss":     true when this wave's kill ends the run
 @export var waves: Array[Dictionary] = []
-## Concurrent enemy cap ramps linearly from start to end over the run.
-@export var cap_start: int = 30
-@export var cap_end: int = 260
-@export var spawn_interval_start: float = 0.7
-@export var spawn_interval_end: float = 0.08
-## Enemy HP multiplier at the end of the run (linear ramp from 1.0).
-@export var hp_scale_end: float = 3.0
-## [{ "time": sec, "kind": "ring"|"boss", "enemy": EnemyData, "count": int }]
-@export var events: Array[Dictionary] = []
+## Breather between one wave being cleared and the next arriving.
+@export var wave_break: float = 3.0
 
 @export_group("Rewards")
 ## Chapter id unlocked by winning this one; empty for the last chapter.
 @export var unlocks: String = ""
 @export var coins_win: int = 150
-@export var coins_per_minute: int = 10
+@export var coins_per_wave: int = 25
 
 @export_group("Music")
 ## Loop for the run; the boss loop plays while a boss is alive.
@@ -84,44 +86,75 @@ extends Resource
 @export var boss_music: AudioStream
 
 
-func spawn_interval(t: float) -> float:
-	return lerpf(spawn_interval_start, spawn_interval_end, clampf(t / duration, 0.0, 1.0))
+func wave_count() -> int:
+	return waves.size()
 
 
-func enemy_cap(t: float) -> int:
-	return int(roundf(lerpf(cap_start, cap_end, clampf(t / duration, 0.0, 1.0))))
+func wave_name(index: int) -> String:
+	return String(_wave(index).get("name", "WAVE %d" % (index + 1)))
 
 
-func hp_scale(t: float) -> float:
-	return lerpf(1.0, hp_scale_end, clampf(t / duration, 0.0, 1.0))
+func wave_hp_scale(index: int) -> float:
+	return float(_wave(index).get("hp_scale", 1.0))
 
 
-## Weighted random enemy type active at time `t`, or null if none.
-func pick_enemy(t: float, rng: RandomNumberGenerator) -> EnemyData:
-	var total := 0.0
-	for w: Dictionary in waves:
-		if t >= float(w.get("start", 0.0)) and t < float(w.get("end", duration + 1.0)):
-			total += float(w.get("weight", 1.0))
-	if total <= 0.0:
-		return null
-	var r := rng.randf() * total
-	for w: Dictionary in waves:
-		if t >= float(w.get("start", 0.0)) and t < float(w.get("end", duration + 1.0)):
-			r -= float(w.get("weight", 1.0))
-			if r <= 0.0:
-				return w["enemy"]
+func wave_interval(index: int) -> float:
+	return maxf(0.05, float(_wave(index).get("interval", 0.4)))
+
+
+func wave_cap(index: int) -> int:
+	return maxi(1, int(_wave(index).get("cap", 40)))
+
+
+func is_boss_wave(index: int) -> bool:
+	return bool(_wave(index).get("boss", false))
+
+
+## Portrait for the wave marker on the run timeline: the first group's enemy.
+func wave_icon(index: int) -> Texture2D:
+	for g: Dictionary in _wave(index).get("groups", []):
+		var e: EnemyData = g.get("enemy")
+		if e != null:
+			return e.icon
 	return null
 
 
-## All enemy types referenced by this chapter (waves + events), each once.
-func all_enemies() -> Array[EnemyData]:
+## Every enemy the wave sends, one entry per body, ready to be shuffled into a
+## spawn order.
+func wave_roster(index: int) -> Array[EnemyData]:
 	var out: Array[EnemyData] = []
-	for w: Dictionary in waves:
-		var e: EnemyData = w.get("enemy")
-		if e != null and not out.has(e):
-			out.append(e)
-	for ev: Dictionary in events:
-		var e: EnemyData = ev.get("enemy")
-		if e != null and not out.has(e):
+	for g: Dictionary in _wave(index).get("groups", []):
+		var e: EnemyData = g.get("enemy")
+		if e == null:
+			continue
+		for i in maxi(1, int(g.get("count", 1))):
 			out.append(e)
 	return out
+
+
+## A non-boss enemy from the opening waves, for the menu's background demo.
+func demo_enemy(rng: RandomNumberGenerator) -> EnemyData:
+	var pool: Array[EnemyData] = []
+	for i in mini(3, waves.size()):
+		for e in wave_roster(i):
+			if not e.is_boss and not pool.has(e):
+				pool.append(e)
+	if pool.is_empty():
+		return null
+	return pool[rng.randi() % pool.size()]
+
+
+## All enemy types this chapter can spawn, each once.
+func all_enemies() -> Array[EnemyData]:
+	var out: Array[EnemyData] = []
+	for i in waves.size():
+		for e in wave_roster(i):
+			if not out.has(e):
+				out.append(e)
+	return out
+
+
+func _wave(index: int) -> Dictionary:
+	if index < 0 or index >= waves.size():
+		return {}
+	return waves[index]

@@ -142,17 +142,25 @@ func get_chapter_record(chapter_id: String) -> Dictionary:
 
 
 ## Records a finished run. Returns true when a new best time was set.
-func record_run(chapter_id: String, time_survived: float, kills: int, won: bool, coins_earned: int) -> bool:
+## Books a finished run and returns true when it set a new record.
+##
+## `best_time` is the *fastest clear*, not the longest survival: a chapter is
+## a set of waves you finish, so a shorter run is a better one. Runs that end
+## in death never touch it — you cannot record a best time for a chapter you
+## did not beat.
+func record_run(chapter_id: String, time_taken: float, kills: int, won: bool, coins_earned: int) -> bool:
 	var rec := get_chapter_record(chapter_id)
-	var new_best := time_survived > float(rec["best_time"])
-	rec["best_time"] = maxf(float(rec["best_time"]), time_survived)
+	var best := float(rec["best_time"])
+	var new_best := won and (best <= 0.0 or time_taken < best)
+	if new_best:
+		rec["best_time"] = time_taken
 	rec["best_kills"] = maxi(int(rec["best_kills"]), kills)
 	if won:
 		rec["wins"] = int(rec["wins"]) + 1
 	profile["chapter_records"][chapter_id] = rec
 	profile["stats"]["runs"] = int(profile["stats"]["runs"]) + 1
 	profile["stats"]["total_kills"] = int(profile["stats"]["total_kills"]) + kills
-	profile["stats"]["total_time"] = float(profile["stats"]["total_time"]) + time_survived
+	profile["stats"]["total_time"] = float(profile["stats"]["total_time"]) + time_taken
 	add_coins(coins_earned)
 	return new_best
 

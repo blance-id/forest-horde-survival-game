@@ -7,6 +7,10 @@ extends Node3D
 enum State { RUNNING, BOSS_INTRO, LEVEL_UP, PAUSED, DYING, OVER }
 
 const RING_RADIUS := 9.0
+## Beat between the boss dying and the victory badge, so the kill lands first.
+const BOSS_WIN_DELAY := 1.3
+## Grace before the first wave walks in.
+const FIRST_WAVE_DELAY := 1.6
 const ENEMY_CAPACITY := 300
 const HEAL_DROP_CHANCE := 0.012
 const HEAL_AMOUNT := 0.3
@@ -56,6 +60,7 @@ var run_time := 0.0
 var level := 1
 var xp := 0.0
 var run_coins := 0
+var wave_index := 0
 var run_wood := 0
 var run_ammo := 0
 var upgrade_levels: Dictionary = {}  # UpgradeData -> level
@@ -68,7 +73,13 @@ var bag_spent: Array[bool] = []
 
 var _chapter_id := "chapter_01"
 var _spawn_timer := 0.0
-var _events: Array[Dictionary] = []
+## Bodies still to send in the current wave, in spawn order.
+var _wave_queue: Array[EnemyData] = []
+var _wave_total := 0
+## Counts down the breather between waves; <= 0 means a wave is running.
+var _wave_break := 0.0
+## Set when the boss dies, so its death spectacle plays before the badge.
+var _win_delay := -1.0
 var _rng := RandomNumberGenerator.new()
 var _pending_level_ups := 0
 var _intro_time := -1.0
@@ -190,7 +201,7 @@ func _start_run() -> void:
 	hud.minimap.forest = forest
 	hud.minimap.traps = traps
 	hud.setup(chapter)
-	hud.set_time(chapter.duration)
+	hud.set_time(0.0)
 	hud.set_xp(0.0, xp_needed(level), level)
 	hud.set_coins(0)
 	hud.set_wood(0)
@@ -203,7 +214,6 @@ func _start_run() -> void:
 	hud.set_bag_items(bag, bag_spent)
 	hud.set_build(weapon_system.slots, upgrade_levels)
 	hud.show_move_hint()
-	hud.show_announcement("SURVIVE %d MINUTES!" % roundi(chapter.duration / 60.0), 1.6)
 	level_up_panel.chosen.connect(_on_upgrade_chosen)
 	pause_panel.resume_pressed.connect(_resume)
 	pause_panel.quit_pressed.connect(_give_up)
@@ -213,9 +223,7 @@ func _start_run() -> void:
 	result_panel.retry_pressed.connect(_retry)
 	result_panel.menu_pressed.connect(_to_menu)
 
-	_events = chapter.events.duplicate()
-	_events.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["time"]) < float(b["time"]))
-	_spawn_timer = 0.5
+	_wave_break = FIRST_WAVE_DELAY
 	state = State.RUNNING
 	AudioManager.play_music(chapter.music, 1.5)
 
@@ -270,12 +278,16 @@ func dev_command(cmd: String) -> void:
 			var hexer := load("res://resources/enemies/hexer.tres") as EnemyData
 			enemies.spawn_ring(hexer, 7, 5.0, 1.0)
 		"horde":
-			_run_event({"kind": "ring", "enemy": chapter.waves[0]["enemy"], "count": 40})
+			var trash := chapter.demo_enemy(_rng)
+			if trash != null:
+				enemies.spawn_ring(trash, 40, RING_RADIUS, 1.0)
 		"boss":
-			for ev in chapter.events:
-				if ev.get("kind") == "boss":
-					_run_event(ev)
-					break
+			# Jump straight to the last wave, which is the boss.
+			_wave_queue.clear()
+			enemies.clear_all()
+			wave_index = maxi(0, chapter.wave_count() - 1)
+			_wave_break = 0.0
+			_start_wave()
 		"weapons":
 			for w in weapons:
 				for i in 3:
@@ -352,6 +364,9 @@ func dev_command(cmd: String) -> void:
 func _process(delta: float) -> void:
 	if chapter == null:
 		return
+	# Runs in every state: a freeze must lift even while the boss entrance or
+	# the death overlay owns the frame.
+	_tick_hit_stop()
 	if state == State.BOSS_INTRO:
 		_tick_boss_intro(delta)
 		return
@@ -367,11 +382,13 @@ func _process(delta: float) -> void:
 	_tick_world(delta)
 	_tick_director(delta)
 	_tick_ambience(delta)
-	hud.set_time(chapter.duration - run_time)
+	hud.set_time(run_time)
 	if enemies.boss != null:
 		hud.set_boss(enemies.boss.hp, enemies.boss.max_hp)
-	if run_time >= chapter.duration:
-		_win()
+	if _win_delay >= 0.0:
+		_win_delay -= delta
+		if _win_delay < 0.0:
+			_win()
 
 
 func _tick_world(delta: float) -> void:
@@ -396,32 +413,71 @@ func _tick_world(delta: float) -> void:
 	hud.tick(camera_rig.camera, delta)
 
 
+## Sends the current wave, then waits for it to be wiped out before calling in
+## the next. There is no clock: the run advances only when the player clears
+## what is in front of them.
 func _tick_director(delta: float) -> void:
-	_spawn_timer -= delta
-	var cap := chapter.enemy_cap(run_time)
-	while _spawn_timer <= 0.0:
-		_spawn_timer += chapter.spawn_interval(run_time)
-		if enemies.alive >= cap:
-			continue
-		var data := chapter.pick_enemy(run_time, _rng)
-		if data != null:
-			enemies.spawn(data, enemies.spawn_position(), chapter.hp_scale(run_time))
-	while not _events.is_empty() and run_time >= float(_events[0]["time"]):
-		_run_event(_events.pop_front())
+	if _wave_break > 0.0:
+		_wave_break -= delta
+		if _wave_break <= 0.0:
+			_start_wave()
+		return
+	if not _wave_queue.is_empty():
+		_spawn_timer -= delta
+		while _spawn_timer <= 0.0 and not _wave_queue.is_empty():
+			_spawn_timer += chapter.wave_interval(wave_index)
+			if enemies.alive >= chapter.wave_cap(wave_index):
+				break
+			enemies.spawn(_wave_queue.pop_back(), enemies.spawn_position(),
+				chapter.wave_hp_scale(wave_index))
+		_report_wave()
+	elif enemies.alive == 0:
+		_clear_wave()
 
 
-func _run_event(ev: Dictionary) -> void:
-	var data: EnemyData = ev["enemy"]
-	var count := int(ev.get("count", 1))
-	var hp_scale := chapter.hp_scale(run_time)
-	match String(ev.get("kind", "ring")):
-		"boss":
-			for i in count:
-				enemies.spawn(data, enemies.spawn_position(), hp_scale)
-		_:
-			enemies.spawn_ring(data, count, RING_RADIUS, hp_scale)
-			hud.show_announcement("HORDE INCOMING!", 1.6)
-			camera_rig.shake(0.35)
+func _start_wave() -> void:
+	if wave_index >= chapter.wave_count():
+		_win()
+		return
+	_wave_queue = chapter.wave_roster(wave_index)
+	_wave_queue.shuffle()
+	_wave_total = _wave_queue.size()
+	_spawn_timer = 0.0
+	# The boss leads its wave rather than arriving somewhere in the shuffle:
+	# its entrance is the point of the wave, and the escorts are the garnish.
+	var boss_wave := false
+	for i in range(_wave_queue.size() - 1, -1, -1):
+		if _wave_queue[i].is_boss:
+			var boss_data := _wave_queue[i]
+			_wave_queue.remove_at(i)
+			enemies.spawn(boss_data, enemies.spawn_position(), chapter.wave_hp_scale(wave_index))
+			boss_wave = true
+	hud.show_announcement(chapter.wave_name(wave_index).to_upper(), 1.8)
+	if not boss_wave:
+		SoundBank.sfx("bell", -6.0, 0.0)
+		camera_rig.shake(0.2)
+	_report_wave()
+	Log.info("Game", "Wave %d/%d: %d enemies" % [wave_index + 1, chapter.wave_count(), _wave_total])
+
+
+## The wave is spawned and every body is down.
+func _clear_wave() -> void:
+	wave_index += 1
+	_report_wave()
+	if wave_index >= chapter.wave_count():
+		_win()
+		return
+	_wave_break = chapter.wave_break
+	SoundBank.jingle("reward", -8.0)
+	hud.show_announcement("WAVE CLEARED!", 1.4)
+
+
+func _report_wave() -> void:
+	# How much of this wave is done: everything not yet sent, plus everything
+	# still standing, is what is left.
+	var left := _wave_queue.size() + enemies.alive
+	var done := 1.0 if _wave_total == 0 else 1.0 - float(left) / float(_wave_total)
+	hud.set_wave(wave_index, chapter.wave_count(), left, clampf(done, 0.0, 1.0))
 
 
 ## Hero footsteps and the horde's idle groans: the nearest zombies grumble
@@ -708,6 +764,11 @@ func _on_boss_killed(e: EnemyManager.Enemy) -> void:
 		hud.show_announcement("%s!" % drop.display_name.to_upper(), 2.4)
 	else:
 		hud.show_announcement("BOSS DOWN!", 2.0)
+	# The boss is the end of the chapter: whatever else is still standing, the
+	# run is won. The delay lets the kill land before the badge covers it.
+	if chapter.is_boss_wave(wave_index):
+		wave_index = chapter.wave_count()
+		_win_delay = BOSS_WIN_DELAY
 
 
 func _on_player_damaged(amount: float) -> void:
@@ -724,14 +785,23 @@ func _on_player_damaged(amount: float) -> void:
 	Haptics.medium()
 
 
-## Freezes the action for `duration` real seconds (boss kill punch). The
-## timer ignores time scale so it always ends; a later call just extends it.
+## Freezes the action for `duration` real seconds (boss kill punch). A later
+## call just extends the deadline.
 func _hit_stop(scale: float, duration: float) -> void:
 	Engine.time_scale = scale
 	_hit_stop_until = Time.get_ticks_msec() + int(duration * 1000.0)
-	get_tree().create_timer(duration, true, false, true).timeout.connect(func() -> void:
-		if Time.get_ticks_msec() >= _hit_stop_until:
-			Engine.time_scale = 1.0)
+
+
+## Ends a hit-stop by the wall clock.
+##
+## A SceneTreeTimer is the obvious tool for this and the wrong one: it counts
+## *scaled* time even when asked not to, so the timer meant to lift a 0.16 s
+## freeze at time_scale 0.05 does not fire for 3.2 s. Every boss kill left the
+## whole game crawling, which also stalled the boss entrance behind it.
+func _tick_hit_stop() -> void:
+	if _hit_stop_until > 0 and Time.get_ticks_msec() >= _hit_stop_until:
+		_hit_stop_until = 0
+		Engine.time_scale = 1.0
 
 
 func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vector3) -> void:
@@ -1034,8 +1104,9 @@ func _end(won: bool) -> void:
 	_won = won
 	hud.joystick.reset()
 	player.move_input = Vector2.ZERO
-	var minutes := run_time / 60.0
-	var reward := run_coins + int(chapter.coins_per_minute * minutes)
+	# Paid per wave cleared, so a run that got most of the way through is worth
+	# something even when it ends badly.
+	var reward := run_coins + chapter.coins_per_wave * wave_index
 	if won:
 		reward += chapter.coins_win
 	run_coins = reward
@@ -1050,7 +1121,8 @@ func _end(won: bool) -> void:
 		GameState.return_unused(leftovers)
 	# record_run banks the coins as well.
 	_new_best = GameState.record_run(chapter.id, run_time, enemies.kills, won, reward)
-	Log.info("Game", "Run over: won=%s time=%.1f kills=%d level=%d coins=%d" % [won, run_time, enemies.kills, level, reward])
+	Log.info("Game", "Run over: won=%s wave=%d/%d time=%.1f kills=%d level=%d coins=%d" % [
+		won, wave_index, chapter.wave_count(), run_time, enemies.kills, level, reward])
 
 
 func _show_result() -> void:
@@ -1060,6 +1132,7 @@ func _show_result() -> void:
 
 
 func _exit_tree() -> void:
+	_hit_stop_until = 0
 	Engine.time_scale = 1.0
 	AudioManager.duck_music(false)
 

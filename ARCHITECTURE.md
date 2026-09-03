@@ -156,6 +156,29 @@ foot where the fight left them.
 walking away resets the timer, so the cost is standing still in the open while
 the horde closes.
 
+### Waves
+
+A chapter is a list of waves, not a stopwatch. `ChapterData.waves` holds one
+entry per wave — the groups it sends, its HP scale, spawn interval and
+concurrent cap, and whether it is the boss wave.
+
+`Game._tick_director` runs exactly one wave at a time: it shuffles that wave's
+roster into `_wave_queue`, trickles bodies in on `interval` while `alive` is
+under `cap`, and only when the queue is empty *and* nothing is standing does
+`_clear_wave()` advance. A boss is pulled out of the shuffle and spawned
+first, so its entrance opens the wave instead of interrupting the middle of
+one. Killing the boss ends the run — escorts still alive do not matter —
+after `BOSS_WIN_DELAY` so the kill lands before the badge covers it.
+
+`best_time` therefore means *fastest clear*, and a run that ends in death
+never sets one.
+
+**Hit-stop must not use a `SceneTreeTimer`.** It counts scaled time even when
+asked not to, so the timer meant to lift a 0.16 s freeze at `time_scale` 0.05
+does not fire for 3.2 s; every boss kill left the game crawling and stalled
+the boss entrance behind it. `_tick_hit_stop()` ends it by wall clock instead,
+and runs in every state.
+
 ### Ending a run
 
 Both endings freeze the tree (`_freeze()`), so the last frame of the fight
@@ -221,6 +244,17 @@ Hits are painted with `Damage.color()`, which is the entire tutorial: a player
 who watches pale numbers bounce off a wisp and violet ones land learns the
 system without a tooltip. Traps deal TRUE damage — spikes do not care about
 armour.
+
+**The boss is outside the separation system.** The spatial hash checks a 2x2
+block of cells, which assumes every body is small next to `CELL`; a boss at
+radius 3+ spans a dozen cells, so it both missed most of its neighbours and
+generated pushes the size of its own body — it jittered through the horde and
+flung zombies around. Bosses now shove without being shoved: they skip
+`_separation` and ignore knockback, everyone else gets an explicit check
+against the boss that the grid would have missed, and the total push is capped
+at `MAX_SEPARATION` body radii. A boss also flattens the trees it walks
+through (`Forest.crush`), since something that size standing inside a trunk
+reads as a broken level.
 
 ### Enemy attacks
 
