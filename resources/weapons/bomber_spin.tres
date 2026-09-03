@@ -18,6 +18,7 @@ tint = Color(1, 0.55, 0.2, 1)
 fire_sound = ""
 hit_sound = "heavy_impact"
 damage_type = 0
+impact = 1
 damage = 19.0
 projectile_count = 2
 projectile_speed = 3.4

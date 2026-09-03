@@ -16,6 +16,7 @@ tint = Color(0.8, 0.6, 1, 1)
 fire_sound = "shot_retro"
 hit_sound = "hit_zombie"
 damage_type = 1
+impact = 2
 damage = 18.0
 cooldown = 0.8
 projectile_count = 2

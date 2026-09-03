@@ -16,6 +16,7 @@ tint = Color(0.45, 0.9, 1, 1)
 fire_sound = "force_field"
 hit_sound = "metal_impact"
 damage_type = 1
+impact = 2
 damage = 13.0
 cooldown = 0.42
 area = 2.2

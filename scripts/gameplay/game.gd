@@ -23,6 +23,9 @@ const COVER_BLOWN_TIME := 4.0
 ## Tower ammo dropped by every ×5-and-up enemy.
 const AMMO_PER_ELITE := 2
 ## How a chest's contents are split into things on the ground.
+## Flames are re-emitted this often, for traps within this range.
+const FIRE_INTERVAL := 0.07
+const FIRE_RANGE := 15.0
 const CHEST_GEMS := 8
 const CHEST_COINS := 6
 ## Seconds of grace after a revive, and how far the horde is blown back.
@@ -97,6 +100,8 @@ var _step_timer := 0.0
 var _growl_timer := 1.0
 ## Seconds of blown cover left: killing from inside a bush gives you away.
 var _exposed := 0.0
+var _fire_timer := 0.0
+var _fire_spots: Array[Vector3] = []
 ## Revives bought this run; each one doubles the next price.
 var _revives := 0
 
@@ -318,6 +323,15 @@ func dev_command(cmd: String) -> void:
 			var edge := Vector2(0.0, -1.0) * (b.radius_at(-PI * 0.5) - 4.0)
 			player.position = Vector3(edge.x, 0.0, edge.y)
 			camera_rig.snap_to(player.position)
+		"fx2":
+			# Every new effect at once, around the hero.
+			var p := player.position
+			fx.explosion(p + Vector3(2.5, 0.3, -1.5), Color(1.0, 0.6, 0.2), 1.6)
+			fx.explosion(p + Vector3(-2.8, 0.3, 1.2), Color(1.0, 0.45, 0.15), 1.0)
+			fx.magic(p + Vector3(-2.0, 0.4, -2.2), Color(0.72, 0.45, 1.0), 1.5)
+			fx.magic(p + Vector3(2.2, 0.4, 2.0), Color(0.45, 0.9, 1.0), 1.2)
+			for i in 24:
+				fx.fire(p + Vector3(0.0, 0.35, -3.4), 1.1)
 		"chest":
 			if not treasure.chests.is_empty():
 				var c: Treasure.Chest = treasure.chests[0]
@@ -466,6 +480,7 @@ func _tick_world(delta: float) -> void:
 	forest.tick(delta, hero)
 	_crush_forest()
 	traps.tick(delta, player, enemies)
+	_tick_fires(delta, hero)
 	towers.tick(delta, hero, run_ammo)
 	vehicles.tick(delta, hero)
 	survivors.tick(delta, hero)
@@ -576,6 +591,21 @@ func _tick_ambience(delta: float) -> void:
 	SoundBank.sfx("zombie_growl", lerpf(-8.0, -20.0, dist / GROWL_RANGE), 0.2)
 
 
+## Keeps the brazier traps burning. Fires are re-emitted rather than looping,
+## so only the ones the player can actually see cost anything.
+func _tick_fires(delta: float, hero: Vector2) -> void:
+	if not traps.burns:
+		return
+	_fire_timer -= delta
+	if _fire_timer > 0.0:
+		return
+	_fire_timer = FIRE_INTERVAL
+	_fire_spots.clear()
+	traps.burning_near(hero, FIRE_RANGE, _fire_spots)
+	for spot in _fire_spots:
+		fx.fire(spot, 1.2)
+
+
 ## A boss flattens the trees it walks over. Anything that big standing inside
 ## a trunk reads as the level being broken, and knocking them down is also the
 ## clearest signal on screen that it does not care about the terrain.
@@ -633,7 +663,7 @@ func _on_tower_fired(position: Vector3, dir: Vector2) -> void:
 
 func _on_tower_destroyed(position: Vector3) -> void:
 	SoundBank.sfx("explosion", -4.0, 0.05)
-	fx.boss_death(position, Color(0.6, 0.85, 1.0))
+	fx.explosion(position, Color(0.6, 0.85, 1.0), 1.3)
 	camera_rig.shake(0.4)
 	hud.show_announcement("NEST DOWN!", 1.4)
 
@@ -656,7 +686,7 @@ func _on_vehicle_dismounted(position: Vector3, wrecked: bool) -> void:
 	camera_rig.shake(0.5 if wrecked else 0.2)
 	if wrecked:
 		SoundBank.sfx("explosion", -2.0, 0.0)
-		fx.boss_death(position + Vector3(0.0, 0.6, 0.0), Color(1.0, 0.6, 0.2))
+		fx.explosion(position + Vector3(0.0, 0.5, 0.0), Color(1.0, 0.6, 0.25), 1.6)
 		hud.show_announcement("MECH DOWN!", 1.6)
 	else:
 		SoundBank.sfx("reload", -6.0, 0.0)
@@ -717,9 +747,16 @@ func _on_tree_felled(position: Vector2, wood: int) -> void:
 		pickups.drop(PickupManager.Kind.WOOD, position + Vector2(cos(a), sin(a)) * 0.6, 1.0)
 
 
+## A trap springing looks like whatever the trap is: spikes throw sparks, a
+## brazier throws fire.
 func _on_trap_triggered(position: Vector3, hit_player: bool) -> void:
-	SoundBank.sfx("metal_impact", -8.0 if hit_player else -14.0, 0.05)
-	fx.hit(position + Vector3(0.0, 0.4, 0.0), Vector2.ZERO, Color(1.0, 0.4, 0.2))
+	var volume := -8.0 if hit_player else -14.0
+	if traps.burns:
+		SoundBank.sfx("explosion", volume - 2.0, 0.1)
+		fx.explosion(position + Vector3(0.0, 0.4, 0.0), Color(1.0, 0.55, 0.2), 0.7)
+	else:
+		SoundBank.sfx("metal_impact", volume, 0.05)
+		fx.hit(position + Vector3(0.0, 0.4, 0.0), Vector2.ZERO, Color(1.0, 0.4, 0.2))
 
 
 # --- Combat feedback ---------------------------------------------------------
@@ -731,7 +768,14 @@ func _on_enemy_hit(e: EnemyManager.Enemy, position: Vector3, dir: Vector2, amoun
 	if killed:
 		return
 	SoundBank.sfx(weapon.hit_sound, -8.0, 0.15)
-	fx.hit(position, dir, weapon.tint)
+	match weapon.impact:
+		WeaponData.Impact.EXPLOSION:
+			fx.explosion(position, weapon.tint, 0.55)
+			camera_rig.shake(0.08)
+		WeaponData.Impact.MAGIC:
+			fx.magic(position, weapon.tint, 0.55)
+		_:
+			fx.hit(position, dir, weapon.tint)
 
 
 func _on_weapon_fired(weapon: WeaponData, from: Vector3, dir: Vector2) -> void:
@@ -779,7 +823,11 @@ func _on_enemy_winding_up(e: EnemyManager.Enemy) -> void:
 		return
 	if d.windup_sound != "":
 		SoundBank.sfx(d.windup_sound, lerpf(-12.0, -22.0, dist / TELL_RANGE), 0.12)
-	fx.hit(e.position3d() + Vector3(0.0, 0.9 * d.scale, 0.0), Vector2.ZERO, d.tint.lightened(0.4))
+	var at := e.position3d() + Vector3(0.0, 0.9 * d.scale, 0.0)
+	if d.ranged:
+		fx.magic(at, d.bolt_color, 0.7)
+	else:
+		fx.hit(at, Vector2.ZERO, d.tint.lightened(0.4))
 
 
 func _on_enemy_struck(e: EnemyManager.Enemy, target: Vector2) -> void:
@@ -804,6 +852,7 @@ func _on_boss_ability(e: EnemyManager.Enemy, kind: String, data: Dictionary) -> 
 			SoundBank.sfx("boss_roar", 0.0, 0.0)
 			SoundBank.sfx("force_field", -4.0, 0.0)
 			fx.aura_pulse(Vector3(e.pos.x, 0.1, e.pos.y), float(data.get("radius", 12.0)), e.data().tint)
+			fx.magic(at, e.data().tint, 1.6)
 			camera_rig.shake(0.4)
 			Haptics.medium()
 			hud.show_announcement("THE HORDE IS ROUSED!", 1.4)
@@ -811,13 +860,14 @@ func _on_boss_ability(e: EnemyManager.Enemy, kind: String, data: Dictionary) -> 
 			var minion: EnemyData = data.get("enemy")
 			if minion != null:
 				SoundBank.sfx("bell", -4.0, 0.0)
-				fx.boss_death(at, e.data().tint)
+				fx.magic(at, e.data().tint, 1.8)
 				for i in int(data.get("count", 4)):
 					var a := TAU * float(i) / float(maxi(1, int(data.get("count", 4))))
 					enemies.spawn(minion, enemies.bounds.clamp_point(
 						e.pos + Vector2(cos(a), sin(a)) * 2.2, 0.5), chapter.wave_hp_scale(wave_index))
 		"volley":
 			SoundBank.sfx("force_field", -2.0, 0.0)
+			fx.magic(at, e.data().bolt_color, 1.2)
 			var count := int(data.get("count", 5))
 			var spread := deg_to_rad(float(data.get("spread", 60.0)))
 			var hero := Vector2(player.position.x, player.position.z)
@@ -835,7 +885,7 @@ func _on_boss_slammed(at: Vector2, radius: float, damage: float) -> void:
 	camera_rig.shake(1.0)
 	Haptics.heavy()
 	_hit_stop(0.25, 0.12)
-	fx.boss_death(Vector3(at.x, 0.3, at.y), Color(1.0, 0.75, 0.4))
+	fx.explosion(Vector3(at.x, 0.3, at.y), Color(1.0, 0.72, 0.35), 2.2)
 	fx.aura_pulse(Vector3(at.x, 0.08, at.y), radius, Color(1.0, 0.6, 0.25))
 	var hero := Vector2(player.position.x, player.position.z)
 	if not player.is_dead and hero.distance_to(at) <= radius:
@@ -849,7 +899,7 @@ func _on_boss_slammed(at: Vector2, radius: float, damage: float) -> void:
 
 
 func _on_bolt_landed(position: Vector3, _damage: float, hit_player: bool) -> void:
-	fx.death(position, Color(0.7, 0.4, 1.0))
+	fx.magic(position, Color(0.72, 0.42, 1.0), 0.8)
 	SoundBank.sfx("glass_break" if hit_player else "slime", -14.0, 0.08)
 
 
@@ -1018,6 +1068,10 @@ func _use_relic(index: int) -> void:
 		RelicData.Kind.NUKE:
 			camera_rig.shake(0.7)
 			_hit_stop(0.1, 0.14)
+			for i in 5:
+				var a := TAU * float(i) / 5.0
+				fx.explosion(player.position + Vector3(cos(a), 0.3, sin(a)) * relic.value * 0.55,
+					Color(1.0, 0.62, 0.22), 1.8)
 			for e in enemies.enemies.duplicate():
 				if not e.dying and e.pos.distance_to(Vector2(player.position.x, player.position.z)) < relic.value:
 					enemies.hit(e, 1e9, e.pos, 0.0, Damage.Type.TRUE)

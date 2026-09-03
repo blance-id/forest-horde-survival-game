@@ -1,6 +1,10 @@
 ## Static hazards scattered through the map. A trap does not care who stepped
 ## on it — the horde walks into them just as often as the player does, which
 ## turns "run past the spikes" into a real tactic instead of a punishment.
+##
+## Chapters whose trap is a fire (`trap_burns`) also report which ones are
+## close enough to be worth burning, so the run can keep flames alive on them
+## without paying for forty fires nobody can see.
 class_name Traps
 extends Node3D
 
@@ -21,6 +25,9 @@ class Trap:
 
 
 var traps: Array[Trap] = []
+## Set from the chapter: these traps are fires and should be given flames.
+var burns := false
+var flame_height := 0.55
 
 var _mm: MultiMesh
 var _query: Array = []
@@ -31,6 +38,8 @@ func build(chapter: ChapterData, seed_value: int) -> void:
 	if chapter.trap_model == null or chapter.trap_count <= 0:
 		return
 	_rng.seed = seed_value
+	burns = chapter.trap_burns
+	flame_height = chapter.trap_flame_height
 	var bounds := ArenaBounds.from_chapter(chapter)
 	var node: Node = chapter.trap_model.instantiate()
 	var meshes := node.find_children("*", "MeshInstance3D", true, false)
@@ -65,6 +74,16 @@ func build(chapter: ChapterData, seed_value: int) -> void:
 	mmi.custom_aabb = AABB(Vector3(-extent, -1, -extent), Vector3(extent * 2.0, 3, extent * 2.0))
 	add_child(mmi)
 	node.free()
+
+
+## Traps close enough to the hero to be worth drawing flames on. Anything
+## further away is off screen, and forty fires costs forty times as much as one.
+func burning_near(hero: Vector2, radius: float, out: Array[Vector3]) -> void:
+	if not burns:
+		return
+	for t in traps:
+		if hero.distance_squared_to(t.pos) <= radius * radius:
+			out.append(Vector3(t.pos.x, flame_height, t.pos.y))
 
 
 func tick(delta: float, player: Player, enemies: EnemyManager) -> void:

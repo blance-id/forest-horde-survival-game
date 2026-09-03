@@ -16,6 +16,10 @@ const POOLS := {
 	"flash": {"tex": "muzzle_a", "add": true, "count": 48},
 	"smoke": {"tex": "smoke_a", "add": false, "count": 256},
 	"splat": {"tex": "splat", "add": false, "count": 96},
+	"flame": {"tex": "flame", "add": true, "count": 384},
+	"magic": {"tex": "magic", "add": true, "count": 256},
+	"rune": {"tex": "symbol", "add": true, "count": 96},
+	"scorch": {"tex": "scorch", "add": false, "count": 64},
 }
 const PARTICLE_DIR := "res://assets/effects/particles/"
 const SPLAT_DIR := "res://assets/effects/splats/"
@@ -212,6 +216,75 @@ func boss_death(pos: Vector3, tint: Color) -> void:
 		var a := TAU * float(i) / 36.0
 		var vel := Vector3(cos(a), 0.0, sin(a)) * 7.0 + Vector3(0, 1.5, 0)
 		emit("star", pos + Vector3(0, 0.5, 0), vel, Vector2(0.4, 0.08), 0.8, white, 2.0, 2.0, _rng.randf_range(-6.0, 6.0), 0.02)
+
+
+## A real explosion: white core, a fireball that swells and darkens into
+## smoke, embers thrown out flat, a shock ring on the ground and a scorch mark
+## left behind. Used for anything that detonates — a boss slam, a shell, a
+## nest going up.
+func explosion(pos: Vector3, tint: Color = Color(1.0, 0.6, 0.2), scale: float = 1.0) -> void:
+	var core := Color(2.1, 1.9, 1.6, 1.0)
+	var fire := tint * 1.9
+	fire.a = 1.0
+	# The core flash reads first, before the eye resolves anything else.
+	emit("glow", pos, Vector3.ZERO, Vector2(0.8, 3.4) * scale, 0.16, core, 0.0, 0.0, 0.0, 0.01)
+	# The fireball: flames that rise slowly and swell as they die.
+	for i in roundi(12 * scale):
+		var vel := _spread(Vector2.ZERO, PI, 1.0, 3.4 * scale, 1.2, 3.4)
+		emit("flame", pos + Vector3(0, 0.25, 0), vel, Vector2(1.0, 2.2) * scale,
+			_rng.randf_range(0.35, 0.55), fire, -1.2, 2.6, _rng.randf_range(-2.0, 2.0), 0.02)
+	# Smoke, arriving late and lasting longest.
+	for i in roundi(8 * scale):
+		var vel := _spread(Vector2.ZERO, PI, 0.4, 1.6, 1.4, 3.0)
+		emit("smoke", pos + Vector3(0, 0.5, 0), vel, Vector2(1.2, 3.0) * scale,
+			_rng.randf_range(0.7, 1.1), Color(0.22, 0.19, 0.17, 0.8), -0.5, 2.2,
+			_rng.randf_range(-1.5, 1.5), 0.25)
+	# Embers, thrown out nearly flat so they skitter across the ground.
+	for i in roundi(18 * scale):
+		var vel := _spread(Vector2.ZERO, PI, 4.0 * scale, 9.0 * scale, 0.5, 3.5)
+		emit("spark", pos + Vector3(0, 0.3, 0), vel, Vector2(0.34, 0.06) * scale,
+			_rng.randf_range(0.35, 0.7), Color(2.4, 1.5, 0.6, 1.0), 11.0, 1.6, 0.0, 0.01)
+	# Shock ring and the burn it leaves.
+	emit("glow", Vector3(pos.x, 0.06, pos.z), Vector3.ZERO, Vector2(1.0, 7.0) * scale, 0.32,
+		Color(2.2, 1.4, 0.7, 0.7), 0.0, 0.0, 0.0, 0.02, 0, true)
+	emit("scorch", Vector3(pos.x, 0.03, pos.z), Vector3.ZERO, Vector2(1.6, 2.2) * scale, 7.0,
+		Color(0.10, 0.08, 0.07, 0.8), 0.0, 0.0, _rng.randf() * TAU, 0.05, 0, true)
+
+
+## One tick of a fire that is meant to keep burning. Callers re-emit this every
+## frame or two for as long as the fire should last, which is cheaper and more
+## controllable than a looping emitter per flame.
+func fire(pos: Vector3, scale: float = 1.0, tint: Color = Color(1.0, 0.62, 0.22)) -> void:
+	var hot := tint * 1.9
+	hot.a = 1.0
+	var vel := _spread(Vector2.ZERO, PI, 0.1, 0.35 * scale, 1.1 * scale, 1.9 * scale)
+	emit("flame", pos, vel, Vector2(0.5, 0.9) * scale, _rng.randf_range(0.3, 0.5), hot,
+		-1.6, 2.0, _rng.randf_range(-2.0, 2.0), 0.06)
+	if _rng.randf() < 0.35:
+		emit("spark", pos, _spread(Vector2.ZERO, PI, 0.2, 0.8, 2.0, 3.4) * scale,
+			Vector2(0.12, 0.03) * scale, _rng.randf_range(0.4, 0.8), Color(2.4, 1.4, 0.5, 1.0), 2.5, 1.0, 0.0, 0.05)
+	if _rng.randf() < 0.18:
+		emit("smoke", pos + Vector3(0, 0.4 * scale, 0), Vector3(0, 0.9, 0), Vector2(0.4, 1.1) * scale,
+			0.9, Color(0.2, 0.18, 0.16, 0.35), -0.4, 1.6, _rng.randf_range(-1.0, 1.0), 0.3)
+
+
+## A spell going off: a bloom, glyphs turning as they rise, and motes drawn up
+## out of the ground. Magic reads as *ordered* where an explosion is chaotic.
+func magic(pos: Vector3, tint: Color = Color(0.72, 0.45, 1.0), scale: float = 1.0) -> void:
+	var glow := tint * 1.7
+	glow.a = 1.0
+	emit("glow", pos, Vector3.ZERO, Vector2(0.5, 2.2) * scale, 0.32, glow, 0.0, 0.0, 0.0, 0.03)
+	for i in roundi(3 * scale):
+		emit("rune", pos + Vector3(0, 0.15 * float(i), 0), Vector3(0, 0.9, 0), Vector2(0.9, 0.35) * scale,
+			_rng.randf_range(0.45, 0.7), glow, -0.3, 1.4, _rng.randf_range(-3.0, 3.0), 0.05)
+	# Motes spiral upward: a ring of particles with a sideways kick.
+	for i in roundi(10 * scale):
+		var a := TAU * float(i) / float(maxi(1, roundi(10 * scale)))
+		var out := Vector3(cos(a), 0.0, sin(a))
+		var side := Vector3(-out.z, 0.0, out.x)
+		emit("magic", pos + out * 0.3 * scale, out * 1.4 + side * 2.2 + Vector3(0, 2.4, 0),
+			Vector2(0.34, 0.05) * scale, _rng.randf_range(0.4, 0.7), glow, -1.0, 2.4,
+			_rng.randf_range(-6.0, 6.0), 0.03)
 
 
 ## Aura pulse: a soft ring flash on the ground.

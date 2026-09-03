@@ -404,6 +404,17 @@ into `FxManager` presets, `DamageNumbers`, camera shake, haptics and hit-stop.
   16-bit floats**, which is why the timestamp lives in the 32-bit transform.
   Dead particles are parked with spawn_time −1e6 so they collapse to zero size.
   Splats are `mix`-blended ground quads from a 4×2 atlas built at startup.
+- **Effect vocabulary**: on top of the impact / death / muzzle presets there
+  are three heavier ones. `explosion()` is a white core, a fireball that swells
+  and darkens into smoke, embers thrown out nearly flat, a ground shock ring
+  and a scorch mark that stays. `magic()` is deliberately the opposite —
+  ordered rather than chaotic: a bloom, glyphs turning as they rise, and motes
+  spiralling up. `fire()` is one tick of a flame, re-emitted by the caller for
+  as long as the fire should burn, which is cheaper and far more controllable
+  than a looping emitter per flame; `Game._tick_fires` uses it to keep only
+  the braziers near the hero alight.
+  Which one a weapon uses is data (`WeaponData.impact`), not a branch in
+  `Game`, so a new weapon picks its own without touching code.
 - **Hit-stop**: `Game._hit_stop(scale, duration)` sets `Engine.time_scale` and
   restores it from an unscaled timer (boss kill 0.05 s, hero death slow-mo).
 - **Minimap** (scripts/ui/minimap.gd) draws the whole arena in one `_draw()`:

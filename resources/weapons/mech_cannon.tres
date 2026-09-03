@@ -15,6 +15,7 @@ tint = Color(1, 0.72, 0.35, 1)
 fire_sound = "shot_scatter"
 hit_sound = "heavy_impact"
 damage_type = 0
+impact = 1
 damage = 30.0
 cooldown = 0.18
 projectile_count = 1

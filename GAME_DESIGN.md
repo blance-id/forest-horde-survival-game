@@ -293,6 +293,14 @@ meta spending they beat it; Chapter 2 pushes them back to ~4:00.
   damage: red hero burst, red "50" number, camera shake, haptic tap and a
   screen-edge red vignette that pulses continuously under 30 % HP. Death is a
   0.9 s slow-motion. Level-ups fire a gold star ring around the hero.
+- **Effects** — three heavier languages on top of the hit sparks. Explosions
+  are chaotic: a white core, a fireball, embers skittering out flat, and a
+  burn mark left on the grass. Magic is the opposite, ordered and cool —
+  glyphs turning as they rise out of a bloom. Fire actually burns: the
+  braziers in Hollow Thicket are lit, and springing one is a detonation rather
+  than a clang. Bombs explode, holy and angelic weapons cast, everything else
+  throws sparks — and which is which is a field on the weapon, not a rule
+  buried in code.
 - **Sound** — each weapon has its own voice (blaster zap, scatter boom, lantern
   hum, knife slashes for the shovel) and a hit clip; zombies groan when they
   bite, growl at random when close, and shriek on death. A driving JRPG battle

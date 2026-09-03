@@ -26,7 +26,7 @@
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/fence-damaged.glb" id="m_fence"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/pine.glb" id="m_pine_straight"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/trunk.glb" id="m_trunk"]
-[ext_resource type="PackedScene" path="res://assets/models/dungeon/trap.glb" id="m_trap"]
+[ext_resource type="PackedScene" path="res://assets/models/built/spike_trap.tscn" id="m_trap"]
 [ext_resource type="PackedScene" path="res://assets/models/dungeon/chest.glb" id="m_chest"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeA.glb" id="h_rock_a"]
 [ext_resource type="PackedScene" path="res://assets/models/nature/rock_largeC.glb" id="h_rock_b"]
@@ -106,7 +106,7 @@ trap_model = ExtResource("m_trap")
 trap_count = 34
 trap_radius = 0.8
 trap_damage = 14.0
-trap_scale = 1.1
+trap_scale = 1.4
 chest_model = ExtResource("m_chest")
 chest_count = 9
 chest_scale = 1.3

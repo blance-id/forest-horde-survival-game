@@ -4,6 +4,10 @@
 class_name WeaponData
 extends Resource
 
+## How a hit from this weapon looks. Data rather than a special case in Game,
+## so a new weapon picks its own impact without touching any code.
+enum Impact { SPARKS, EXPLOSION, MAGIC }
+
 enum Kind {
 	PROJECTILE,
 	ORBIT,
@@ -36,6 +40,7 @@ enum Kind {
 
 @export_group("Base stats")
 @export var damage_type: Damage.Type = Damage.Type.PHYSICAL
+@export var impact: Impact = Impact.SPARKS
 @export var damage: float = 10.0
 @export var cooldown: float = 0.5
 @export var projectile_count: int = 1

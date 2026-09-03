@@ -1,6 +1,6 @@
-## Builds the models the CC0 kits do not ship — a wolf, a forest serpent and
-## the walker mech — assembled from boxes in the exact palette everything else
-## uses.
+## Builds the models the CC0 kits do not ship — a wolf, a forest serpent, the
+## walker mech and the spike trap — assembled from boxes in the exact palette
+## everything else uses.
 ##
 ## The Kenney packs have no animals, so rather than change art direction (or
 ## the licence story) these are generated here in the same flat-shaded, chunky
@@ -40,6 +40,7 @@ func _init() -> void:
 	_save(_build_wolf(), "wolf")
 	_save(_build_serpent(), "serpent")
 	_save(_build_mech(), "mech")
+	_save(_build_spike_trap(), "spike_trap")
 	quit()
 
 
@@ -146,6 +147,33 @@ func _build_mech() -> Node3D:
 	return root
 
 
+# --- Spike trap ---------------------------------------------------------------
+
+## The dungeon kit's trap is a plate with four holes in it, which from a
+## pitched camera reads as four circles on the grass and not as a hazard. This
+## is unmistakable: a sunken frame with a ring of blood-tipped spikes standing
+## out of it.
+func _build_spike_trap() -> Node3D:
+	var root := Node3D.new()
+	root.name = "SpikeTrap"
+	var t := _Part.new()
+	# Sunken frame: a dark pit ringed by a rusted lip.
+	t.box(Vector3(-0.46, 0.0, -0.46), Vector3(0.46, 0.05, 0.46), BROWN)
+	t.box(Vector3(-0.40, 0.05, -0.40), Vector3(0.40, 0.09, 0.40), NEAR_BLACK)
+	# Corner bolts, so the frame reads as iron rather than a painted square.
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			t.box(Vector3(sx * 0.40 - 0.06, 0.05, sz * 0.40 - 0.06),
+				Vector3(sx * 0.40 + 0.06, 0.11, sz * 0.40 + 0.06), GREY_MID)
+	# Spikes: one in the middle and a ring of four, all blood-tipped.
+	t.spike(Vector2.ZERO, 0.11, 0.42, GREY_PALE, RED)
+	for i in 4:
+		var a := TAU * float(i) / 4.0 + PI * 0.25
+		t.spike(Vector2(cos(a), sin(a)) * 0.24, 0.085, 0.32, GREY_PALE, RED)
+	_attach(root, t, "torso", Vector3.ZERO)
+	return root
+
+
 # --- Plumbing ----------------------------------------------------------------
 
 func _attach(root: Node3D, part: _Part, part_name: String, pivot: Vector3) -> void:
@@ -195,6 +223,31 @@ class _Part:
 		_quad(c[1], c[5], c[6], c[2], Vector3.RIGHT, uv)
 		_quad(c[3], c[2], c[6], c[7], Vector3.UP, uv)
 		_quad(c[4], c[5], c[1], c[0], Vector3.DOWN, uv)
+
+	## A four-sided pyramid standing at `centre`, with the top fifth in
+	## `tip_uv` so a spike looks like it has been used.
+	func spike(centre: Vector2, half: float, height: float, uv: Vector2, tip_uv: Vector2) -> void:
+		var apex := Vector3(centre.x, height, centre.y)
+		var neck := height * 0.8
+		var shrink := 0.2
+		for i in 4:
+			var a0 := TAU * float(i) / 4.0 + PI * 0.25
+			var a1 := TAU * float(i + 1) / 4.0 + PI * 0.25
+			var p0 := Vector3(centre.x + cos(a0) * half, 0.0, centre.y + sin(a0) * half)
+			var p1 := Vector3(centre.x + cos(a1) * half, 0.0, centre.y + sin(a1) * half)
+			var q0 := Vector3(centre.x + cos(a0) * half * shrink, neck, centre.y + sin(a0) * half * shrink)
+			var q1 := Vector3(centre.x + cos(a1) * half * shrink, neck, centre.y + sin(a1) * half * shrink)
+			var n := (p1 - p0).cross(q0 - p0).normalized()
+			_quad(p0, p1, q1, q0, n, uv)
+			_tri(q0, q1, apex, n, tip_uv)
+
+	func _tri(a: Vector3, b: Vector3, c: Vector3, n: Vector3, uv: Vector2) -> void:
+		var base := verts.size()
+		for p in [a, b, c]:
+			verts.append(p)
+			normals.append(n)
+			uvs.append(uv)
+		indices.append_array([base, base + 2, base + 1])
 
 	func _quad(a: Vector3, b: Vector3, c: Vector3, d: Vector3, n: Vector3, uv: Vector2) -> void:
 		var base := verts.size()

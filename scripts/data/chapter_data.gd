@@ -84,6 +84,11 @@ extends Resource
 @export var trap_radius: float = 0.7
 @export var trap_damage: float = 12.0
 @export var trap_scale: float = 1.0
+## Traps that are on fire — braziers rather than spikes. Nearby ones burn
+## continuously and their damage reads as heat.
+@export var trap_burns: bool = false
+## Where the flame sits above the trap's base.
+@export var trap_flame_height: float = 0.55
 
 @export_group("Treasure")
 ## Chests holding XP and gold, hidden out towards the rim.
