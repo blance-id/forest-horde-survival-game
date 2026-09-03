@@ -380,6 +380,7 @@ func _tick_world(delta: float) -> void:
 	weapon_system.enabled = not vehicles.is_piloting()
 	var hero := Vector2(player.position.x, player.position.z)
 	forest.tick(delta, hero)
+	_crush_forest()
 	traps.tick(delta, player, enemies)
 	towers.tick(delta, hero, run_ammo)
 	vehicles.tick(delta, hero)
@@ -444,6 +445,18 @@ func _tick_ambience(delta: float) -> void:
 	if dist > GROWL_RANGE:
 		return
 	SoundBank.sfx("zombie_growl", lerpf(-8.0, -20.0, dist / GROWL_RANGE), 0.2)
+
+
+## A boss flattens the trees it walks over. Anything that big standing inside
+## a trunk reads as the level being broken, and knocking them down is also the
+## clearest signal on screen that it does not care about the terrain.
+func _crush_forest() -> void:
+	var b := enemies.boss
+	if b == null or b.dying:
+		return
+	if forest.crush(b.pos, b.radius() * 0.8) > 0:
+		SoundBank.sfx("wood_impact", -4.0, 0.1)
+		camera_rig.shake(0.12)
 
 
 ## Standing in a bush breaks the horde's line of sight — until you kill from

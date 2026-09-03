@@ -130,6 +130,20 @@ func tick(delta: float, hero: Vector2) -> void:
 	_fell(target)
 
 
+## Everything standing inside `radius` comes down. A boss is wider than a
+## tree trunk, so without this it walks through trunks and looks like it is
+## clipping through the level; flattening them instead turns the overlap into
+## a wake of broken forest.
+func crush(centre: Vector2, radius: float) -> int:
+	var felled_count := 0
+	var r2 := radius * radius
+	for t in trees:
+		if t.standing and t.pos.distance_squared_to(centre) <= r2:
+			_fell(t)
+			felled_count += 1
+	return felled_count
+
+
 func nearest_trunk(p: Vector2, max_dist: float) -> Trunk:
 	var best: Trunk = null
 	var best_d := max_dist * max_dist

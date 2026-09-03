@@ -270,9 +270,11 @@ func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 	else:
 		e.charge = maxf(0.0, e.charge - delta * 5.0)
 		# Separation is refreshed on alternate frames; the cached push is reused.
-		if (_frame + e.slot) & 1 == 0:
-			e.sep = _separation(e)
-		vel += e.sep * 7.0
+		# A boss walks through the horde rather than being jostled by it.
+		if e != boss:
+			if (_frame + e.slot) & 1 == 0:
+				e.sep = _separation(e)
+			vel += e.sep * 7.0
 		var trigger := d.cast_range if d.ranged else reach
 		if (player_alive or e.lure != null) and dist < trigger and e.attack_cd <= 0.0:
 			e.windup = d.attack_windup
@@ -439,7 +441,7 @@ func hit(e: Enemy, amount: float, from: Vector2, knockback: float, type: Damage.
 	last_dealt = dealt
 	e.hp -= dealt
 	e.hit_time = time
-	if knockback > 0.0:
+	if knockback > 0.0 and e != boss:
 		var dir := (e.pos - from)
 		if dir.length_squared() > 0.0001:
 			e.knock += dir.normalized() * knockback * (1.0 - e.pool.data.knockback_resist)
