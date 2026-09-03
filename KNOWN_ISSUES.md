@@ -65,3 +65,23 @@ have been involved:
 The death path itself was also rewritten: it no longer keeps ticking the world
 (traps, towers, the horde, projectiles) after the hero is dead. If the crash
 survives all of that, the next step is `adb logcat` from the device.
+
+## Fixed: permanent slow motion after a revive
+
+Reported from a device playtest — reviving left the game running in slow
+motion for good. Two defects stacked:
+
+- The hit-stop's `SceneTreeTimer` counted *scaled* time, so a 0.16 s freeze at
+  `time_scale` 0.05 ran for seconds rather than a sixth of one.
+- `Game` is pausable, so once the tree froze for the death overlay nothing was
+  left running to lift the freeze — while the overlay, the revive panel and
+  the result card, all `PROCESS_MODE_ALWAYS`, kept rendering at 0.05x.
+
+Reproduce on the old code with `--dev=boss,nuke,die`: the death overlay's
+1.3 s hold takes ~26 s and the revive panel never opens inside a 170-frame
+capture. Fixed by ending hit-stop on the wall clock and clearing it in
+`_freeze()`.
+
+Reviving also used to kill everything within `REVIVE_CLEAR`, including the
+boss — which handed the player the chapter for the price of one revive. The
+boss is now shoved back instead.

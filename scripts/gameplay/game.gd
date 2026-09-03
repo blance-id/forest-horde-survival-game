@@ -795,13 +795,24 @@ func _hit_stop(scale: float, duration: float) -> void:
 ## Ends a hit-stop by the wall clock.
 ##
 ## A SceneTreeTimer is the obvious tool for this and the wrong one: it counts
-## *scaled* time even when asked not to, so the timer meant to lift a 0.16 s
-## freeze at time_scale 0.05 does not fire for 3.2 s. Every boss kill left the
-## whole game crawling, which also stalled the boss entrance behind it.
+## *scaled* time, so the timer meant to lift a 0.16 s freeze at time_scale 0.05
+## does not fire for seconds. Every boss kill left the whole game crawling.
 func _tick_hit_stop() -> void:
 	if _hit_stop_until > 0 and Time.get_ticks_msec() >= _hit_stop_until:
-		_hit_stop_until = 0
-		Engine.time_scale = 1.0
+		_end_hit_stop()
+
+
+## Time scale must be 1 outside a live frame.
+##
+## This node is pausable, so the moment the tree freezes for a level-up, a
+## pause or a death, `_tick_hit_stop()` stops running — and `Engine.time_scale`
+## is global, so every ALWAYS-mode panel keeps rendering at whatever the freeze
+## left behind. That is how dying mid-hit-stop and then reviving left the whole
+## game permanently in slow motion. Freezing the world *is* the dramatic beat;
+## slow motion on top of a stopped tree means nothing, so it ends here.
+func _end_hit_stop() -> void:
+	_hit_stop_until = 0
+	Engine.time_scale = 1.0
 
 
 func _on_pickup_collected(kind: PickupManager.Kind, value: float, position: Vector3) -> void:
@@ -997,6 +1008,7 @@ func _pause() -> void:
 ## input while paused, so the finger's release would otherwise never arrive
 ## and the hero would keep walking after the panel closes.
 func _freeze() -> void:
+	_end_hit_stop()
 	get_tree().paused = true
 	hud.joystick.reset()
 	player.move_input = Vector2.ZERO
@@ -1063,12 +1075,21 @@ func _do_revive() -> void:
 		return
 	_revives += 1
 	outcome.hide_overlay()
+	_end_hit_stop()
 	get_tree().paused = false
 	AudioManager.duck_music(false)
 	player.revive(REVIVE_GRACE)
-	# Clear the pile that killed you, or the revive is worth nothing.
+	# Clear the pile that killed you, or the revive is worth nothing — but a
+	# boss is the fight, not the pile. Killing it here would hand the player
+	# the chapter for the price of one revive, so it is shoved back instead.
+	var hero := Vector2(player.position.x, player.position.z)
 	for e in enemies.enemies.duplicate():
-		if not e.dying and e.pos.distance_to(Vector2(player.position.x, player.position.z)) < REVIVE_CLEAR:
+		if e.dying or e.pos.distance_to(hero) >= REVIVE_CLEAR:
+			continue
+		if e.data().is_boss:
+			e.pos = hero + (e.pos - hero).normalized() * REVIVE_CLEAR
+			enemies.refresh(e)
+		else:
 			enemies.hit(e, 1e9, e.pos, 0.0, Damage.Type.TRUE)
 	fx.level_up(player.position)
 	camera_rig.shake(0.5)
@@ -1132,8 +1153,7 @@ func _show_result() -> void:
 
 
 func _exit_tree() -> void:
-	_hit_stop_until = 0
-	Engine.time_scale = 1.0
+	_end_hit_stop()
 	AudioManager.duck_music(false)
 
 

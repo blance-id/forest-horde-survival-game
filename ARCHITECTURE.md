@@ -173,11 +173,18 @@ after `BOSS_WIN_DELAY` so the kill lands before the badge covers it.
 `best_time` therefore means *fastest clear*, and a run that ends in death
 never sets one.
 
-**Hit-stop must not use a `SceneTreeTimer`.** It counts scaled time even when
-asked not to, so the timer meant to lift a 0.16 s freeze at `time_scale` 0.05
-does not fire for 3.2 s; every boss kill left the game crawling and stalled
-the boss entrance behind it. `_tick_hit_stop()` ends it by wall clock instead,
-and runs in every state.
+**Hit-stop has two rules, and both were learned the hard way.**
+
+1. It must not use a `SceneTreeTimer` to lift itself. The timer counts scaled
+   time, so the one meant to end a 0.16 s freeze at `time_scale` 0.05 does not
+   fire for seconds. `_tick_hit_stop()` ends it by wall clock instead.
+2. `Engine.time_scale` must be 1 outside a live frame. `Game` is pausable, so
+   the instant the tree freezes for a level-up, a pause or a death,
+   `_tick_hit_stop()` stops running — while every `PROCESS_MODE_ALWAYS` panel
+   keeps rendering at whatever scale the freeze left behind. Dying during a
+   hit-stop therefore left the death overlay, the revive countdown and the
+   whole game afterwards in permanent slow motion. `_freeze()` calls
+   `_end_hit_stop()`, so a stopped tree always runs at full speed.
 
 ### Ending a run
 
