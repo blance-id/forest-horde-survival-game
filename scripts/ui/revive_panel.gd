@@ -56,8 +56,9 @@ func open(used_this_run: int, coins: int) -> bool:
 	return true
 
 
-## Driven by the run rather than `_process`, because the tree is paused here.
-func tick(delta: float) -> void:
+## The tree is paused while this is up, so the panel runs its own clock —
+## nothing on the `Game` side is ticking to drive it.
+func _process(delta: float) -> void:
 	if not _open:
 		return
 	_time_left -= delta

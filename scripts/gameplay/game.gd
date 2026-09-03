@@ -6,7 +6,6 @@ extends Node3D
 
 enum State { RUNNING, BOSS_INTRO, LEVEL_UP, PAUSED, DYING, OVER }
 
-const RESULT_DELAY := 1.6
 const RING_RADIUS := 9.0
 const ENEMY_CAPACITY := 300
 const HEAL_DROP_CHANCE := 0.012
@@ -21,8 +20,6 @@ const COVER_BLOWN_TIME := 4.0
 const AMMO_PER_ELITE := 2
 ## How many weapons the hero can carry at once.
 const WEAPON_SLOTS := 4
-## Slow-motion beat after the hero falls, before the revive offer.
-const DEATH_PAUSE := 1.1
 ## Seconds of grace after a revive, and how far the horde is blown back.
 const REVIVE_GRACE := 2.0
 const REVIVE_CLEAR := 6.0
@@ -48,6 +45,7 @@ const LAUGH_BEAT := 1.1
 @onready var pause_panel: PausePanel = $UI/PausePanel
 @onready var result_panel: ResultPanel = $UI/ResultPanel
 @onready var revive_panel: RevivePanel = $UI/RevivePanel
+@onready var outcome: OutcomeOverlay = $UI/OutcomeOverlay
 
 var chapter: ChapterData
 var character: CharacterData
@@ -71,8 +69,6 @@ var _spawn_timer := 0.0
 var _events: Array[Dictionary] = []
 var _rng := RandomNumberGenerator.new()
 var _pending_level_ups := 0
-var _result_timer := -1.0
-var _death_timer := 0.0
 var _intro_time := -1.0
 var _last_laugh := -1
 var _won := false
@@ -198,6 +194,7 @@ func _start_run() -> void:
 	pause_panel.quit_pressed.connect(_give_up)
 	revive_panel.revive_pressed.connect(_do_revive)
 	revive_panel.declined.connect(_after_death)
+	outcome.finished.connect(_on_outcome_finished)
 	result_panel.retry_pressed.connect(_retry)
 	result_panel.menu_pressed.connect(_to_menu)
 
@@ -326,16 +323,9 @@ func _process(delta: float) -> void:
 	if state == State.BOSS_INTRO:
 		_tick_boss_intro(delta)
 		return
-	if state == State.DYING:
-		_tick_dying(delta)
-		return
-	if state == State.OVER:
-		_tick_world(delta)
-		if _result_timer >= 0.0:
-			_result_timer -= delta
-			if _result_timer < 0.0:
-				_show_result()
-		return
+	# DYING, PAUSED, LEVEL_UP and OVER all freeze the tree; the overlays and
+	# panels that run during them are on ALWAYS process mode and drive
+	# themselves.
 	if state != State.RUNNING:
 		return
 	run_time += delta
@@ -720,8 +710,15 @@ func _use_relic(index: int) -> void:
 
 ## Runs `action` after `seconds` of game time. Relic effects that wear off use
 ## this rather than each keeping their own countdown in `_process`.
+##
+## A SceneTreeTimer outlives the scene, so a relic bought at 19:59 can fire its
+## expiry after the player has already quit to the menu — by which point the
+## nodes it touches are freed. The guard makes that a no-op instead of a
+## call into a dead object.
 func _timed(seconds: float, action: Callable) -> void:
-	get_tree().create_timer(seconds, false).timeout.connect(action)
+	get_tree().create_timer(seconds, false).timeout.connect(func() -> void:
+		if is_inside_tree():
+			action.call())
 
 
 # --- XP / level ups ----------------------------------------------------------
@@ -868,34 +865,34 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _give_up() -> void:
 	pause_panel.close()
-	get_tree().paused = false
 	AudioManager.stop_music(0.6)
 	_end(false)
+	state = State.OVER
 	_show_result()
 
 
+## Death stops the world outright: the horde freezes mid-lunge, the particles
+## hang where they are, and the screen answers. Nothing on this side ticks
+## again until the player revives or gives up.
 func _on_player_died() -> void:
+	if state == State.DYING or state == State.OVER:
+		return
+	state = State.DYING
 	AudioManager.stop_music(1.2)
 	SoundBank.jingle("lose", -2.0)
-	camera_rig.shake(0.6)
 	Haptics.heavy()
-	_hit_stop(0.25, 0.9)
-	state = State.DYING
-	_death_timer = DEATH_PAUSE
+	_freeze()
+	outcome.show_death()
 
 
-## The pause after death, before the run is actually over: long enough for the
-## slow-motion to land, then the offer to buy the run back.
-func _tick_dying(delta: float) -> void:
-	_tick_world(delta)
-	if revive_panel.visible:
-		revive_panel.tick(delta)
+## The overlay has finished its beat. Death offers the revive; a win goes
+## straight to the result card.
+func _on_outcome_finished() -> void:
+	if state == State.DYING:
+		if not revive_panel.open(_revives, GameState.get_coins()):
+			_after_death()
 		return
-	_death_timer -= delta
-	if _death_timer > 0.0:
-		return
-	if not revive_panel.open(_revives, GameState.get_coins()):
-		_after_death()
+	_show_result()
 
 
 func _do_revive() -> void:
@@ -904,7 +901,9 @@ func _do_revive() -> void:
 		_after_death()
 		return
 	_revives += 1
+	outcome.hide_overlay()
 	get_tree().paused = false
+	AudioManager.duck_music(false)
 	player.revive(REVIVE_GRACE)
 	# Clear the pile that killed you, or the revive is worth nothing.
 	for e in enemies.enemies.duplicate():
@@ -921,17 +920,20 @@ func _do_revive() -> void:
 func _after_death() -> void:
 	_end(false)
 	state = State.OVER
-	_result_timer = RESULT_DELAY
+	_show_result()
 
 
+## A win freezes the world too, so the last frame of the fight stays on screen
+## under the badge instead of the horde carrying on behind a menu.
 func _win() -> void:
+	if state == State.OVER:
+		return
 	AudioManager.stop_music(0.6)
 	SoundBank.jingle("win", -2.0)
-	enemies.clear_all()
-	projectiles.clear_all()
-	hud.show_announcement("SURVIVED!", 2.0)
+	Haptics.medium()
 	_end(true)
-	_result_timer = RESULT_DELAY
+	_freeze()
+	outcome.show_victory()
 
 
 func _end(won: bool) -> void:
@@ -959,7 +961,6 @@ func _end(won: bool) -> void:
 
 
 func _show_result() -> void:
-	_result_timer = -1.0
 	if result_panel.visible:
 		return
 	result_panel.show_result(_won, chapter.display_name, run_time, enemies.kills, level, run_coins, _new_best)

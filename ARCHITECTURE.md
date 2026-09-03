@@ -124,6 +124,20 @@ bush, `EnemyManager.player_hidden` is set and the horde walks to `last_seen`
 instead of tracking. Killing from cover sets `_exposed`, which gives the
 position away for `COVER_BLOWN_TIME`.
 
+### Ending a run
+
+Both endings freeze the tree (`_freeze()`), so the last frame of the fight
+stays on screen: the horde stops mid-lunge, particles hang in the air, and
+`OutcomeOverlay` answers over the top — a red flood with a closing vignette
+for death, a gold flood and a badge for a win. Nothing on the `Game` side
+ticks after that; `_process` returns early for every non-RUNNING state, and
+the overlay, revive panel and result card all run on `PROCESS_MODE_ALWAYS`
+and drive their own timing.
+
+One trap worth knowing: a tween built with `set_parallel(true)` still runs
+everything after `chain()` in parallel, so an interval-then-callback pair
+fires instantly. The overlay's hand-off beat uses its own sequential tween.
+
 ### Relics, the bag and revives
 
 `RelicData` is a one-shot item; `RelicCatalog` is the one place that turns the

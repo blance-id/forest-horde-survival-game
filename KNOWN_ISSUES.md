@@ -44,3 +44,24 @@ struck through — git history keeps the record.
 - **Menu demo zombies pile up.** In the main-menu demo the hero is invulnerable
   and the level-4 orbit weapon keeps the crowd off; at extreme aspect ratios a
   few zombies can still stack on the hero for a moment before dying.
+
+## Reported crash on death (Android, not reproduced)
+
+A smoke test on device reported the app closing when the hero died. It does
+not reproduce on Linux under either the dummy or the GL renderer, across the
+death, revive, decline, result and retry paths.
+
+Two real defects were found and fixed while chasing it, either of which could
+have been involved:
+
+- `RelicCatalog` scanned `res://resources/relics/` for `*.tres`. An Android
+  export converts text resources to binary `.res`, so on device the scan found
+  nothing: the store came up empty and the travel bag never resolved. It now
+  uses explicit `preload()`s, which are checked at build time.
+- Relic timers created with `SceneTreeTimer` outlive the scene, so an effect
+  expiring after a quit called into freed nodes. `Game._timed()` now drops the
+  callback when the scene is gone.
+
+The death path itself was also rewritten: it no longer keeps ticking the world
+(traps, towers, the horde, projectiles) after the hero is dead. If the crash
+survives all of that, the next step is `adb logcat` from the device.
