@@ -115,3 +115,46 @@ func test_each_class_covers_every_weapon_kind() -> void:
 		for kind in [WeaponData.Kind.PROJECTILE, WeaponData.Kind.ORBIT,
 				WeaponData.Kind.AURA, WeaponData.Kind.SHIELD]:
 			assert_true(kinds.has(int(kind)), "%s offers a %d weapon" % [c.id, int(kind)])
+
+
+func _boss_of(chapter_path: String) -> EnemyData:
+	var c := _chapter(chapter_path)
+	for e in c.wave_roster(c.wave_count() - 1):
+		if e.is_boss:
+			return e
+	return null
+
+
+func test_each_boss_has_its_own_kit() -> void:
+	var kits: Array[String] = []
+	for path in ["res://resources/chapters/chapter_01.tres", "res://resources/chapters/chapter_02.tres"]:
+		var boss := _boss_of(path)
+		assert_true(boss != null and not boss.abilities.is_empty(), "the boss does something")
+		var kinds: Array[String] = []
+		for a: Dictionary in boss.abilities:
+			var kind := String(a.get("kind", ""))
+			assert_true(kind in ["leap", "summon", "volley", "roar"], "known ability: " + kind)
+			assert_true(float(a.get("cooldown", 0.0)) > 0.0, "%s has a cooldown" % kind)
+			kinds.append(kind)
+		kinds.sort()
+		var signature := ",".join(kinds)
+		assert_false(kits.has(signature), "bosses do not share a kit: " + signature)
+		kits.append(signature)
+
+
+func test_summons_name_a_real_enemy() -> void:
+	for path in ["res://resources/chapters/chapter_01.tres", "res://resources/chapters/chapter_02.tres"]:
+		for a: Dictionary in _boss_of(path).abilities:
+			if String(a.get("kind", "")) == "summon":
+				var minion: EnemyData = a.get("enemy")
+				assert_true(minion != null and not minion.is_boss, "summons a real, non-boss enemy")
+				assert_true(int(a.get("count", 0)) > 0)
+
+
+func test_bosses_outclass_their_own_wave() -> void:
+	for path in ["res://resources/chapters/chapter_01.tres", "res://resources/chapters/chapter_02.tres"]:
+		var c := _chapter(path)
+		var boss := _boss_of(path)
+		for e in c.wave_roster(c.wave_count() - 1):
+			if not e.is_boss:
+				assert_true(boss.max_hp > e.max_hp * 4.0, "the boss is not just another body")

@@ -449,7 +449,25 @@ afford to carry, and how slow am I willing to be".
 Shields are new: a dome that shoves the horde back off you and soaks a flat
 amount of every hit while you hold it.
 
-### 15.5 Everything shipped
+### 15.5 Terrain, treasure and boss fights
+
+- **Terrain.** The nature kit is now mined properly — around a hundred models
+  instead of forty-five, with rock, stone and cliff sets. Rock outcrops stand
+  in the arena as solid ground that the hero *and* the horde walk around, so
+  an open field has corners to fight in, and a rim of bluffs rings the
+  clearing among the border pines. The palettes fog to a light haze rather
+  than near-black, which is what lets distance read at all.
+- **Treasure.** Chests sit out towards the rim holding XP and gold. Opening
+  one takes a moment standing still and bursts its contents onto the grass, so
+  the reward is a scramble rather than a number going up.
+- **Bosses.** Each has its own kit. Count Nosferatu summons his brood, sprays
+  bolts and blinks across the arena; The Alpha leaps constantly, howls the
+  pack into a sprint and calls more wolves. A leap crouches, arcs through the
+  air and lands with a shock that throws back and hurts everything nearby —
+  hero and horde — and shakes the whole frame. Both are far tougher than
+  before, with real resistances.
+
+### 15.6 Everything shipped
 
 Wave 6 closed out with the three items that were left:
 
@@ -467,7 +485,7 @@ Wave 6 closed out with the three items that were left:
   anything that walks through them, and stocked with wolves, hexers and
   serpents under the Alpha.
 
-### 15.6 Still open
+### 15.7 Still open
 
 Nothing from the playtest list is outstanding. The next pass is balance:
 Hollow Thicket's later waves are currently a wall, and the mech is strong

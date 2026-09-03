@@ -77,6 +77,15 @@ extends Resource
 @export var trap_damage: float = 12.0
 @export var trap_scale: float = 1.0
 
+@export_group("Treasure")
+## Chests holding XP and gold, hidden out towards the rim.
+@export var chest_model: PackedScene
+@export var chest_count: int = 8
+@export var chest_scale: float = 1.2
+@export var chest_clearance: float = 14.0
+@export var chest_xp: int = 60
+@export var chest_coins: int = 40
+
 @export_group("Survivors and vehicles")
 ## People to free; each hands over a one-shot relic for this run.
 @export var survivor_model: PackedScene

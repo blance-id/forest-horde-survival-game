@@ -217,6 +217,26 @@ never sets one.
    whole game afterwards in permanent slow motion. `_freeze()` calls
    `_end_hit_stop()`, so a stopped tree always runs at full speed.
 
+### Bosses
+
+`BossBrain` (scripts/enemies/boss_brain.gd) runs a boss's `EnemyData.abilities`
+list. Each entry keeps its own cooldown, staggered at spawn, so a boss with a
+leap, a summon and a roar cycles a pattern instead of leaning on whichever came
+off cooldown first. The brain owns only what the horde can resolve itself —
+the leap arc and the roar's haste — and reports the rest through
+`boss_ability` / `boss_slammed` so `Game` can spawn minions, fire volleys and
+answer with sound and shake.
+
+A leap is crouch → flight → slam. `Enemy.height` lifts the body off the ground
+for the arc (the only thing in the game that leaves y = 0), and while
+`BossBrain.is_busy()` the normal walk is skipped so it does not fight the
+brain for the position. The landing damages and throws back everything inside
+its radius, hero and horde alike, with a hit-stop and a full-strength shake.
+
+Bosses are also outside the separation system entirely — see the note above —
+so a leap lands where it was aimed rather than being nudged by whatever it
+lands on.
+
 ### Ending a run
 
 Both endings freeze the tree (`_freeze()`), so the last frame of the fight

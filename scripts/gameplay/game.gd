@@ -22,6 +22,9 @@ const TELL_RANGE := 6.0
 const COVER_BLOWN_TIME := 4.0
 ## Tower ammo dropped by every ×5-and-up enemy.
 const AMMO_PER_ELITE := 2
+## How a chest's contents are split into things on the ground.
+const CHEST_GEMS := 8
+const CHEST_COINS := 6
 ## Seconds of grace after a revive, and how far the horde is blown back.
 const REVIVE_GRACE := 2.0
 const REVIVE_CLEAR := 6.0
@@ -67,6 +70,8 @@ var forest: Forest
 var traps: Traps
 var survivors: Survivors
 var hills: Hills
+var treasure: Treasure
+var boss_brain := BossBrain.new()
 ## Relics carried into this run, and whether each has been spent.
 var bag: Array[RelicData] = []
 var bag_spent: Array[bool] = []
@@ -142,6 +147,13 @@ func _start_run() -> void:
 	traps.build(chapter, _rng.randi())
 	traps.triggered.connect(_on_trap_triggered)
 
+	treasure = Treasure.new()
+	treasure.name = "Treasure"
+	world.add_child(treasure)
+	treasure.build(chapter, _rng.randi(), hills)
+	treasure.progress.connect(_on_rescue_progress)
+	treasure.opened.connect(_on_chest_opened)
+
 	survivors = Survivors.new()
 	survivors.name = "Survivors"
 	world.add_child(survivors)
@@ -160,6 +172,11 @@ func _start_run() -> void:
 	enemies.player = player
 	enemies.configure(chapter, ENEMY_CAPACITY)
 	enemies.obstacles = hills.hills
+	boss_brain.enemies = enemies
+	boss_brain.player = player
+	enemies.boss_brain = boss_brain
+	enemies.boss_ability.connect(_on_boss_ability)
+	enemies.boss_slammed.connect(_on_boss_slammed)
 	enemies.enemy_killed.connect(_on_enemy_killed)
 	enemies.boss_spawned.connect(_on_boss_spawned)
 	enemies.boss_killed.connect(_on_boss_killed)
@@ -301,6 +318,11 @@ func dev_command(cmd: String) -> void:
 			var edge := Vector2(0.0, -1.0) * (b.radius_at(-PI * 0.5) - 4.0)
 			player.position = Vector3(edge.x, 0.0, edge.y)
 			camera_rig.snap_to(player.position)
+		"chest":
+			if not treasure.chests.is_empty():
+				var c: Treasure.Chest = treasure.chests[0]
+				player.position = Vector3(c.pos.x, 0.0, c.pos.y)
+				camera_rig.snap_to(player.position)
 		"chapter2":
 			SceneRouter.go_to(SceneRouter.GAME, {"chapter_id": "chapter_02", "character": character})
 		"beasts":
@@ -447,8 +469,10 @@ func _tick_world(delta: float) -> void:
 	towers.tick(delta, hero, run_ammo)
 	vehicles.tick(delta, hero)
 	survivors.tick(delta, hero)
+	treasure.tick(delta, hero)
 	hud.set_build_action(towers.can_act(hero, run_wood), towers.action_cost(hero), towers.is_upgrade(hero))
 	weapon_system.tick(delta)
+	boss_brain.tick(delta)
 	enemies.tick(delta)
 	projectiles.tick(delta)
 	pickups.tick(delta)
@@ -644,6 +668,26 @@ func _on_vehicle_fired(from: Vector3, dir: Vector2) -> void:
 	camera_rig.shake(0.06)
 
 
+## A chest bursts its contents on the ground rather than crediting them: the
+## gems and coins flying out is the payoff, and picking them up drags the
+## player another step from safety.
+func _on_chest_opened(position: Vector3, xp: int, coins: int) -> void:
+	SoundBank.sfx("chest_open", -2.0, 0.05)
+	SoundBank.jingle("reward", -6.0)
+	fx.level_up(position)
+	camera_rig.shake(0.25)
+	hud.show_announcement("TREASURE!", 1.3)
+	var at := Vector2(position.x, position.z)
+	for i in CHEST_GEMS:
+		var a := TAU * float(i) / float(CHEST_GEMS)
+		pickups.drop(PickupManager.Kind.XP, at + Vector2(cos(a), sin(a)) * _rng.randf_range(0.5, 1.6),
+			maxf(1.0, float(xp) / float(CHEST_GEMS)))
+	for i in CHEST_COINS:
+		var a := TAU * (float(i) + 0.5) / float(CHEST_COINS)
+		pickups.drop(PickupManager.Kind.COIN, at + Vector2(cos(a), sin(a)) * _rng.randf_range(0.5, 1.6),
+			maxf(1.0, float(coins) / float(CHEST_COINS)))
+
+
 func _on_rescue_progress(ratio: float, position: Vector3) -> void:
 	hud.set_rescue(ratio, position, camera_rig.camera)
 
@@ -748,6 +792,62 @@ func _on_enemy_struck(e: EnemyManager.Enemy, target: Vector2) -> void:
 	fx.hit(Vector3(target.x, 0.7, target.y), (target - e.pos).normalized(), d.tint)
 
 
+## Abilities the horde cannot resolve on its own: summons are spawns, volleys
+## are projectiles, and everything wants sound and shake.
+func _on_boss_ability(e: EnemyManager.Enemy, kind: String, data: Dictionary) -> void:
+	var at := e.position3d() + Vector3(0.0, 1.0 * e.data().scale, 0.0)
+	match kind:
+		"leap":
+			SoundBank.sfx("boss_roar", -3.0, 0.0)
+			camera_rig.shake(0.2)
+		"roar":
+			SoundBank.sfx("boss_roar", 0.0, 0.0)
+			SoundBank.sfx("force_field", -4.0, 0.0)
+			fx.aura_pulse(Vector3(e.pos.x, 0.1, e.pos.y), float(data.get("radius", 12.0)), e.data().tint)
+			camera_rig.shake(0.4)
+			Haptics.medium()
+			hud.show_announcement("THE HORDE IS ROUSED!", 1.4)
+		"summon":
+			var minion: EnemyData = data.get("enemy")
+			if minion != null:
+				SoundBank.sfx("bell", -4.0, 0.0)
+				fx.boss_death(at, e.data().tint)
+				for i in int(data.get("count", 4)):
+					var a := TAU * float(i) / float(maxi(1, int(data.get("count", 4))))
+					enemies.spawn(minion, enemies.bounds.clamp_point(
+						e.pos + Vector2(cos(a), sin(a)) * 2.2, 0.5), chapter.wave_hp_scale(wave_index))
+		"volley":
+			SoundBank.sfx("force_field", -2.0, 0.0)
+			var count := int(data.get("count", 5))
+			var spread := deg_to_rad(float(data.get("spread", 60.0)))
+			var hero := Vector2(player.position.x, player.position.z)
+			var aim := (hero - e.pos).normalized() if e.pos.distance_to(hero) > 0.01 else Vector2.RIGHT
+			for i in count:
+				var offset := 0.0 if count == 1 else lerpf(-spread * 0.5, spread * 0.5, float(i) / float(count - 1))
+				projectiles.spawn_enemy_bolt(at, e.pos + aim.rotated(offset) * 14.0, e.data())
+
+
+## The landing. Everything close is thrown back and hurt, and the whole frame
+## jumps — a boss that can shake the world is the point of the move.
+func _on_boss_slammed(at: Vector2, radius: float, damage: float) -> void:
+	SoundBank.sfx("explosion", 0.0, 0.0)
+	SoundBank.sfx("heavy_impact", -2.0, 0.0)
+	camera_rig.shake(1.0)
+	Haptics.heavy()
+	_hit_stop(0.25, 0.12)
+	fx.boss_death(Vector3(at.x, 0.3, at.y), Color(1.0, 0.75, 0.4))
+	fx.aura_pulse(Vector3(at.x, 0.08, at.y), radius, Color(1.0, 0.6, 0.25))
+	var hero := Vector2(player.position.x, player.position.z)
+	if not player.is_dead and hero.distance_to(at) <= radius:
+		player.take_damage(damage)
+	# The shock throws the horde clear as well, so the boss lands in a space.
+	var caught: Array = []
+	enemies.query_circle(at, radius, caught)
+	for e: EnemyManager.Enemy in caught:
+		if not e.data().is_boss:
+			enemies.hit(e, damage * 0.5, at, 6.0, Damage.Type.TRUE)
+
+
 func _on_bolt_landed(position: Vector3, _damage: float, hit_player: bool) -> void:
 	fx.death(position, Color(0.7, 0.4, 1.0))
 	SoundBank.sfx("glass_break" if hit_player else "slime", -14.0, 0.08)
@@ -760,6 +860,7 @@ func _on_boss_spawned(e: EnemyManager.Enemy) -> void:
 	AudioManager.play_music(chapter.boss_music, 0.8)
 	camera_rig.shake(0.5)
 	Haptics.heavy()
+	boss_brain.begin(e)
 	# It walks in on its own: the horde, the hero and every bullet stop, and
 	# the camera goes to look at it.
 	state = State.BOSS_INTRO

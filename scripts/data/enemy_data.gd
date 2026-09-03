@@ -32,6 +32,19 @@ extends Resource
 ## Bosses only: the one-shot relic they leave for the next run.
 @export var boss_drop: RelicData
 
+@export_group("Boss abilities")
+## What this boss does besides walk at you, as an ordered list of
+##   { "kind": "leap"|"summon"|"volley"|"roar", "cooldown": sec, ... }
+## Each entry keeps its own timer, so a boss with three of them cycles through
+## a real pattern instead of spamming one move.
+##   leap:   "range" how far it can jump, "damage", "radius" of the landing
+##           shock, "wind" seconds crouched before takeoff, "flight" seconds
+##           in the air
+##   summon: "enemy" EnemyData, "count"
+##   volley: "count" bolts, "spread" degrees
+##   roar:   "haste" speed multiplier, "seconds" it lasts, "radius"
+@export var abilities: Array[Dictionary] = []
+
 @export_group("Attack")
 ## Enemies never damage on touch. They stop, wind up for `attack_windup`
 ## seconds (the tell), strike, and only then deal damage — so every hit the

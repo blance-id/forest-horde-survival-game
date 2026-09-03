@@ -11,6 +11,10 @@ signal boss_killed(enemy: Enemy)
 signal enemy_winding_up(enemy: Enemy)
 ## The strike landed (melee) or the bolt left the caster (ranged).
 signal enemy_struck(enemy: Enemy, target: Vector2)
+## A boss started an ability; `kind` is its "kind" string.
+signal boss_ability(enemy: Enemy, kind: String, data: Dictionary)
+## A boss landed a leap: everything in `radius` of `at` is hit.
+signal boss_slammed(at: Vector2, radius: float, damage: float)
 
 
 ## Something noisy that pulls the horde off the hero — a firing tower. Only
@@ -58,6 +62,11 @@ class Enemy:
 	var strike := 0.0
 	## Wind-up pose: the body rears back and swells as it charges the hit.
 	var charge := 0.0
+	## Height above the ground, for a boss mid-leap.
+	var height := 0.0
+	## Temporary speed multiplier from a boss roar, and how long it lasts.
+	var haste := 1.0
+	var haste_left := 0.0
 	var knock := Vector2.ZERO
 	var sep := Vector2.ZERO
 	var hit_time := -100.0
@@ -92,6 +101,8 @@ var last_seen := Vector2.ZERO
 var lures: Array[Lure] = []
 ## Solid terrain the horde walks around; set from the chapter's hills.
 var obstacles: Array[Obstacle] = []
+## Set by Game; while it reports busy the boss is under the brain's control.
+var boss_brain: BossBrain
 ## What the most recent `hit()` actually landed, after resistances.
 var last_dealt := 0.0
 var time := 0.0
@@ -224,6 +235,9 @@ func tick(delta: float) -> void:
 				continue
 			i += 1
 			continue
+		if e == boss and boss_brain != null and boss_brain.is_busy():
+			i += 1
+			continue
 		_move(e, delta, target, player_alive)
 		i += 1
 
@@ -250,7 +264,7 @@ func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 	var to_player := target - e.pos
 	var dist := to_player.length()
 	var dir := to_player / dist if dist > 0.001 else Vector2.RIGHT
-	var vel := dir * d.speed
+	var vel := dir * d.speed * e.haste
 	var target_radius := e.lure.body_radius if e.lure != null else Player.RADIUS
 	var reach := e.radius() + target_radius + d.attack_reach
 
@@ -263,6 +277,10 @@ func _move(e: Enemy, delta: float, target: Vector2, player_alive: bool) -> void:
 
 	e.strike = maxf(0.0, e.strike - delta / STRIKE_TIME)
 	e.attack_cd = maxf(0.0, e.attack_cd - delta)
+	if e.haste_left > 0.0:
+		e.haste_left -= delta
+		if e.haste_left <= 0.0:
+			e.haste = 1.0
 
 	if e.windup > 0.0:
 		# Rooted while charging: the wind-up is the player's cue to leave.
@@ -403,7 +421,8 @@ func _write_transform(e: Enemy) -> void:
 		offset = forward * d.lunge * (e.strike - e.charge * 0.4)
 		s *= 1.0 + e.charge * 0.12 + e.strike * 0.08
 	var basis := Basis(Vector3.UP, e.yaw).scaled(Vector3(s, s, s))
-	e.pool.multimesh.set_instance_transform(e.slot, Transform3D(basis, Vector3(e.pos.x + offset.x, 0.0, e.pos.y + offset.y)))
+	e.pool.multimesh.set_instance_transform(e.slot, Transform3D(basis,
+		Vector3(e.pos.x + offset.x, e.height, e.pos.y + offset.y)))
 
 
 func _write_custom(e: Enemy) -> void:

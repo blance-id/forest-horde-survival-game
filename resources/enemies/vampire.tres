@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/data/enemy_data.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/models/graveyard/character-vampire.glb" id="2"]
 [ext_resource type="Texture2D" path="res://assets/ui/items/vampire.png" id="3"]
 [ext_resource type="Resource" path="res://resources/relics/vampire_ward.tres" id="4"]
+[ext_resource type="Resource" path="res://resources/enemies/ghost.tres" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -12,13 +13,13 @@ display_name = "Count Nosferatu"
 model = ExtResource("2")
 icon = ExtResource("3")
 scale = 2.4
-max_hp = 900.0
-speed = 1.25
-damage = 26.0
+max_hp = 1700.0
+speed = 1.5
+damage = 32.0
 attack_cooldown = 1.1
 radius = 0.95
-physical_resist = 0.15
-magic_resist = 0.15
+physical_resist = 0.25
+magic_resist = 0.25
 xp = 100
 coin_chance = 1.0
 attack_windup = 0.7
@@ -27,6 +28,26 @@ lunge = 0.9
 windup_sound = "boss_roar"
 is_boss = true
 boss_drop = ExtResource("4")
+abilities = Array[Dictionary]([{
+"kind": "summon",
+"cooldown": 11.0,
+"enemy": ExtResource("5"),
+"count": 6
+}, {
+"kind": "volley",
+"cooldown": 7.0,
+"count": 7,
+"spread": 70.0
+}, {
+"kind": "leap",
+"cooldown": 13.0,
+"range": 16.0,
+"wind": 0.7,
+"flight": 0.75,
+"height": 5.0,
+"radius": 5.0,
+"damage": 34.0
+}])
 stride_rate = 1.4
 leg_swing_degrees = 28.0
 arm_forward_degrees = 45.0
